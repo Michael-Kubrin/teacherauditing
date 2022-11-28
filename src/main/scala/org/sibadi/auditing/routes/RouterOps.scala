@@ -2,7 +2,6 @@ package org.sibadi.auditing.routes
 
 import cats.Applicative
 import cats.data.EitherT
-import org.sibadi.auditing.AuditingError
 import org.sibadi.auditing.validators.ValidationErrors
 
 trait RouterOps[F[_]] {
