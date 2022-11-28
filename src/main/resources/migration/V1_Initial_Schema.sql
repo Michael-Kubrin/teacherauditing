@@ -1,0 +1,13 @@
+--CREATE TABLE works (
+--        work_id TEXT,
+--        imageBase64 TEXT,
+--        createDt TIMESTAMP,
+--        who_id TEXT
+--);
+--
+--CREATE TABLE reviews (
+--        work_id TEXT,
+--        reviewer_id TEXT,
+--        state TEXT,
+--        dt TIMESTAMP
+--);
