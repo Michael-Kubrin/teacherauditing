@@ -7,20 +7,20 @@ import org.slf4j.LoggerFactory
 
 trait TeacherService[F[_]] {
 
-  def create(id: String): EitherT[F, TeacherService, TeacherResponse]
-  def update(id: String): EitherT[F, TeacherService, TeacherResponse]
-  def delete(id: String): EitherT[F, TeacherService, TeacherResponse]
+  def create(id: String): EitherT[F, TeacherService[F], TeacherResponse]
+  def update(id: String): EitherT[F, TeacherService[F], TeacherResponse]
+  def delete(id: String): EitherT[F, TeacherService[F], TeacherResponse]
 }
 
 class TeacherServiceImpl[F[_]: Sync]() extends TeacherService[F] {
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  override def create(id: String): EitherT[F, TeacherService, TeacherResponse] =
+  override def create(id: String): EitherT[F, TeacherService[F], TeacherResponse] =
     ???
 
-  override def update(id: String): EitherT[F, TeacherService, TeacherResponse] =
+  override def update(id: String): EitherT[F, TeacherService[F], TeacherResponse] =
     ???
 
-  override def delete(id: String): EitherT[F, TeacherService, TeacherResponse] =
+  override def delete(id: String): EitherT[F, TeacherService[F], TeacherResponse] =
     ???
 }
