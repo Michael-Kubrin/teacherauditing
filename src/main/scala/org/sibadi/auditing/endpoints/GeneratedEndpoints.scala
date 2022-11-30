@@ -57,6 +57,18 @@ object GeneratedEndpoints {
 
   final case class EstimateRequest(score: Long)
 
+  final case class EditGroupsRequest(nameOfGroup: String)
+
+  final case class GroupsResponse(userName: String, groupId: String)
+
+  final case class EditOneGroupRequest(groupId: String)
+
+  final case class CreateUserRequest(userName: String)
+
+  final case class UserResponse(userName: String, userId: String)
+
+  final case class EditUserRequest(userName: String, role: String)
+
   final case class ResponseId(id: String)
 
   val postApiAdminTopics =
@@ -370,4 +382,120 @@ object GeneratedEndpoints {
 //      )
 //      .out(jsonBody[application / octet - stream])
 //      .description("")
+
+  val postApiAdminGroups =
+    endpoint.post
+      .in("api" / "admin" / "groups")
+      .in(jsonBody[EditGroupsRequest])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(stringBody)
+      .description("")
+
+  val getApiAdminGroups =
+    endpoint.get
+      .in("api" / "admin" / "groups")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(jsonBody[GroupsResponse])
+      .description("")
+
+  val putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId =
+    endpoint.put
+      .in("api" / "admin" / "groups" / path[String]("groupId") / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .in(jsonBody[EditOneGroupRequest])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(stringBody)
+      .description("")
+
+  val deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId =
+    endpoint.delete
+      .in("api" / "admin" / "groups" / path[String]("groupId") / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(stringBody)
+      .description("")
+
+  val postApiAdminUsers =
+    endpoint.post
+      .in("api" / "admin" / "users")
+      .in(jsonBody[CreateUserRequest])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(jsonBody[ResponseId])
+      .description("")
+
+  val getApiAdminUsers =
+    endpoint.get
+      .in("api" / "admin" / "users")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(jsonBody[UserResponse])
+      .description("")
+
+  val putApiAdminUsersUserIdGroupGroupId =
+    endpoint.put
+      .in("api" / "admin" / "users" / path[String]("userId") / "group" / path[String]("groupId"))
+      .in(jsonBody[EditUserRequest])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(stringBody)
+      .description("")
+
+  val deleteApiAdminUsersUserIdGroupGroupId =
+    endpoint.delete
+      .in("api" / "admin" / "users" / path[String]("userId") / "group" / path[String]("groupId"))
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+        )
+      )
+      .out(stringBody)
+      .description("")
 }
