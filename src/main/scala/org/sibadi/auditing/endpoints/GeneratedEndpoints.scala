@@ -66,7 +66,7 @@ object GeneratedEndpoints {
         )
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
-      .description("")
+
   val putApiAdminTopicsTopicId =
     endpoint.put
       .securityIn(auth.bearer[String]())
@@ -82,7 +82,7 @@ object GeneratedEndpoints {
         )
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
-      .description("")
+
   val postApiAdminTopicsTopicIdKpi =
     endpoint.post
       .securityIn(auth.bearer[String]())
@@ -97,6 +97,7 @@ object GeneratedEndpoints {
         )
       )
       .out(jsonBody[ResponseId])
+
   val getApiAdminTopicsTopicIdKpi =
     endpoint.get
       .securityIn(auth.bearer[String]())
@@ -110,6 +111,7 @@ object GeneratedEndpoints {
         )
       )
       .out(jsonBody[List[TopicKpiResponse]])
+
   val putApiAdminTopicsTopicIdKpiKpiId =
     endpoint.put
       .securityIn(auth.bearer[String]())
@@ -124,6 +126,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
+
   val deleteApiAdminTopicsTopicIdKpiKpiId =
     endpoint.delete
       .securityIn(auth.bearer[String]())
@@ -137,6 +140,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
+
   val putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus =
     endpoint.put
       .securityIn(auth.bearer[String]())
@@ -152,6 +156,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
+
   val postApiAdminTeachers =
     endpoint.post
       .securityIn(auth.bearer[String]())
@@ -167,7 +172,7 @@ object GeneratedEndpoints {
         )
       )
       .out(jsonBody[ResponseId])
-      .description("")
+
   val getApiAdminTeachers =
     endpoint.get
       .securityIn(auth.bearer[String]())
@@ -197,7 +202,7 @@ object GeneratedEndpoints {
         )
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
-      .description("")
+
   val postApiAdminReviewers =
     endpoint.post
       .securityIn(auth.bearer[String]())
@@ -213,7 +218,7 @@ object GeneratedEndpoints {
         )
       )
       .out(jsonBody[ResponseId])
-      .description("")
+
   val getApiAdminReviewers =
     endpoint.get
       .securityIn(auth.bearer[String]())
@@ -228,6 +233,7 @@ object GeneratedEndpoints {
       )
       .out(jsonBody[List[ReviewerResponse]])
       .description("")
+
   val putApiAdminReviewersId =
     endpoint.put
       .securityIn(auth.bearer[String]())
@@ -243,6 +249,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
+
   val postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId =
     endpoint.post
       .securityIn(auth.bearer[String]())
@@ -257,6 +264,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(201)).and(stringBody))
       .description("")
+
   val deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId =
     endpoint.delete
       .securityIn(auth.bearer[String]())
@@ -271,6 +279,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
+
   val getApiPublicTopics =
     endpoint.get
       .securityIn(auth.bearer[String]())
@@ -285,6 +294,7 @@ object GeneratedEndpoints {
       )
       .out(jsonBody[TopicItemResponseDto])
       .description("")
+
   val getApiPublicTopicsTopicIdKpi =
     endpoint.get
       .securityIn(auth.bearer[String]())
@@ -299,6 +309,7 @@ object GeneratedEndpoints {
       )
       .out(jsonBody[GetPublicKpiResponse])
       .description("")
+
   val postApiPublicTopicsTopicIdKpiKpiIdEstimate =
     endpoint.post
       .securityIn(auth.bearer[String]())
@@ -314,6 +325,7 @@ object GeneratedEndpoints {
       )
       .out(jsonBody[ResponseId])
       .description("")
+
   val postApiPublicTopicsTopicIdKpiKpiIdFiles =
     endpoint.post
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files")
@@ -328,6 +340,7 @@ object GeneratedEndpoints {
       )
       .out(jsonBody[ResponseId])
       .description("")
+
   val postApiPublicTopicsTopicIdKpiKpiIdFilesFileId =
     endpoint.get
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files" / path[String]("fileId"))
@@ -341,6 +354,7 @@ object GeneratedEndpoints {
       )
       .out(fileBody)
       .description("")
+
   val postApiAdminGroups =
     endpoint.post
       .securityIn(auth.bearer[String]())
@@ -356,6 +370,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(201)).and(stringBody))
       .description("")
+
   val getApiAdminGroups =
     endpoint.get
       .securityIn(auth.bearer[String]())
@@ -370,6 +385,7 @@ object GeneratedEndpoints {
       )
       .out(jsonBody[GroupsResponse])
       .description("")
+
   val putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId =
     endpoint.put
       .securityIn(auth.bearer[String]())
@@ -385,6 +401,7 @@ object GeneratedEndpoints {
       )
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
+
   val deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId =
     endpoint.delete
       .securityIn(auth.bearer[String]())
