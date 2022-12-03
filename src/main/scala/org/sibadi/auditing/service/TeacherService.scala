@@ -3,7 +3,6 @@ package org.sibadi.auditing.service
 import cats.data.EitherT
 import cats.effect.Sync
 import org.sibadi.auditing.domain.response.TeacherResponse
-import org.slf4j.LoggerFactory
 
 trait TeacherService[F[_]] {
 
@@ -13,7 +12,7 @@ trait TeacherService[F[_]] {
 }
 
 class TeacherServiceImpl[F[_]: Sync]() extends TeacherService[F] {
-  private val log = LoggerFactory.getLogger(this.getClass)
+//  private val log = LoggerFactory.getLogger(this.getClass)
 
   override def create(id: String): EitherT[F, TeacherService[F], TeacherResponse] =
     ???

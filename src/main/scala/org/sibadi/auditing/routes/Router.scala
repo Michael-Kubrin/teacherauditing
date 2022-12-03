@@ -1,11 +1,8 @@
 package org.sibadi.auditing.routes
 
 import cats.Monad
-import cats.effect.Async
 import cats.syntax.all._
-import org.http4s.HttpRoutes
 import org.sibadi.auditing.domain.ApiError
-import sttp.tapir.server.http4s.Http4sServerOptions
 import org.sibadi.auditing.endpoints.GeneratedEndpoints._
 import org.sibadi.auditing.service.Authenticator
 
@@ -39,6 +36,21 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
     adminEditGroups,
     adminDeleteGropus
   )
+
+  def createLogin =
+    postLogin
+      .serverLogic { userType =>
+        ApiError.InternalError("Not implemented").cast.asLeft[LoginResponse].pure[F]
+      }
+
+  def changePassword =
+    editPassword
+      .serverSecurityLogic { token =>
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+      }
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]
+      }
 
   def adminCreateTopic =
     postApiAdminTopics
@@ -127,7 +139,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
+        ApiError.InternalError("Not implemented").cast.asLeft[ResponseIdPassword].pure[F]
       }
 
   def adminGetTeacher =
@@ -154,7 +166,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
+        ApiError.InternalError("Not implemented").cast.asLeft[ResponseIdPassword].pure[F]
       }
 
   def adminGetRivewers =

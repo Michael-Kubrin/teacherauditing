@@ -22,6 +22,38 @@ object GeneratedEndpoints {
   // TODO create teacher/reviewer
   //  IN: FIO, login
   //  OUT: id, password (will be randomly generated)
+  // KUBR1N: Done
+
+  val postLogin =
+    endpoint.post
+      .in("api" / "login")
+      .in(jsonBody[CreateAccountRequestDto])
+      .description("")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[LoginResponse])
+
+  val editPassword =
+    endpoint.put
+      .securityIn(auth.bearer[String]())
+      .in("api" / "password")
+      .description("")
+      .in(jsonBody[ChangePasswordRequestDto])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[PasswordResponse])
 
   val postApiAdminTopics =
     endpoint.post
@@ -171,7 +203,7 @@ object GeneratedEndpoints {
           oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
         )
       )
-      .out(jsonBody[ResponseId])
+      .out(jsonBody[ResponseIdPassword])
 
   val getApiAdminTeachers =
     endpoint.get
@@ -217,7 +249,7 @@ object GeneratedEndpoints {
           oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
         )
       )
-      .out(jsonBody[ResponseId])
+      .out(jsonBody[ResponseIdPassword])
 
   val getApiAdminReviewers =
     endpoint.get
@@ -425,6 +457,8 @@ object GeneratedEndpoints {
 
   final case class ResponseId(id: String)
 
+  final case class ResponseIdPassword(id: String, password: String)
+
   final case class CreateKPIRequestDto(title: String)
 
   final case class CreateTopicRequestDto(title: String, kpis: List[CreateKPIRequestDto])
@@ -445,7 +479,7 @@ object GeneratedEndpoints {
 
   final case class EditTeacherStatusRequest(newstatus: ReviewStatus.ReviewStatus)
 
-  final case class CreateTeacherRequest(name: String, surName: String, middleName: Option[String])
+  final case class CreateTeacherRequest(name: String, surName: String, middleName: Option[String], login: String)
 
   final case class TeacherResponse(
     id: String,
@@ -457,7 +491,7 @@ object GeneratedEndpoints {
 
   final case class EditTeacherRequest(name: String, surName: String, middleName: Option[String])
 
-  final case class CreateReviewerRequest(name: String, surName: String, middleName: Option[String])
+  final case class CreateReviewerRequest(name: String, surName: String, middleName: Option[String], login: String)
 
   final case class ReviewerResponse(id: String, name: String, surName: String, middleName: Option[String])
 
@@ -475,6 +509,14 @@ object GeneratedEndpoints {
   final case class CreateGroupRequestDtp(name: String)
 
   final case class GroupsResponse(id: String, name: String)
+
+  final case class CreateAccountRequestDto(login: String, password: String)
+
+  final case class ChangePasswordRequestDto(oldPassword: String, NewPassword: String)
+
+  final case class LoginResponse(bearerToken: String)
+
+  final case class PasswordResponse(bearerToken: String)
 
   object ReviewStatus extends Enumeration {
     type ReviewStatus = Value
