@@ -8,6 +8,8 @@ object ServiceErrors {
 
   object Validation {
 
+    val invalidAuth = new ServiceErrors("Invalid Authentication")
+
     val invalidTeacherName = new ServiceErrors("TEACHER_INVALID_NAME")
   }
 }
