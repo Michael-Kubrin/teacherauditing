@@ -1,16 +1,23 @@
-package org.sibadi.auditing.routes
+package org.sibadi.auditing.api.routes
 
-import cats.Monad
+import cats.effect.{Async, Resource}
 import cats.syntax.all._
-import org.sibadi.auditing.domain.ApiError
-import org.sibadi.auditing.endpoints.GeneratedEndpoints._
+import org.http4s.HttpRoutes
+import org.sibadi.auditing.api.endpoints.GeneratedEndpoints
+import org.sibadi.auditing.api.endpoints.GeneratedEndpoints._
+import org.sibadi.auditing.api.model.ApiError
 import org.sibadi.auditing.service.Authenticator
+import sttp.tapir.server.ServerEndpoint
+import sttp.tapir.server.http4s.Http4sServerInterpreter
+import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
-class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] {
+class AppRouter[F[_]: Async](authenticator: Authenticator[F]) {
 
-  // TODO handle all endpoints with 500 return
+  private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](GeneratedEndpoints.allEndpoints, "aboba", "1.0.0")
 
-  def routes = List(
+  def httpRoutes: HttpRoutes[F] = Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes)
+
+  private def allRoutes: List[ServerEndpoint[Any, F]] = List(
     adminCreateTopic,
     adminGetTopic,
     adminDeleteTopic,
@@ -34,25 +41,12 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
     adminCreateGroups,
     adminGetGroups,
     adminEditGroups,
-    adminDeleteGropus
+    adminDeleteGropus,
+    createLogin,
+    changePassword
   )
 
-  def createLogin =
-    postLogin
-      .serverLogic { userType =>
-        ApiError.InternalError("Not implemented").cast.asLeft[LoginResponse].pure[F]
-      }
-
-  def changePassword =
-    editPassword
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]
-      }
-
-  def adminCreateTopic =
+  private def adminCreateTopic =
     postApiAdminTopics
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -61,7 +55,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
       }
 
-  def adminGetTopic =
+  private def adminGetTopic =
     getApiAdminTopics
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -70,7 +64,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[List[TopicItemResponseDto]].pure[F]
       }
 
-  def adminDeleteTopic =
+  private def adminDeleteTopic =
     deleteApiAdminTopics
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -79,7 +73,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F] //TODO: Not sure about it
       }
 
-  def adminEditTopicById =
+  private def adminEditTopicById =
     putApiAdminTopicsTopicId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -88,7 +82,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminCreateTopicKpi =
+  private def adminCreateTopicKpi =
     postApiAdminTopicsTopicIdKpi
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -97,7 +91,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
       }
 
-  def adminGetTopicKpi =
+  private def adminGetTopicKpi =
     getApiAdminTopicsTopicIdKpi
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -106,7 +100,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[List[TopicKpiResponse]].pure[F]
       }
 
-  def adminEditTopicKpiId =
+  private def adminEditTopicKpiId =
     putApiAdminTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -115,7 +109,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminDeleteTopicKpiId =
+  private def adminDeleteTopicKpiId =
     deleteApiAdminTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -124,7 +118,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminEditStatus =
+  private def adminEditStatus =
     putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -133,7 +127,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminCreateTeacher =
+  private def adminCreateTeacher =
     postApiAdminTeachers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -142,7 +136,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[ResponseIdPassword].pure[F]
       }
 
-  def adminGetTeacher =
+  private def adminGetTeacher =
     getApiAdminTeachers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -151,7 +145,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[List[TeacherResponse]].pure[F]
       }
 
-  def adminEditTeacher =
+  private def adminEditTeacher =
     putApiAdminTeachers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -160,7 +154,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminCreateRivewers =
+  private def adminCreateRivewers =
     postApiAdminReviewers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -169,7 +163,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[ResponseIdPassword].pure[F]
       }
 
-  def adminGetRivewers =
+  private def adminGetRivewers =
     getApiAdminReviewers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -178,7 +172,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[List[ReviewerResponse]].pure[F]
       }
 
-  def adminEditRivewers =
+  private def adminEditRivewers =
     putApiAdminReviewersId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -187,7 +181,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminCreateTeacherId =
+  private def adminCreateTeacherId =
     postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -196,7 +190,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminDeleteTeacherId =
+  private def adminDeleteTeacherId =
     deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -205,7 +199,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def publicGetTopics =
+  private def publicGetTopics =
     getApiPublicTopics
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -214,7 +208,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[TopicItemResponseDto].pure[F]
       }
 
-  def publicGetKpi =
+  private def publicGetKpi =
     getApiPublicTopicsTopicIdKpi
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -223,13 +217,31 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[GetPublicKpiResponse].pure[F]
       }
 
-  def publicEstimate =
+  private def publicEstimate =
     postApiPublicTopicsTopicIdKpiKpiIdEstimate
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
+      }
+
+  private def adminCreateGroups =
+    postApiAdminGroups
+      .serverSecurityLogic { token =>
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+      }
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+      }
+
+  private def adminGetGroups =
+    getApiAdminGroups
+      .serverSecurityLogic { token =>
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+      }
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[GroupsResponse].pure[F]
       }
 
 //  def publicUploadFile =
@@ -251,25 +263,7 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
 //          ApiError.InternalError("Not implemented").cast.asLeft[].pure[F]
 //      }
 
-  def adminCreateGroups =
-    postApiAdminGroups
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
-      }
-
-  def adminGetGroups =
-    getApiAdminGroups
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[GroupsResponse].pure[F]
-      }
-
-  def adminEditGroups =
+  private def adminEditGroups =
     putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -278,12 +272,35 @@ class Router[F[_]: Monad](authenticator: Authenticator[F]) extends RouterOps[F] 
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  def adminDeleteGropus =
+  private def adminDeleteGropus =
     deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+        authenticator
+          .isAdmin(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value // TODO check valid userType
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
+
+  private def createLogin =
+    postLogin
+      .serverLogic { userType =>
+        ApiError.InternalError("Not implemented").cast.asLeft[LoginResponse].pure[F]
+      }
+
+  private def changePassword =
+    editPassword
+      .serverSecurityLogic { token =>
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+      }
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]
+      }
+}
+
+object AppRouter {
+  def apply[F[_]: Async](authenticator: Authenticator[F]): Resource[F, AppRouter[F]] =
+    Resource.pure(new AppRouter(authenticator))
 }

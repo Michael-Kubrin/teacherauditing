@@ -1,28 +1,15 @@
-package org.sibadi.auditing.endpoints
+package org.sibadi.auditing.api.endpoints
 
 import io.circe.generic.auto.{exportDecoder, exportEncoder}
 import io.circe.{Decoder, Encoder}
-import org.sibadi.auditing.domain.ApiError
-import org.sibadi.auditing.domain.ApiError._
+import org.sibadi.auditing.api.model.ApiError
+import ApiError._
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.generic.auto.schemaForCaseClass
 import sttp.tapir.json.circe.jsonBody
 
 object GeneratedEndpoints {
-
-  // TODO login
-  //  IN: login, password
-  //  OUT: bearer token
-
-  // TODO changePassword
-  //  IN: oldPassword, newPassword, bearer in header
-  //  OUT: new bearer token
-
-  // TODO create teacher/reviewer
-  //  IN: FIO, login
-  //  OUT: id, password (will be randomly generated)
-  // KUBR1N: Done
 
   val postLogin =
     endpoint.post
@@ -119,7 +106,7 @@ object GeneratedEndpoints {
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
-      .in(jsonBody[CreateKpiRequestDto])
+      .in(jsonBody[CreateKPIRequestDto])
       .description("")
       .errorOut(
         oneOf[ApiError](
@@ -449,6 +436,37 @@ object GeneratedEndpoints {
       .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
       .description("")
 
+  val allEndpoints = List(
+    postLogin,
+    editPassword,
+    postApiAdminTopics,
+    getApiAdminTopics,
+    deleteApiAdminTopics,
+    putApiAdminTopicsTopicId,
+    postApiAdminTopicsTopicIdKpi,
+    getApiAdminTopicsTopicIdKpi,
+    putApiAdminTopicsTopicIdKpiKpiId,
+    deleteApiAdminTopicsTopicIdKpiKpiId,
+    putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus,
+    postApiAdminTeachers,
+    getApiAdminTeachers,
+    putApiAdminTeachers,
+    postApiAdminReviewers,
+    getApiAdminReviewers,
+    putApiAdminReviewersId,
+    postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId,
+    deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId,
+    getApiPublicTopics,
+    getApiPublicTopicsTopicIdKpi,
+    postApiPublicTopicsTopicIdKpiKpiIdEstimate,
+    postApiPublicTopicsTopicIdKpiKpiIdFiles,
+    postApiPublicTopicsTopicIdKpiKpiIdFilesFileId,
+    postApiAdminGroups,
+    getApiAdminGroups,
+    putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId,
+    deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
+  )
+
   final case class FileId(id: String)
 
   final case class Reviewer(name: String, surName: String, middleName: Option[String], reviewDt: java.time.LocalDateTime)
@@ -471,11 +489,9 @@ object GeneratedEndpoints {
 
   final case class EditTopicRequestDto(name: String)
 
-  final case class CreateKpiRequestDto(title: String)
-
   final case class TopicKpiResponse(id: String, title: String)
 
-  final case class EditKpiRequestDto(title: String)
+  final case class EditKpiRequestDto(aboba: String)
 
   final case class EditTeacherStatusRequest(newstatus: ReviewStatus.ReviewStatus)
 

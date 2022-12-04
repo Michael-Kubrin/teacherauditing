@@ -1,4 +1,4 @@
-package org.sibadi.auditing.errors
+package org.sibadi.auditing.domain.errors
 
 sealed class ServiceErrors(val code: String)
 

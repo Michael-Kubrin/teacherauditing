@@ -10,7 +10,8 @@ lazy val root = (project in file("."))
       "-Wdead-code",
       "-Xlint:infer-any",
       "-feature",
-      "-language:existentials"
+      "-language:existentials",
+      "-deprecation"
     ),
     semanticdbEnabled          := true,
     semanticdbVersion          := scalafixSemanticdb.revision,
