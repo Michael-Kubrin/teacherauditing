@@ -134,17 +134,18 @@ class AppRouter[F[_]: Async](authenticator: Authenticator[F], service: Service[F
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        service.createTeacher(
-          firstName = body.name,
-          lastName = body.surName,
-          middleName = body.middleName,
-          login = body.login
-        )
+        service
+          .createTeacher(
+            firstName = body.name,
+            lastName = body.surName,
+            middleName = body.middleName,
+            login = body.login
+          )
           .map { createdTeacher =>
             ResponseIdPassword(createdTeacher.id, createdTeacher.password)
           }
-          .leftMap {
-            case AppError.Unexpected(_) => ApiError.InternalError("Cannot create teacher").cast
+          .leftMap { case AppError.Unexpected(_) =>
+            ApiError.InternalError("Cannot create teacher").cast
           }
           .value
       }
