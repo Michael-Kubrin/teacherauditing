@@ -6,12 +6,13 @@ import org.http4s.HttpRoutes
 import org.sibadi.auditing.api.endpoints.GeneratedEndpoints
 import org.sibadi.auditing.api.endpoints.GeneratedEndpoints._
 import org.sibadi.auditing.api.model.ApiError
-import org.sibadi.auditing.service.Authenticator
+import org.sibadi.auditing.domain.errors.AppError
+import org.sibadi.auditing.service.{Authenticator, Service}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
-class AppRouter[F[_]: Async](authenticator: Authenticator[F]) {
+class AppRouter[F[_]: Async](authenticator: Authenticator[F], service: Service[F]) {
 
   private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](GeneratedEndpoints.allEndpoints, "aboba", "1.0.0")
 
@@ -133,7 +134,19 @@ class AppRouter[F[_]: Async](authenticator: Authenticator[F]) {
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[ResponseIdPassword].pure[F]
+        service.createTeacher(
+          firstName = body.name,
+          lastName = body.surName,
+          middleName = body.middleName,
+          login = body.login
+        )
+          .map { createdTeacher =>
+            ResponseIdPassword(createdTeacher.id, createdTeacher.password)
+          }
+          .leftMap {
+            case AppError.Unexpected(_) => ApiError.InternalError("Cannot create teacher").cast
+          }
+          .value
       }
 
   private def adminGetTeacher =
@@ -301,6 +314,6 @@ class AppRouter[F[_]: Async](authenticator: Authenticator[F]) {
 }
 
 object AppRouter {
-  def apply[F[_]: Async](authenticator: Authenticator[F]): Resource[F, AppRouter[F]] =
-    Resource.pure(new AppRouter(authenticator))
+  def apply[F[_]: Async](authenticator: Authenticator[F], service: Service[F]): Resource[F, AppRouter[F]] =
+    Resource.pure(new AppRouter(authenticator, service))
 }

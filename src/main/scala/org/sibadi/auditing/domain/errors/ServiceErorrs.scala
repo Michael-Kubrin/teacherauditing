@@ -1,15 +1,11 @@
 package org.sibadi.auditing.domain.errors
 
-sealed class ServiceErrors(val code: String)
+sealed trait AppError {
+  def cast: AppError = this
+}
 
-object ServiceErrors {
+object AppError {
 
-  val teacherNotFound = new ServiceErrors("TEACHER_NOT_FOUND")
+  final case class Unexpected(t: Throwable) extends AppError
 
-  object Validation {
-
-    val invalidAuth = new ServiceErrors("Invalid Authentication")
-
-    val invalidTeacherName = new ServiceErrors("TEACHER_INVALID_NAME")
-  }
 }
