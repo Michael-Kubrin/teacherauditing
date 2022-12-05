@@ -18,4 +18,17 @@ package object db {
     bearer: String
   )
 
+//  final case class Topics(
+//                           title: String,
+//                           kpis: String
+//  )
+
+  final case class Reviewer(
+    id: String,
+    firstName: String,
+    lastName: String,
+    middleName: Option[String],
+    deleteDt: Option[LocalDateTime]
+  )
+
 }

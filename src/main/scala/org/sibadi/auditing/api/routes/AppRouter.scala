@@ -30,10 +30,10 @@ class AppRouter[F[_]: Async](authenticator: Authenticator[F], service: Service[F
     adminEditStatus,
     adminCreateTeacher,
     adminGetTeacher,
-    adminEditTeacher,
-    adminCreateRivewers,
-    adminGetRivewers,
-    adminEditRivewers,
+//    adminEditTeacher,
+    adminCreateReviewers,
+    adminGetReviewers,
+    adminEditReviewers,
     adminCreateTeacherId,
     adminDeleteTeacherId,
     publicGetTopics,
@@ -159,25 +159,47 @@ class AppRouter[F[_]: Async](authenticator: Authenticator[F], service: Service[F
         ApiError.InternalError("Not implemented").cast.asLeft[List[TeacherResponse]].pure[F]
       }
 
-  private def adminEditTeacher =
-    putApiAdminTeachers
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
-      }
+//  private def adminEditTeacher =
+//    putApiAdminTeachers
+//      .serverSecurityLogic { token =>
+//        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+//      }
+//      .serverLogic { userType => body =>
+//        service
+//          .editTeacher(
+//            name = body._1,
+//            surName = body._1,
+//            middleName = body._1.some
+//          )
+//          .leftMap { case AppError.Unexpected(_) =>
+//            ApiError.InternalError("Cannot edit teacher").cast
+//          }
+//          .value
+//      }
 
-  private def adminCreateRivewers =
+  private def adminCreateReviewers =
     postApiAdminReviewers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[ResponseIdPassword].pure[F]
+        service
+          .createReviewer(
+            firstName = body.name,
+            lastName = body.surName,
+            middleName = body.middleName,
+            login = body.login
+          )
+          .map { createdReviewer =>
+            ResponseIdPassword(createdReviewer.id, createdReviewer.password)
+          }
+          .leftMap { case AppError.Unexpected(_) =>
+            ApiError.InternalError("Cannot create teacher").cast
+          }
+          .value
       }
 
-  private def adminGetRivewers =
+  private def adminGetReviewers =
     getApiAdminReviewers
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
@@ -186,7 +208,7 @@ class AppRouter[F[_]: Async](authenticator: Authenticator[F], service: Service[F
         ApiError.InternalError("Not implemented").cast.asLeft[List[ReviewerResponse]].pure[F]
       }
 
-  private def adminEditRivewers =
+  private def adminEditReviewers =
     putApiAdminReviewersId
       .serverSecurityLogic { token =>
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
