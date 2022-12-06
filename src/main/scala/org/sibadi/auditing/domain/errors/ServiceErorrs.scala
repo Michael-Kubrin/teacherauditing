@@ -8,4 +8,12 @@ object AppError {
 
   final case class Unexpected(t: Throwable) extends AppError
 
+  final case class TeacherDoesNotExists(t: Throwable) extends AppError
+
+  final case class ReviewerDoesNotExists(t: Throwable) extends AppError
+
+  final case class TopicDoesNotExists(t: Throwable) extends AppError
+
+  final case class TopicKPIDoesNotExists(t: Throwable) extends AppError
+
 }

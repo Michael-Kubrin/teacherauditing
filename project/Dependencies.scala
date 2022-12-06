@@ -15,6 +15,7 @@ object Versions {
   val doobie            = "1.0.0-RC2"
   val flyWay            = "6.2.4"
   val pureConfigVersion = "0.17.1"
+  val hashVersion       = "1.2.2"
 
 }
 
@@ -40,6 +41,7 @@ object Dependencies {
   val doobiePostgres = "org.tpolecat"                %% "doobie-postgres"         % Versions.doobie
   val flyWay         = "org.flywaydb"                 % "flyway-core"             % Versions.flyWay
   val pureConfig     = "com.github.pureconfig"       %% "pureconfig"              % Versions.pureConfigVersion
+  val hasherCode     = "com.outr"                    %% "hasher"                  % Versions.hashVersion
 
   val all: Seq[ModuleID] =
     Seq(
@@ -60,7 +62,8 @@ object Dependencies {
       doobieHikari,
       doobiePostgres,
       flyWay,
-      pureConfig
+      pureConfig,
+      hasherCode
     ) ++ Seq(
       testcontainers,
       weaver
