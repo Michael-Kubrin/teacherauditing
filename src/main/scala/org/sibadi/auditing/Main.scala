@@ -32,7 +32,7 @@ object Main extends IOApp.Simple {
       _             <- Resource.eval(Migrations(cfg.database).migrate())
       transactor    <- createTransactor(cfg.database)
       teacherDao    <- Resource.pure(new TeacherDAO[F](transactor))
-      service       <- Service(teacherDao)
+      service       <- Service()
       authenticator <- Authenticator[F]()
       router        <- AppRouter[F](authenticator, service)
       server        <- server[F](cfg.server, router.httpRoutes)

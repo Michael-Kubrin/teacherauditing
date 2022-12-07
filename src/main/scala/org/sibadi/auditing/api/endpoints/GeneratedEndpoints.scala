@@ -56,7 +56,7 @@ object GeneratedEndpoints {
           oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[ResponseId])
+      .out(statusCode(StatusCode.unsafeApply(201)))
   val getApiAdminTopics =
     endpoint.get
       .securityIn(auth.bearer[String]())

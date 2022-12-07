@@ -3,19 +3,19 @@ package org.sibadi.auditing.service
 import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
-import cats.syntax.option.none
-import com.roundeights.hasher.Algo
+import com.roundeights.hasher.Implicits._
 import org.sibadi.auditing.db
 import org.sibadi.auditing.db.{Reviewer, ReviewerCredentialsDAO, ReviewerDAO}
-import org.sibadi.auditing.domain.CreatedReviewer
+import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
+import org.sibadi.auditing.util.{PasswordGenerator, TokenGenerator}
 
 import java.util.UUID
-import scala.io.Source
 
 class ReviewerService[F[_]](
+  tokenGenerator: TokenGenerator[F],
   reviewerDAO: ReviewerDAO[F],
-  reviewerCredDAO: ReviewerCredentialsDAO[F]
+  reviewerCredsDAO: ReviewerCredentialsDAO[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
   def createReviewer(
@@ -30,81 +30,49 @@ class ReviewerService[F[_]](
         reviewerDAO
           .createReviewer(db.Reviewer(id, firstName, lastName, middleName, none))
           .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.Unexpected(throwable).asLeft[Unit]
-          }
+          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
-      password <- EitherT.pure(randomPassword(10))
-      source = Algo.sha1.tap(Source.fromString(password))
-      hash         <- source.hash
-      passwordHash <- password.map(x => hash(x)).toString
-      bearer       <- EitherT.pure(UUID.randomUUID().toString)
-      _            <- EitherT.liftF(reviewerCredDAO.insertCredentials(db.ReviewerCredentials(id, login, passwordHash, bearer)))
+      password = PasswordGenerator.randomPassword(10)
+      hash     = password.bcrypt.hex
+      bearer <- EitherT.liftF(tokenGenerator.generate)
+      _      <- EitherT.liftF(reviewerCredsDAO.insertCredentials(db.ReviewerCredentials(id, login, hash, bearer)))
     } yield CreatedReviewer(id = id, password = password)
-
-  private def randomPassword(len: Int): String = {
-    val randomize     = new scala.util.Random(System.nanoTime)
-    val stringBuilder = new StringBuilder(len)
-    val password      = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-    for (i <- 0 until len)
-      stringBuilder.append(password(randomize.nextInt(password.length)))
-    stringBuilder.toString
-  }
-
-  def getReviewer(
-    reviewerId: String
-  ): EitherT[F, AppError, Reviewer] =
-    for {
-      _ <- EitherT(
-        reviewerDAO
-          .getReviewerById(reviewerId)
-          .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.ReviewerDoesNotExists(throwable).asLeft[Reviewer]
-          }
-      )
-    } yield ()
-
-  def getAllReviewers: EitherT[F, AppError, List[Reviewer]] =
-    for {
-      _ <- EitherT(
-        reviewerDAO.getAllReviewers
-          .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.ReviewerDoesNotExists(throwable).asLeft[List[Reviewer]]
-          }
-      )
-    } yield ()
 
   def updateReviewer(
     firstName: String,
     lastName: String,
     middleName: Option[String],
-    login: String,
     reviewerId: String
   ): EitherT[F, AppError, Unit] =
-    for {
-      id <- EitherT.pure(UUID.randomUUID().toString)
-      _ <- EitherT(
-        reviewerDAO
-          .updateReviewer(db.Reviewer(id, firstName, lastName, middleName, none))
-          .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.Unexpected(throwable).asLeft[Unit]
-          }
-      )
-      password <- EitherT.pure(randomPassword(10))
-      source = Algo.sha1.tap(Source.fromString(password))
-      hash         <- source.hash
-      passwordHash <- password.map(x => hash(x)).toString
-      bearer       <- EitherT.pure(UUID.randomUUID().toString)
-      _            <- EitherT.liftF(reviewerCredDAO.insertCredentials(db.ReviewerCredentials(id, login, passwordHash, bearer))) // TODO
-    } yield ()
+    EitherT {
+      reviewerDAO
+        .updateReviewer(db.Reviewer(reviewerId, firstName, lastName, middleName, none))
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+    }
+
+  def getReviewer(
+    reviewerId: String
+  ): EitherT[F, AppError, Reviewer] =
+    EitherT(
+      reviewerDAO
+        .getReviewerById(reviewerId)
+        .map(_.toRight(AppError.ReviewerDoesNotExists(reviewerId).cast))
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Reviewer])
+    )
+
+  def getAllReviewers: EitherT[F, AppError, List[Reviewer]] =
+    EitherT(
+      reviewerDAO.getAllReviewers
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[Reviewer]])
+    )
+
 }
 
 object ReviewerService {
-  def apply[F[_]](reviewerDAO: ReviewerDAO[F], reviewerCredsDAO: ReviewerCredentialsDAO[F])(implicit
+  def apply[F[_]](tokenGenerator: TokenGenerator[F], reviewerDAO: ReviewerDAO[F], reviewerCredsDAO: ReviewerCredentialsDAO[F])(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, ReviewerService[F]] =
-    Resource.pure(new ReviewerService(reviewerDAO, reviewerCredsDAO))
+    Resource.pure(new ReviewerService(tokenGenerator, reviewerDAO, reviewerCredsDAO))
 }

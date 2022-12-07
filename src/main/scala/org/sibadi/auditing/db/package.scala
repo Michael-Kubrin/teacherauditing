@@ -73,7 +73,7 @@ package object db {
     groupId: String,
     teacherId: String,
     status: String,
-    lastReviewerId: String,
+    lastReviewerId: Option[String],
     lastChangesDt: LocalDateTime
   )
 

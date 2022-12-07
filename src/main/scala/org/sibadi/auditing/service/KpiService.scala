@@ -13,7 +13,7 @@ import java.util.UUID
 
 class KpiService[F[_]](kpiDAO: KpiDAO[F])(implicit M: MonadCancel[F, Throwable]) {
 
-  def createKpi(): EitherT[F, AppError, ]
+  //def createKpi(): EitherT[F, AppError, ]
 
 }
 

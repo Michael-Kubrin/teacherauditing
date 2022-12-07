@@ -4,27 +4,30 @@ import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.EstimateDAO
+import org.sibadi.auditing.db.{EstimateDAO, TeacherGroupDAO}
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
 
+import java.time.{LocalDateTime, ZoneId}
 import java.util.UUID
 
-class EstimateService[F[_]](estimateDAO: EstimateDAO[F])(implicit M: MonadCancel[F, Throwable]) {
+class EstimateService[F[_]](
+  estimateDAO: EstimateDAO[F],
+  teacherGroupDAO: TeacherGroupDAO[F]
+)(implicit M: MonadCancel[F, Throwable]) {
 
-  def createEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, CreatedEstimated] =
+  def createEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Unit] =
     for {
-      id <- EitherT.pure(UUID.randomUUID().toString)
+      group <- EitherT.fromOptionF(teacherGroupDAO.getByTeacherId(teacherId), AppError.TeacherWithoutGroup(teacherId).cast)
       _ <- EitherT(
         estimateDAO
-          .insert(db.Estimate(topicId, kpiId, ???, teacherId, ???, ???, ???))
+          .insert(db.Estimate(topicId, kpiId, group.groupId, teacherId, EstimateStatus.Waiting.toString, None, LocalDateTime.now(ZoneId.of("UTC"))))
           .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.Unexpected(throwable).asLeft[Unit]
-          }
+          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
-    } yield CreatedEstimated()
+    } yield ()
 
+  // TODO implement as changing estimate state
   def updateEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, CreatedEstimated] =
     for {
       id <- EitherT.pure(UUID.randomUUID().toString)

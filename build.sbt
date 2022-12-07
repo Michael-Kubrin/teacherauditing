@@ -4,14 +4,14 @@ lazy val root = (project in file("."))
     name         := "teacherauditing",
     version      := "0.0.1",
     scalacOptions ++= Seq(
-      "-Xfatal-warnings",
-      "-Wunused:imports,privates,locals,patvars",
-      "-Wconf:src=src_managed/.*:silent",
-      "-Wdead-code",
-      "-Xlint:infer-any",
-      "-feature",
-      "-language:existentials",
-      "-deprecation"
+//      "-Xfatal-warnings",
+//      "-Wunused:imports,privates,locals,patvars",
+//      "-Wconf:src=src_managed/.*:silent",
+//      "-Wdead-code",
+//      "-Xlint:infer-any",
+//      "-feature",
+//      "-language:existentials",
+//      "-deprecation"
     ),
     semanticdbEnabled          := true,
     semanticdbVersion          := scalafixSemanticdb.revision,

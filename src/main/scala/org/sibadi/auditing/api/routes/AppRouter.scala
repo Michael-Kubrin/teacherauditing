@@ -58,23 +58,17 @@ class AppRouter[F[_]: Async](
   private def adminCreateTopic =
     postApiAdminTopics
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
-        topicService
-          .createTopic(
-            kpis = body.topics.map(x => x.kpis.map(a => a.title)),
-            groupId = ???,
-            title = ???
-          )
-          .map { createdTopic =>
-            ResponseId(createdTopic.groupId)
-          }
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot create topuc").cast
-          }
+      .serverLogic { admin => body =>
+        val topics = body.topics.map(dto => (dto.title, dto.kpis.map(_.title).toSet)).toMap
+        topicService.createTopics(topics)
+          .leftMap(toApiError)
           .value
       }
+
+  // TODO implement
+  private def toApiError(appError: AppError): ApiError = ???
 
   private def adminGetTopic =
     getApiAdminTopics

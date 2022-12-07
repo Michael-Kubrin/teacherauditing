@@ -6,7 +6,8 @@ import pureconfig.generic.auto._
 
 final case class AppConfig(
   server: ServerConfig,
-  database: DatabaseConfig
+  database: DatabaseConfig,
+  admin: AdminConfig
 )
 
 object AppConfig {

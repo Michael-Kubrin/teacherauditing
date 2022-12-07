@@ -1,43 +1,57 @@
 package org.sibadi.auditing.service
 
-import cats.syntax.option._
 import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
-import org.sibadi.auditing.api.endpoints.GeneratedEndpoints.CreateTopicRequestDto
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{Topic, TopicDAO}
+import org.sibadi.auditing.db.{KpiDAO, Topic, TopicDAO, TopicKpiDAO}
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
 
 import java.util.UUID
 
 class TopicService[F[_]](
-  topicDAO: TopicDAO[F]
+  topicDAO: TopicDAO[F],
+  kpiDAO: KpiDAO[F],
+  topicKpiDAO: TopicKpiDAO[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
-  // TODO: It's not right
-  def createTopic(kpis: List[CreateTopicRequestDto], groupId: String, title: String): EitherT[F, AppError, CreatedTopic] =
-    for {
-      id <- EitherT.pure(UUID.randomUUID().toString)
-      _ <- EitherT(
-        topicDAO
-          .insert(db.Topic(id, title, none))
-          .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.Unexpected(throwable).asLeft[Unit]
-          }
-      )
-    } yield CreatedTopic(groupId = groupId, title = title)
+  def createTopics(topicToKpisMap: Map[String, Set[String]]): EitherT[F, AppError, Unit] =
+    EitherT {
+      topicToKpisMap
+        .map { case (topic, kpis) => createTopic(topic, kpis) }
+        .toList
+        .sequence
+        .map(_.asRight[AppError])
+        .void
+        .handleError(throwable => AppError.Unexpected(throwable).cast.asLeft[Unit])
+    }
 
-  def getTopic(groupId: String): EitherT[F, AppError, Topic] =
+  private def createTopic(topicName: String, kpiNames: Set[String]): F[Unit] = {
+    val topicId = UUID.randomUUID().toString
+    for {
+      _           <- topicDAO.insert(db.Topic(topicId, topicName, None))
+      createdKpis <- kpiNames.map(createKpi).toList.sequence
+      _           <- createdKpis.map(kpiId => createTopicKpiLink(topicId, kpiId)).sequence
+    } yield ()
+  }
+
+  private def createKpi(name: String): F[String] = {
+    val id = UUID.randomUUID().toString
+    kpiDAO.insert(db.Kpi(id, name, None)).map(_ => id)
+  }
+
+  private def createTopicKpiLink(topicId: String, kpiId: String): F[Unit] =
+    topicKpiDAO.insert(db.TopicKpi(topicId, kpiId))
+
+  def getTopic(groupId: String): EitherT[F, AppError, Option[Topic]] =
     for {
       _ <- EitherT(
         topicDAO
           .get(groupId)
           .map(_.asRight[AppError])
           .handleError { case throwable =>
-            AppError.TopicDoesNotExists(throwable).asLeft[Topic]
+            AppError.TopicDoesNotExists(throwable).asLeft[Option[Topic]]
           }
       )
     } yield ()

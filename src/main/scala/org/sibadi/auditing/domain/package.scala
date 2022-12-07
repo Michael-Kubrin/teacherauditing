@@ -12,5 +12,12 @@ package object domain {
 
   final case class CreatedEstimated()
 
+  object EstimateStatus extends Enumeration() {
+    type EstimateStatus = Value
+    val Waiting = Value("waiting")
+    val Accepted = Value("accepted")
+    val Declined = Value("declined")
+    val Reviewed = Value("reviewed")
+  }
 
 }
