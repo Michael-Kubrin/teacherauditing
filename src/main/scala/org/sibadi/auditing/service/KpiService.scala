@@ -1,23 +1,90 @@
 package org.sibadi.auditing.service
 
-import cats.syntax.option._
 import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{KpiDAO, Topic, TopicDAO}
-import org.sibadi.auditing.domain._
+import org.sibadi.auditing.db.{Kpi, KpiDAO, KpiGroup, KpiGroupDAO}
 import org.sibadi.auditing.domain.errors.AppError
 
 import java.util.UUID
 
-class KpiService[F[_]](kpiDAO: KpiDAO[F])(implicit M: MonadCancel[F, Throwable]) {
+class KpiService[F[_]](kpiDAO: KpiDAO[F], kpiGroupDAO: KpiGroupDAO[F])(implicit M: MonadCancel[F, Throwable]) {
 
-  //def createKpi(): EitherT[F, AppError, ]
+  def createKpi(title: String): EitherT[F, AppError, Unit] =
+    for {
+      id <- EitherT.pure(UUID.randomUUID().toString)
+      _ <- EitherT(
+        kpiDAO
+          .insert(db.Kpi(id, title, None))
+          .map(_.asRight[AppError])
+          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+      )
+    } yield ()
 
+  def updateKpi(id: String, title: String): EitherT[F, AppError, Unit] =
+    EitherT(
+      kpiDAO
+        .update(db.Kpi(id, title, None))
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+    )
+
+  def getKpi(kpiId: String): EitherT[F, AppError, Kpi] =
+    EitherT(
+      kpiDAO
+        .get(kpiId)
+        .map(_.toRight(AppError.KpiDoesNotExists(kpiId).cast))
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Kpi])
+    )
+
+  def getAllKpi: EitherT[F, AppError, List[Kpi]] =
+    EitherT(
+      kpiDAO.getAll
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[Kpi]])
+    )
+
+  //TODO: KpiGroupService:
+  def createKpiGroup: EitherT[F, AppError, Unit] =
+    for {
+      kpiId   <- EitherT.pure(UUID.randomUUID().toString)
+      groupId <- EitherT.pure(UUID.randomUUID().toString) // TODO: Not sure, that we must create groupId here
+      _ <- EitherT(
+        kpiGroupDAO
+          .insert(db.KpiGroup(kpiId, groupId))
+          .map(_.asRight[AppError])
+          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+      )
+    } yield ()
+
+  def getByGroupId(groupId: String): EitherT[F, AppError, Option[KpiGroup]] =
+    EitherT(
+      kpiGroupDAO
+        .getByGroupId(groupId)
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.GroupByIdDoesNotExists(throwable).asLeft[Option[KpiGroup]])
+    )
+
+  def getByKpiId(kpiId: String): EitherT[F, AppError, Option[KpiGroup]] =
+    EitherT(
+      kpiGroupDAO
+        .getByKpiId(kpiId)
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.KpiByIdDoesNotExists(throwable).asLeft[Option[KpiGroup]])
+    )
+
+  //TODO: Which type of link: KpiGroup has to be need written?
+  def deleteKpiGroup(link: ???): EitherT[F, AppError, Unit] =
+    EitherT(
+      kpiGroupDAO
+        .delete(link)
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+    )
 }
 
 object KpiService {
-  def apply[F[_]](kpiDAO: KpiDAO[F])(implicit M: MonadCancel[F, Throwable]): Resource[F, KpiService[F]] =
-    Resource.pure(new KpiService(kpiDAO))
+  def apply[F[_]](kpiDAO: KpiDAO[F], kpiGroupDAO: KpiGroupDAO[F])(implicit M: MonadCancel[F, Throwable]): Resource[F, KpiService[F]] =
+    Resource.pure(new KpiService(kpiDAO, kpiGroupDAO))
 }

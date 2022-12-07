@@ -7,7 +7,7 @@ import org.sibadi.auditing.api.endpoints.GeneratedEndpoints
 import org.sibadi.auditing.api.endpoints.GeneratedEndpoints._
 import org.sibadi.auditing.api.model.ApiError
 import org.sibadi.auditing.domain.errors.AppError
-import org.sibadi.auditing.service.{Authenticator, EstimateService, ReviewerService, Service, TeacherService, TopicKpiService, TopicService}
+import org.sibadi.auditing.service.{Authenticator, EstimateService, GroupService, ReviewerService, Service, TeacherService, TopicService}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
@@ -18,8 +18,8 @@ class AppRouter[F[_]: Async](
   teacherService: TeacherService[F],
   reviewerService: ReviewerService[F],
   topicService: TopicService[F],
-  topicKpiService: TopicKpiService[F],
-  estimateService: EstimateService[F]
+  estimateService: EstimateService[F],
+  groupService: GroupService[F]
 ) {
 
   private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](GeneratedEndpoints.allEndpoints, "aboba", "1.0.0")
@@ -62,13 +62,16 @@ class AppRouter[F[_]: Async](
       }
       .serverLogic { admin => body =>
         val topics = body.topics.map(dto => (dto.title, dto.kpis.map(_.title).toSet)).toMap
-        topicService.createTopics(topics)
+        topicService
+          .createTopics(topics)
           .leftMap(toApiError)
           .value
       }
 
-  // TODO implement
-  private def toApiError(appError: AppError): ApiError = ???
+  private def toApiError(appError: AppError): ApiError =
+    appError match {
+      case t => ApiError.NotFound(t.toString)
+    }
 
   private def adminGetTopic =
     getApiAdminTopics
@@ -76,14 +79,9 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        topicService
-          .getTopic(groupId = ???)
-          .map { topic =>
-            topic.id
-          }
-          .leftMap { case AppError.TeacherDoesNotExists(_) =>
-            ApiError.BadRequest("Cannot find topic").cast
-          }
+        topicService.getAllTopics
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminDeleteTopic =
@@ -92,7 +90,13 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F] //TODO: Not sure about it
+        topicService
+          .deleteTopicKpi(
+            topicId = ???,
+            kpiId = ???
+          )
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminEditTopicById =
@@ -103,13 +107,10 @@ class AppRouter[F[_]: Async](
       .serverLogic { userType => body =>
         topicService
           .updateTopic(
-            kpis = ???,
-            groupId = ???,
-            title = ???
+            topicId = ???,
+            topicToKpisMap = ???
           )
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot edit teacher").cast
-          }
+          .leftMap(toApiError)
           .value
       }
 
@@ -119,17 +120,9 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        topicKpiService
-          .createTopicKpi(
-            kpiId = ???,
-            topicId = ???
-          )
-          .map { response =>
-            ResponseId(response.kpiId)
-          }
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot create KPI").cast
-          }
+        topicService
+          .createTopicKpi()
+          .leftMap(toApiError)
           .value
       }
 
@@ -139,16 +132,9 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        topicKpiService
-          .getTopicKpiByKpiId(
-            kpiId = ???
-          )
-          .map { response =>
-            TopicKpiResponse(response.topicId, response.topicId)
-          }
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot get KPI").cast
-          }
+        topicService
+          .getTopicKpiByKpiId(kpiId = ???)
+          .leftMap(toApiError)
           .value
       }
 
@@ -158,14 +144,9 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        topicKpiService
-          .editTopicKpi(
-            kpiId = ???,
-            topicId = ???
-          )
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot edit KPI").cast
-          }
+        topicService
+          .editTopicKpi(topicId = body._1, kpiId = body._2)
+          .leftMap(toApiError)
           .value
       }
 
@@ -175,7 +156,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        topicService
+          .deleteTopicKpi(topicId = body._1, kpiId = body._2)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminEditStatus =
@@ -184,7 +168,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        estimateService
+          .updateEstimate(topicId = body._1, kpiId = body._2, teacherId = body._3)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminCreateTeacher =
@@ -217,12 +204,8 @@ class AppRouter[F[_]: Async](
       .serverLogic { userType => body =>
         teacherService
           .getTeacher(teacherId = ???)
-          .map { response =>
-            response.id
-          }
-          .leftMap { case AppError.TeacherDoesNotExists(_) =>
-            ApiError.BadRequest("Cannot find teacher").cast
-          }
+          .leftMap(toApiError)
+          .value
       }
 
   //TODO: It's not right
@@ -237,12 +220,9 @@ class AppRouter[F[_]: Async](
             firstName = ???,
             lastName = ???,
             middleName = ???,
-            login = ???,
             teacherId = ???
           )
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot edit teacher").cast
-          }
+          .leftMap(toApiError)
           .value
       }
 
@@ -259,12 +239,7 @@ class AppRouter[F[_]: Async](
             middleName = body.middleName,
             login = body.login
           )
-          .map { createdReviewer =>
-            ResponseIdPassword(createdReviewer.id, createdReviewer.password)
-          }
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot create reviewer").cast
-          }
+          .leftMap(toApiError)
           .value
       }
 
@@ -279,9 +254,8 @@ class AppRouter[F[_]: Async](
           .map { response =>
             response.id
           }
-          .leftMap { case AppError.TeacherDoesNotExists(_) =>
-            ApiError.BadRequest("Cannot find reviewer").cast
-          }
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminEditReviewers =
@@ -295,12 +269,9 @@ class AppRouter[F[_]: Async](
             firstName = ???,
             lastName = ???,
             middleName = ???,
-            login = ???,
             reviewerId = ???
           )
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot edit reviewer").cast
-          }
+          .leftMap(toApiError)
           .value
       }
 
@@ -310,7 +281,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        teacherService
+          .createTeacher(firstName = body._1, lastName = body._2, middleName = body._3.some, login = ???)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminDeleteTeacherId =
@@ -328,7 +302,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[TopicItemResponseDto].pure[F]
+        topicService
+          .getTopic(groupId = ???)
+          .leftMap(toApiError)
+          .value
       }
 
   private def publicGetKpi =
@@ -337,7 +314,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[GetPublicKpiResponse].pure[F]
+        topicService
+          .getTopicKpiByTopicId(topicId = ???)
+          .leftMap(toApiError)
+          .value
       }
 
   private def publicEstimate =
@@ -346,7 +326,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
+        estimateService
+          .createEstimate(topicId = body._1, kpiId = body._2, teacherId = ???)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminCreateGroups =
@@ -355,7 +338,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        groupService
+          .createGroup(title = body.name)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminGetGroups =
@@ -364,18 +350,24 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[GroupsResponse].pure[F]
+        groupService
+          .getGroup(groupId = ???)
+          .leftMap(toApiError)
+          .value
       }
 
-//  def publicUploadFile =
-//    postApiPublicTopicsTopicIdKpiKpiIdFiles
-//      .serverSecurityLogic { token =>
-//        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-//      }
-//      .serverLogic { userType => body =>
-//        ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
-//      }
-//
+  def publicUploadFile =
+    postApiPublicTopicsTopicIdKpiKpiIdFiles
+      .serverSecurityLogic { token =>
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+      }
+      .serverLogic { userType => body =>
+        estimateService
+          .createEstimateFiles(estimateFiles = ???)
+          .leftMap(toApiError)
+          .value
+      }
+
 //  def publicUploadFileId =
 //    postApiPublicTopicsTopicIdKpiKpiIdFilesFileId
 //      .serverSecurityLogic { token =>
@@ -392,7 +384,10 @@ class AppRouter[F[_]: Async](
         authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        groupService
+          .updateGroup(group = ???)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminDeleteGropus =
@@ -400,8 +395,7 @@ class AppRouter[F[_]: Async](
       .serverSecurityLogic { token =>
         authenticator
           .isAdmin(token)
-          .toRight(ApiError.Unauthorized("Unauthorized").cast)
-          .value // TODO check valid userType
+          .toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
