@@ -36,7 +36,7 @@ class TeacherService[F[_]](
       password = PasswordGenerator.randomPassword(10)
       hash     = password.bcrypt.hex
       bearer <- EitherT.liftF(tokenGenerator.generate)
-      _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(id, login, hash, bearer)))
+      _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(teacherId, login, hash, bearer)))
     } yield CreatedTeacher(id = teacherId, password = password)
 
   def updateTeacher(
@@ -111,8 +111,13 @@ class TeacherService[F[_]](
 }
 
 object TeacherService {
-  def apply[F[_]](tokenGenerator: TokenGenerator[F], teacherDAO: TeacherDAO[F], teacherCredsDAO: TeacherCredentialsDAO[F])(implicit
+  def apply[F[_]](
+    tokenGenerator: TokenGenerator[F],
+    teacherDAO: TeacherDAO[F],
+    teacherCredsDAO: TeacherCredentialsDAO[F],
+    teacherGroupDAO: TeacherGroupDAO[F]
+  )(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, TeacherService[F]] =
-    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO))
+    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, teacherGroupDAO))
 }

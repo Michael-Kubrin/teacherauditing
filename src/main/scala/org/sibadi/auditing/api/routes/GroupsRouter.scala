@@ -14,27 +14,25 @@ class GroupsRouter[F[_]: Monad](
   private def adminCreateGroups =
     postApiAdminGroups
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType =>
-        body =>
-          groupService
-            .createGroup(title = body.name)
-            .leftMap(toApiError)
-            .value
+      .serverLogic { userType => body =>
+        groupService
+          .createGroup(title = body.name)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminGetGroups =
     getApiAdminGroups
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
+        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType =>
-        body =>
-          groupService
-            .getGroup(groupId = ???)
-            .leftMap(toApiError)
-            .value
+      .serverLogic { userType => body =>
+        groupService
+          .getGroup(groupId = ???)
+          .leftMap(toApiError)
+          .value
       }
 
 }

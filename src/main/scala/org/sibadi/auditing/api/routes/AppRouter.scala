@@ -1,21 +1,9 @@
 package org.sibadi.auditing.api.routes
 
 import cats.effect.{Async, Resource}
-import cats.syntax.all._
 import org.http4s.HttpRoutes
 import org.sibadi.auditing.api.endpoints.AppEndpoints
-import org.sibadi.auditing.api.endpoints.AppEndpoints._
-import org.sibadi.auditing.api.endpoints.KpiGroupAPI._
-import org.sibadi.auditing.api.endpoints.KpiTeacherAPI._
-import org.sibadi.auditing.api.endpoints.PublicAPI._
-import org.sibadi.auditing.api.endpoints.ReviewerActionsAPI._
-import org.sibadi.auditing.api.endpoints.ReviewersAPI._
-import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
-import org.sibadi.auditing.api.endpoints.TeachersAPI._
-import org.sibadi.auditing.api.endpoints.TopicsAPI._
-import org.sibadi.auditing.api.model.ApiError
-import org.sibadi.auditing.domain.errors.AppError
-import org.sibadi.auditing.service.{Authenticator, EstimateService, GroupService, ReviewerService, Service, TeacherService, TopicService}
+import org.sibadi.auditing.service._
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
@@ -23,11 +11,10 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 class AppRouter[F[_]: Async](
   authenticator: Authenticator[F],
   service: Service[F],
-  teacherService: TeacherService[F],
-  reviewerService: ReviewerService[F],
-  topicService: TopicService[F],
-  estimateService: EstimateService[F],
-  groupService: GroupService[F],
+  teacherRouter: TeacherRouter[F],
+  reviewersRouter: ReviewersRouter[F],
+  topicRouter: TopicRouter[F],
+  estimateRouter: EstimateRouter[F],
   groupsRouter: GroupsRouter[F]
 ) {
 
@@ -36,325 +23,25 @@ class AppRouter[F[_]: Async](
   def httpRoutes: HttpRoutes[F] = Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes)
 
   private def allRoutes: List[ServerEndpoint[Any, F]] = List(
-    //groupsRouter.routes ++,
-    adminCreateTopic,
-    adminGetTopic,
-    adminDeleteTopic,
-    adminEditTopicById,
-    adminCreateTopicKpi,
-    adminGetTopicKpi,
-    adminEditTopicKpiId,
-    adminDeleteTopicKpiId,
-    adminEditStatus,
-    adminCreateTeacher,
-    adminGetTeacher,
-    adminEditTeacher,
-    adminCreateReviewers,
-    adminGetReviewers,
-    adminEditReviewers,
-    adminCreateTeacherId,
-    adminDeleteTeacherId,
-    publicGetTopics,
-    publicGetKpi,
-    publicEstimate,
-    adminEditGroups,
-    adminDeleteGropus,
-    createLogin,
-    changePassword
+    teacherRouter.routes ++
+      reviewersRouter.routes ++
+      groupsRouter.routes ++
+      estimateRouter.routes ++
+      topicRouter.routes ++
+      groupsRouter.routes
   )
 
-  private def adminCreateTopic =
-    postApiAdminTopics
-      .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
-      }
-      .serverLogic { admin => body =>
-        val topics = body.topics.map(dto => (dto.title, dto.kpis.map(_.title).toSet)).toMap
-        topicService
-          .createTopics(topics)
-          .leftMap(toApiError)
-          .value
-      }
-
-
-
-  private def adminGetTopic =
-    getApiAdminTopics
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService.getAllTopics
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminDeleteTopic =
-    deleteApiAdminTopics
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .deleteTopicKpi(
-            topicId = ???,
-            kpiId = ???
-          )
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminEditTopicById =
-    putApiAdminTopicsTopicId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .updateTopic(
-            topicId = ???,
-            topicToKpisMap = ???
-          )
-          .leftMap(toApiError)
-          .value
-      }
-
-
-
-  private def adminEditStatus =
-    putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        estimateService
-          .updateEstimate(topicId = body._1, kpiId = body._2, teacherId = body._3)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminCreateTeacher =
-    postApiAdminTeachers
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        teacherService
-          .createTeacher(
-            firstName = body.name,
-            lastName = body.surName,
-            middleName = body.middleName,
-            login = body.login
-          )
-          .map { createdTeacher =>
-            ResponseIdPassword(createdTeacher.id, createdTeacher.password)
-          }
-          .leftMap { case AppError.Unexpected(_) =>
-            ApiError.InternalError("Cannot create teacher").cast
-          }
-          .value
-      }
-
-  private def adminGetTeacher =
-    getApiAdminTeachers
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        teacherService
-          .getTeacher(teacherId = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-  //TODO: It's not right
-  private def adminEditTeacher =
-    putApiAdminTeachers
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        teacherService
-          .updateTeacher(
-            firstName = ???,
-            lastName = ???,
-            middleName = ???,
-            teacherId = ???
-          )
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminCreateReviewers =
-    postApiAdminReviewers
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        reviewerService
-          .createReviewer(
-            firstName = body.name,
-            lastName = body.surName,
-            middleName = body.middleName,
-            login = body.login
-          )
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminGetReviewers =
-    getApiAdminReviewers
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        reviewerService
-          .getReviewer(reviewerId = ???)
-          .map { response =>
-            response.id
-          }
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminEditReviewers =
-    putApiAdminReviewersId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        reviewerService
-          .updateReviewer(
-            firstName = ???,
-            lastName = ???,
-            middleName = ???,
-            reviewerId = ???
-          )
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminCreateTeacherId =
-    postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        teacherService
-          .createTeacher(firstName = body._1, lastName = body._2, middleName = body._3.some, login = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminDeleteTeacherId =
-    deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
-      }
-
-  private def publicGetTopics =
-    getApiPublicTopics
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .getTopic(groupId = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def publicGetKpi =
-    getApiPublicTopicsTopicIdKpi
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .getTopicKpiByTopicId(topicId = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def publicEstimate =
-    postApiPublicTopicsTopicIdKpiKpiIdEstimate
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        estimateService
-          .createEstimate(topicId = body._1, kpiId = body._2, teacherId = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-
-
-  def publicUploadFile =
-    postApiPublicTopicsTopicIdKpiKpiIdFiles
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        estimateService
-          .createEstimateFiles(file = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-//  def publicUploadFileId =
-//    postApiPublicTopicsTopicIdKpiKpiIdFilesFileId
-//      .serverSecurityLogic { token =>
-//        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-//      }
-//      .serverLogic { userType =>
-//        body =>
-//          ApiError.InternalError("Not implemented").cast.asLeft[].pure[F]
-//      }
-
-  private def adminEditGroups =
-    putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        groupService
-          .updateGroup(group = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminDeleteGropus =
-    deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
-      .serverSecurityLogic { token =>
-        authenticator
-          .isAdmin(token)
-          .toRight(ApiError.Unauthorized("Unauthorized").cast).value
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
-      }
-
-  private def createLogin =
-    postLogin
-      .serverLogic { userType =>
-        ApiError.InternalError("Not implemented").cast.asLeft[LoginResponse].pure[F]
-      }
-
-  private def changePassword =
-    editPassword
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]
-      }
 }
 
 object AppRouter {
-  def apply[F[_]: Async](authenticator: Authenticator[F], service: Service[F]): Resource[F, AppRouter[F]] =
-    Resource.pure(new AppRouter(authenticator, service))
+  def apply[F[_]: Async](
+    authenticator: Authenticator[F],
+    service: Service[F],
+    teacherRouter: TeacherRouter[F],
+    reviewersRouter: ReviewersRouter[F],
+    topicRouter: TopicRouter[F],
+    estimateRouter: EstimateRouter[F],
+    groupsRouter: GroupsRouter[F]
+  ): Resource[F, AppRouter[F]] =
+    Resource.pure(new AppRouter(authenticator, service, teacherRouter, reviewersRouter, topicRouter, estimateRouter, groupsRouter))
 }
