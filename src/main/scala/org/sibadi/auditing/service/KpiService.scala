@@ -45,11 +45,8 @@ class KpiService[F[_]](kpiDAO: KpiDAO[F], kpiGroupDAO: KpiGroupDAO[F])(implicit 
         .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[Kpi]])
     )
 
-  //TODO: KpiGroupService:
-  def createKpiGroup: EitherT[F, AppError, Unit] =
+  def linkGroupToKpi(groupId: String, kpiId: String): EitherT[F, AppError, Unit] =
     for {
-      kpiId   <- EitherT.pure(UUID.randomUUID().toString)
-      groupId <- EitherT.pure(UUID.randomUUID().toString) // TODO: Not sure, that we must create groupId here
       _ <- EitherT(
         kpiGroupDAO
           .insert(db.KpiGroup(kpiId, groupId))
@@ -74,14 +71,6 @@ class KpiService[F[_]](kpiDAO: KpiDAO[F], kpiGroupDAO: KpiGroupDAO[F])(implicit 
         .handleError(throwable => AppError.KpiByIdDoesNotExists(throwable).asLeft[Option[KpiGroup]])
     )
 
-  //TODO: Which type of link: KpiGroup has to be need written?
-  def deleteKpiGroup(link: ???): EitherT[F, AppError, Unit] =
-    EitherT(
-      kpiGroupDAO
-        .delete(link)
-        .map(_.asRight[AppError])
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
-    )
 }
 
 object KpiService {

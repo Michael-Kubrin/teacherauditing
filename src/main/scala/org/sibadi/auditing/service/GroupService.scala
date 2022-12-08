@@ -13,10 +13,10 @@ class GroupService[F[_]](groupDao: GroupDAO[F])(implicit M: MonadCancel[F, Throw
 
   def createGroup(title: String): EitherT[F, AppError, Unit] =
     for {
-      groupdId <- EitherT.pure(UUID.randomUUID().toString)
+      groupId <- EitherT.pure(UUID.randomUUID().toString)
       _ <- EitherT(
         groupDao
-          .insert(db.Group(groupdId, title, None))
+          .insert(db.Group(groupId, title, None))
           .map(_.asRight[AppError])
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
@@ -37,11 +37,10 @@ class GroupService[F[_]](groupDao: GroupDAO[F])(implicit M: MonadCancel[F, Throw
         .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[Group]])
     )
 
-  //TODO: Which type of Group has to be need written?
-  def updateGroup(group: ???): EitherT[F, AppError, Unit] =
+  def updateGroup(groupId: String, groupName: String): EitherT[F, AppError, Unit] =
     EitherT(
       groupDao
-        .update(db.Group(group, group, group))
+        .update(db.Group(groupId, groupName, None))
         .map(_.asRight[AppError])
         .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
     )

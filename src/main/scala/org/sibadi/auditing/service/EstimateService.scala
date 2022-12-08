@@ -4,17 +4,20 @@ import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{Estimate, EstimateDAO, EstimateFiles, EstimateFilesDAO, TeacherGroupDAO}
+import org.sibadi.auditing.db._
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
+import org.sibadi.auditing.util.Filer
 
+import java.io.File
 import java.time.{LocalDateTime, ZoneId}
 import java.util.UUID
 
 class EstimateService[F[_]](
   estimateDAO: EstimateDAO[F],
   teacherGroupDAO: TeacherGroupDAO[F],
-  estimateFilesDAO: EstimateFilesDAO[F]
+  estimateFilesDAO: EstimateFilesDAO[F],
+  filer: Filer[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
   def createEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Unit] =
@@ -50,24 +53,20 @@ class EstimateService[F[_]](
       )
     } yield ()
 
-  //TODO: EstimateFilesService:
-
-  //TODO: Which type of estimateFile: EstimateFile has to be need written?
-  def createEstimateFiles(estimateFiles: ???): EitherT[F, AppError, Unit] =
-    EitherT(
-      estimateFilesDAO
-        .insert(
-          db.EstimateFiles(
-            estimateFiles,
-            estimateFiles,
-            estimateFiles,
-            estimateFiles,
-            estimateFiles
-          )
-        )
-        .map(_.asRight[AppError])
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
-    )
+  def createEstimateFiles(topicId: String, kpiId: String, teacherId: String, file: File): EitherT[F, AppError, Unit] = {
+    val fileId   = Option(file.getName).filterNot(_.isBlank).getOrElse(UUID.randomUUID().toString)
+    val filePath = s"/$topicId/$kpiId/$teacherId/$fileId"
+    for {
+      _ <- filer.saveToF(file, filePath)
+      dbItem = db.EstimateFiles(topicId, kpiId, teacherId, fileId, filePath)
+      _ <- EitherT.liftF(
+        estimateFilesDAO
+          .insert(dbItem)
+          .map(_.asRight[AppError])
+          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+      )
+    } yield ()
+  }
 
   def getEstimateFiles(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Option[EstimateFiles]] =
     EitherT(
@@ -77,19 +76,19 @@ class EstimateService[F[_]](
         .handleError(throwable => AppError.Unexpected(throwable).asLeft[Option[EstimateFiles]])
     )
 
-  def deleteEstimateFiles(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Option[EstimateFiles]] =
+  def deleteEstimateFiles(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Unit] =
     EitherT(
       estimateFilesDAO
         .delete(topicId, kpiId, teacherId)
         .map(_.asRight[AppError])
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Option[EstimateFiles]])
+        .handleError(throwable => AppError.Unexpected(throwable).cast.asLeft[Unit])
     )
 
 }
 
 object EstimateService {
-  def apply[F[_]](estimateDAO: EstimateDAO[F], teacherGroupDAO: TeacherGroupDAO[F], estimateFilesDAO: EstimateFilesDAO[F])(implicit
+  def apply[F[_]](estimateDAO: EstimateDAO[F], teacherGroupDAO: TeacherGroupDAO[F], estimateFilesDAO: EstimateFilesDAO[F], filer: Filer[F])(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, EstimateService[F]] =
-    Resource.pure(new EstimateService(estimateDAO, teacherGroupDAO, estimateFilesDAO))
+    Resource.pure(new EstimateService(estimateDAO, teacherGroupDAO, estimateFilesDAO, filer))
 }
