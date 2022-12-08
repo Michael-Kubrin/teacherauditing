@@ -3,8 +3,16 @@ package org.sibadi.auditing.api.routes
 import cats.effect.{Async, Resource}
 import cats.syntax.all._
 import org.http4s.HttpRoutes
-import org.sibadi.auditing.api.endpoints.GeneratedEndpoints
-import org.sibadi.auditing.api.endpoints.GeneratedEndpoints._
+import org.sibadi.auditing.api.endpoints.AppEndpoints
+import org.sibadi.auditing.api.endpoints.AppEndpoints._
+import org.sibadi.auditing.api.endpoints.KpiGroupAPI._
+import org.sibadi.auditing.api.endpoints.KpiTeacherAPI._
+import org.sibadi.auditing.api.endpoints.PublicAPI._
+import org.sibadi.auditing.api.endpoints.ReviewerActionsAPI._
+import org.sibadi.auditing.api.endpoints.ReviewersAPI._
+import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
+import org.sibadi.auditing.api.endpoints.TeachersAPI._
+import org.sibadi.auditing.api.endpoints.TopicsAPI._
 import org.sibadi.auditing.api.model.ApiError
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.service.{Authenticator, EstimateService, GroupService, ReviewerService, Service, TeacherService, TopicService}
@@ -19,14 +27,16 @@ class AppRouter[F[_]: Async](
   reviewerService: ReviewerService[F],
   topicService: TopicService[F],
   estimateService: EstimateService[F],
-  groupService: GroupService[F]
+  groupService: GroupService[F],
+  groupsRouter: GroupsRouter[F]
 ) {
 
-  private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](GeneratedEndpoints.allEndpoints, "aboba", "1.0.0")
+  private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](AppEndpoints.allEndpoints, "aboba", "1.0.0")
 
   def httpRoutes: HttpRoutes[F] = Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes)
 
   private def allRoutes: List[ServerEndpoint[Any, F]] = List(
+    //groupsRouter.routes ++,
     adminCreateTopic,
     adminGetTopic,
     adminDeleteTopic,
@@ -47,8 +57,6 @@ class AppRouter[F[_]: Async](
     publicGetTopics,
     publicGetKpi,
     publicEstimate,
-    adminCreateGroups,
-    adminGetGroups,
     adminEditGroups,
     adminDeleteGropus,
     createLogin,
@@ -68,10 +76,7 @@ class AppRouter[F[_]: Async](
           .value
       }
 
-  private def toApiError(appError: AppError): ApiError =
-    appError match {
-      case t => ApiError.NotFound(t.toString)
-    }
+
 
   private def adminGetTopic =
     getApiAdminTopics
@@ -114,53 +119,7 @@ class AppRouter[F[_]: Async](
           .value
       }
 
-  private def adminCreateTopicKpi =
-    postApiAdminTopicsTopicIdKpi
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .createTopicKpi()
-          .leftMap(toApiError)
-          .value
-      }
 
-  private def adminGetTopicKpi =
-    getApiAdminTopicsTopicIdKpi
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .getTopicKpiByKpiId(kpiId = ???)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminEditTopicKpiId =
-    putApiAdminTopicsTopicIdKpiKpiId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .editTopicKpi(topicId = body._1, kpiId = body._2)
-          .leftMap(toApiError)
-          .value
-      }
-
-  private def adminDeleteTopicKpiId =
-    deleteApiAdminTopicsTopicIdKpiKpiId
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .deleteTopicKpi(topicId = body._1, kpiId = body._2)
-          .leftMap(toApiError)
-          .value
-      }
 
   private def adminEditStatus =
     putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
@@ -332,29 +291,7 @@ class AppRouter[F[_]: Async](
           .value
       }
 
-  private def adminCreateGroups =
-    postApiAdminGroups
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        groupService
-          .createGroup(title = body.name)
-          .leftMap(toApiError)
-          .value
-      }
 
-  private def adminGetGroups =
-    getApiAdminGroups
-      .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value // TODO check valid userType
-      }
-      .serverLogic { userType => body =>
-        groupService
-          .getGroup(groupId = ???)
-          .leftMap(toApiError)
-          .value
-      }
 
   def publicUploadFile =
     postApiPublicTopicsTopicIdKpiKpiIdFiles
