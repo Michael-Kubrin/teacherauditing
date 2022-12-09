@@ -18,11 +18,11 @@ lazy val root = (project in file("."))
     assembly / assemblyJarName := s"${name.value}-${version.value}.jar",
     assembly / mainClass       := Some("org.sibadi.auditing.Main"),
     assembly / assemblyMergeStrategy := {
-      case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") =>
+      case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") | PathList("META-INF", "resources", "webjars", _*) =>
         MergeStrategy.singleOrError
-      case PathList("reference.conf")  => MergeStrategy.concat
-      case PathList("META-INF", _ @_*) => MergeStrategy.discard
-      case _                           => MergeStrategy.first
+      case PathList("reference.conf") => MergeStrategy.concat
+      case PathList("META-INF", _*)   => MergeStrategy.discard
+      case _                          => MergeStrategy.first
     },
     testFrameworks += new TestFramework("weaver.framework.CatsEffect"),
     libraryDependencies ++= Dependencies.all
