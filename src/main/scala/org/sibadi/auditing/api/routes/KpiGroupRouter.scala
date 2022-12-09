@@ -17,6 +17,8 @@ class KpiGroupRouter[F[_]: Monad](
   topicService: TopicService[F]
 ) {
 
+  def routes = List(adminEditGroups, adminDeleteGropus)
+
   private def adminEditGroups =
     putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>

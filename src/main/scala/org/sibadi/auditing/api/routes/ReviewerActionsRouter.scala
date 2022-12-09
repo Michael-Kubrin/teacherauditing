@@ -15,6 +15,8 @@ class ReviewerActionsRouter[F[_]: Monad](
   topicService: TopicService[F]
 ) {
 
+  def routes = List(adminEditStatus)
+
   private def adminEditStatus =
     putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
       .serverSecurityLogic { token =>

@@ -17,6 +17,8 @@ class KpiTeacherRouter[F[_]: Monad](
   topicService: TopicService[F]
 ) {
 
+  def routes = List(adminCreateTeacherId, adminDeleteTeacherId)
+
   private def adminCreateTeacherId =
     postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
       .serverSecurityLogic { token =>
