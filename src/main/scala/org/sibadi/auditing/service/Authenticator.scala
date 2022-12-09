@@ -15,14 +15,20 @@ class Authenticator[F[_]: Monad](
   adminConfig: AdminConfig
 ) {
 
-  def isAdmin(token: String): OptionT[F, Admin] =
-    authenticate(token).filter(_ === Admin()).map(_ => Admin())
+  def atLeastTeacher(token: String): OptionT[F, UserType] =
+    isTeacher(token).orElse(isReviewer(token)).orElse(isAdmin(token))
 
-  def authenticate(token: String): OptionT[F, UserType] =
-    OptionT(teacherCredentialsDAO.getCredentialsByBearer(token))
-      .map(_ => UserType.Teacher().cast)
-      .orElse(OptionT(reviewerCredentialsDAO.getCredentialsByBearer(token)).map(_ => UserType.Reviewer().cast))
-      .orElse(OptionT.pure((new Admin).cast).filter(_ => token === adminConfig.bearer))
+  def atLeastReviewer(token: String): OptionT[F, UserType] =
+    isReviewer(token).orElse(isAdmin(token))
+
+  def isTeacher(token: String): OptionT[F, UserType] =
+    OptionT(teacherCredentialsDAO.getCredentialsByBearer(token)).map(u => UserType.Teacher(u.id).cast)
+
+  def isReviewer(token: String): OptionT[F, UserType] =
+    OptionT(reviewerCredentialsDAO.getCredentialsByBearer(token)).map(u => UserType.Reviewer(u.id).cast)
+
+  def isAdmin(token: String): OptionT[F, UserType] =
+    OptionT.pure((Admin("")).cast).filter(_ => token === adminConfig.bearer)
 
 }
 
@@ -37,30 +43,31 @@ object Authenticator {
     }
 
   sealed trait UserType {
+    val id: String
     def cast: UserType = this
   }
 
   object UserType {
-    final case class Teacher()  extends UserType
-    final case class Reviewer() extends UserType
-    final case class Admin()    extends UserType
+    final case class Teacher(override val id: String)  extends UserType
+    final case class Reviewer(override val id: String) extends UserType
+    final case class Admin(override val id: String)    extends UserType
 
     implicit val eq: Eq[UserType] = Eq.instance { case (one, other) =>
       one match {
-        case Teacher() =>
+        case Teacher(_) =>
           other match {
-            case Teacher() => true
-            case _         => false
-          }
-        case Reviewer() =>
-          other match {
-            case Reviewer() => true
+            case Teacher(_) => true
             case _          => false
           }
-        case Admin() =>
+        case Reviewer(_) =>
           other match {
-            case Admin() => true
-            case _       => false
+            case Reviewer(_) => true
+            case _           => false
+          }
+        case Admin(_) =>
+          other match {
+            case Admin(_) => true
+            case _        => false
           }
       }
     }

@@ -22,7 +22,7 @@ class PublicRouter[F[_]: Monad](
   private def changePassword =
     editPassword
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]

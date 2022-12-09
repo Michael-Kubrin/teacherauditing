@@ -1,9 +1,11 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.syntax.either._
+import cats.syntax.applicative._
 import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
 import org.sibadi.auditing.api.endpoints.TopicsAPI._
-import org.sibadi.auditing.api.model.{toApiError, ApiError}
+import org.sibadi.auditing.api.model.{ApiError, TopicItemResponseDto, toApiError}
 import org.sibadi.auditing.service.{Authenticator, TopicService}
 
 class TopicRouter[F[_]: Monad](
@@ -29,58 +31,46 @@ class TopicRouter[F[_]: Monad](
   private def adminGetTopic =
     getApiAdminTopics
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         topicService.getAllTopics
           .leftMap(toApiError)
+          .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty)))
           .value
       }
 
   private def adminDeleteTopic =
     deleteApiAdminTopics
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
-        topicService
-          .deleteTopicKpi(
-            topicId = ???,
-            kpiId = ???
-          )
-          .leftMap(toApiError)
-          .value
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
       }
 
   private def adminEditTopicsById =
     putApiAdminTopicsTopicId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        for {
-          topicName <- body._2.name
-          topicId   <- body._1
-          x         <- topicService.updateTopic(topicId, topicName)
-        } yield x
-
-//        val topicName = body._2.name
-//        val topicId   = body._1 // TODO: not sure
-//        topicService
-//          .updateTopic(topicId, topicName)
-//          .leftMap(toApiError)
-//          .value
+        topicService.updateTopic(body._1, body._2.name)
+          .leftMap(toApiError)
+          .value
       }
 
   private def publicGetTopics =
     getApiPublicTopics
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         topicService
-          .getTopic(groupId = ???)
+          .getAllTopics
           .leftMap(toApiError)
+          .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty))) // TODO
           .value
       }
 

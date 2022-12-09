@@ -20,14 +20,14 @@ object KpiAPI {
   val postApiAdminTopicsTopicIdKpi: Endpoint[String, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topicsApi" / path[String]("topicId") / "kpi")
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
       .in(jsonBody[CreateKPIRequestDto])
       .description("")
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
       .out(jsonBody[ResponseId])
@@ -35,44 +35,44 @@ object KpiAPI {
   val getApiAdminTopicsTopicIdKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topicsApi" / path[String]("topicId") / "kpi")
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
       .description("")
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
       .out(jsonBody[List[TopicKpiResponse]])
 
-  val putApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String, EditKpiRequestDto), ApiError, String, Any] =
+  val putApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topicsApi" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
       .in(jsonBody[EditKpiRequestDto])
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
-      .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
+      .out(statusCode(StatusCode.NoContent))
       .description("")
 
-  val deleteApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
+  val deleteApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     endpoint.delete
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topicsApi" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
-      .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
+      .out(statusCode(StatusCode.NoContent))
       .description("")
 
 }

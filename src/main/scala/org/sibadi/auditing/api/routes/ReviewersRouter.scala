@@ -1,8 +1,10 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.syntax.either._
+import cats.syntax.applicative._
 import org.sibadi.auditing.api.endpoints.ReviewersAPI.{getApiAdminReviewers, postApiAdminReviewers, putApiAdminReviewersId}
-import org.sibadi.auditing.api.model.{toApiError, ApiError}
+import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, ReviewerResponse, toApiError}
 import org.sibadi.auditing.service.{Authenticator, ReviewerService}
 
 class ReviewersRouter[F[_]: Monad](
@@ -15,7 +17,7 @@ class ReviewersRouter[F[_]: Monad](
   private def adminCreateReviewers =
     postApiAdminReviewers
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         reviewerService
@@ -26,20 +28,19 @@ class ReviewersRouter[F[_]: Monad](
             login = body.login
           )
           .leftMap(toApiError)
+          .map(reviewer => ResponseIdPassword(id = reviewer.id, password = reviewer.password))
           .value
       }
 
   private def adminGetReviewers =
     getApiAdminReviewers
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         reviewerService
-          .getReviewer(reviewerId = ???)
-          .map { response =>
-            response.id
-          }
+          .getAllReviewers
+          .map(_.map(reviewer => ReviewerResponse(reviewer.id, reviewer.firstName, reviewer.lastName, reviewer.middleName)))
           .leftMap(toApiError)
           .value
       }
@@ -47,17 +48,11 @@ class ReviewersRouter[F[_]: Monad](
   private def adminEditReviewers =
     putApiAdminReviewersId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
-        for {
-          takeData <- reviewerService.getAllReviewers
-          firstName  = takeData.map(reviewer => reviewer.firstName)
-          lastName   = takeData.map(reviewer => reviewer.lastName)
-          middleName = takeData.map(reviewer => reviewer.middleName)
-          teacherId  = takeData.map(reviewer => reviewer.id)
-          reviewers <- reviewerService.updateReviewer(firstName, lastName, middleName, teacherId)
-        } yield reviewers
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
       }
 
 }

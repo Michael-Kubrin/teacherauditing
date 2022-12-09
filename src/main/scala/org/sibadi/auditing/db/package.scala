@@ -73,6 +73,7 @@ package object db {
     groupId: String,
     teacherId: String,
     status: String,
+    score: Long,
     lastReviewerId: Option[String],
     lastChangesDt: LocalDateTime
   )

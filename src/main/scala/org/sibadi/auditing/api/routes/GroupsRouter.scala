@@ -4,6 +4,7 @@ import cats.Monad
 import org.sibadi.auditing.api.endpoints.GroupsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service.{Authenticator, GroupService}
+
 class GroupsRouter[F[_]: Monad](
   authenticator: Authenticator[F],
   groupService: GroupService[F]
@@ -14,7 +15,7 @@ class GroupsRouter[F[_]: Monad](
   private def adminCreateGroups =
     postApiAdminGroups
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         groupService
@@ -26,12 +27,13 @@ class GroupsRouter[F[_]: Monad](
   private def adminGetGroups =
     getApiAdminGroups
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         groupService
-          .getGroup(groupId = ???)
+          .getAllGroups
           .leftMap(toApiError)
+          .map(_.map(group => GroupResponseItemDto(group.id, group.title)))
           .value
       }
 

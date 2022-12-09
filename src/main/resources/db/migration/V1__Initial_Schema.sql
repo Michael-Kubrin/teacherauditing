@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS estimate(
     groupId TEXT,
     teacherId TEXT,
     status TEXT NOT NULL,
+    score BIGINT NOT NULL,
     lastReviewerId TEXT,
     lastChangesDt TIMESTAMP NOT NULL,
     PRIMARY KEY (topicId, kpiId, groupId, teacherId)

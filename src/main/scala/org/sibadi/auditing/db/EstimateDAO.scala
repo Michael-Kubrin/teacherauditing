@@ -9,8 +9,8 @@ class EstimateDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
 
   def insert(estimate: Estimate): F[Unit] =
     sql"""
-       INSERT INTO estimate (topicId, kpiId, groupId, teacherId, status, lastReviewerId, lastChangesDt)
-       VALUES (${estimate.topicId}, ${estimate.kpiId}, ${estimate.groupId}, ${estimate.teacherId}, ${estimate.status}, ${estimate.lastReviewerId}, ${estimate.lastChangesDt})
+       INSERT INTO estimate (topicId, kpiId, groupId, teacherId, status, score, lastReviewerId, lastChangesDt)
+       VALUES (${estimate.topicId}, ${estimate.kpiId}, ${estimate.groupId}, ${estimate.teacherId}, ${estimate.status}, ${estimate.score}, ${estimate.lastReviewerId}, ${estimate.lastChangesDt})
        """
       .update
       .run
@@ -19,7 +19,7 @@ class EstimateDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
 
   def get(topicId: String, kpiId: String, teacherId: String): F[Option[Estimate]] =
     sql"""
-       SELECT topicId, kpiId, groupId, teacherId, status, lastReviewerId, lastChangesDt
+       SELECT topicId, kpiId, groupId, teacherId, status, score, lastReviewerId, lastChangesDt
        FROM estimate
        WHERE topicId = $topicId
          AND kpiId = $kpiId
@@ -34,6 +34,7 @@ class EstimateDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
        UPDATE estimate
        SET
         status = ${estimate.status},
+        score = ${estimate.score},
         lastReviewer = ${estimate.lastReviewerId},
         lastChangesDt = ${estimate.lastChangesDt}
        WHERE topicId = ${estimate.topicId}

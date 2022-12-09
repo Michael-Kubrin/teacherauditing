@@ -20,12 +20,12 @@ class EstimateService[F[_]](
   filer: Filer[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
-  def createEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Unit] =
+  def createEstimate(topicId: String, kpiId: String, teacherId: String, score: Long): EitherT[F, AppError, Unit] =
     for {
       group <- EitherT.fromOptionF(teacherGroupDAO.getByTeacherId(teacherId), AppError.TeacherWithoutGroup(teacherId).cast)
       _ <- EitherT(
         estimateDAO
-          .insert(db.Estimate(topicId, kpiId, group.groupId, teacherId, EstimateStatus.Waiting.toString, None, LocalDateTime.now(ZoneId.of("UTC"))))
+          .insert(db.Estimate(topicId, kpiId, group.groupId, teacherId, EstimateStatus.Waiting.toString, score, None, LocalDateTime.now(ZoneId.of("UTC"))))
           .map(_.asRight[AppError])
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )

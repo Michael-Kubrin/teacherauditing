@@ -23,10 +23,10 @@ object PublicAPI {
       .description("")
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[InternalError].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
       .out(jsonBody[LoginResponse])
@@ -39,23 +39,24 @@ object PublicAPI {
       .in(jsonBody[ChangePasswordRequestDto])
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[InternalError].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
       .out(jsonBody[PasswordResponse])
 
-  val postApiPublicTopicsTopicIdKpiKpiIdFilesFileId: Endpoint[Unit, (String, String, String), ApiError, _root_.sttp.tapir.TapirFile, Any] =
+  val postApiPublicTopicsTopicIdKpiKpiIdFilesFileId: Endpoint[String, (String, String, String), ApiError, _root_.sttp.tapir.TapirFile, Any] =
     endpoint.get
-      .in("api" / "public" / "topicsApi" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files" / path[String]("fileId"))
+      .securityIn(auth.bearer[String]())
+      .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files" / path[String]("fileId"))
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(sttp.model.StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(sttp.model.StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(sttp.model.StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
       .out(fileBody)

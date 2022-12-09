@@ -31,47 +31,56 @@ class KpiRouter[F[_]: Monad](
   private def adminCreateTopicKpi =
     postApiAdminTopicsTopicIdKpi
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic(userType => body =>)
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
+      }
 
   private def adminGetTopicKpi =
     getApiAdminTopicsTopicIdKpi
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic(userType => body =>)
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[List[TopicKpiResponse]].pure[F]
+      }
 
   private def adminEditTopicKpiId =
     putApiAdminTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic(userType => body =>)
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+      }
 
   private def adminDeleteTopicKpiId =
     deleteApiAdminTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic(userType => body =>)
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+      }
 
   private def adminCreateTeacherId =
     postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
-        teacherService
-          .createTeacher(firstName = body._1, lastName = body._2, middleName = body._3.some, login = ???)
-          .leftMap(toApiError)
-          .value
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
       }
 
   private def adminDeleteTeacherId =
     deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
@@ -80,13 +89,11 @@ class KpiRouter[F[_]: Monad](
   private def adminEditGroups =
     putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
-        groupService
-          .updateGroup(group = ???)
-          .leftMap(toApiError)
-          .value
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
   private def adminDeleteGropus =
@@ -104,12 +111,10 @@ class KpiRouter[F[_]: Monad](
   private def publicGetKpi =
     getApiPublicTopicsTopicIdKpi
       .serverSecurityLogic { token =>
-        authenticator.authenticate(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
-        topicService
-          .getTopicKpiByTopicId(topicId = ???)
-          .leftMap(toApiError)
-          .value
+      .serverLogic { userType =>
+        body =>
+          ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 }

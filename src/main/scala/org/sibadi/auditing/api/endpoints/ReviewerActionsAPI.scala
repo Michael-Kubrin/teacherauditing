@@ -14,20 +14,20 @@ object ReviewerActionsAPI {
     putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
   )
 
-  val putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus: Endpoint[String, (String, String, String, EditTeacherStatusRequest), ApiError, String, Any] =
+  val putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus: Endpoint[String, (String, String, String, EditTeacherStatusRequest), ApiError, Unit, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topicsApi" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teachers" / path[String]("teacherId") / "status")
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teachers" / path[String]("teacherId") / "status")
       .in(jsonBody[EditTeacherStatusRequest])
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.unsafeApply(400)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(401)).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(404)).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.unsafeApply(500)).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
-      .out(statusCode(StatusCode.unsafeApply(204)).and(stringBody))
+      .out(statusCode(StatusCode.NoContent))
       .description("")
 
 }

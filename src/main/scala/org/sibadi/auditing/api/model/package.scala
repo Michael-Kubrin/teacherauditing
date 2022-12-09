@@ -63,7 +63,7 @@ package object model {
 
   final case class CreateGroupRequestDtp(name: String)
 
-  final case class GroupsResponse(id: String, name: String)
+  final case class GroupResponseItemDto(id: String, name: String)
 
   final case class CreateAccountRequestDto(login: String, password: String)
 
