@@ -26,21 +26,21 @@ class EstimateService[F[_]](
       group <- EitherT.fromOptionF(teacherGroupDAO.getByTeacherId(teacherId), AppError.TeacherWithoutGroup(teacherId).cast)
       _ <- EitherT(
         estimateDAO
-          .insert(db.Estimate(topicId, kpiId, group.groupId, teacherId, EstimateStatus.Waiting.toString, score, None, LocalDateTime.now(ZoneId.of("UTC"))))
+          .insert(
+            db.Estimate(topicId, kpiId, group.groupId, teacherId, EstimateStatus.Waiting.toString, score, None, LocalDateTime.now(ZoneId.of("UTC")))
+          )
           .map(_.asRight[AppError])
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
     } yield ()
 
   // TODO implement as changing estimate state
-  def updateEstimate(topicId: String, kpiId: String, teacherId: String, newStatus: EstimateStatus): EitherT[F, AppError, Unit] = {
+  def updateEstimate(topicId: String, kpiId: String, teacherId: String, newStatus: EstimateStatus): EitherT[F, AppError, Unit] =
     for {
       estimate <- EitherT.fromOptionF(estimateDAO.get(topicId, kpiId, teacherId), AppError.EstimateDoesNotExists(topicId, kpiId, teacherId).cast)
       updateEstimate = estimate.copy(status = newStatus.toString)
       _ <- EitherT.liftF(estimateDAO.update(updateEstimate))
     } yield ()
-
-  }
 
   def getEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Option[Estimate]] =
     EitherT(

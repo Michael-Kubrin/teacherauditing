@@ -25,7 +25,7 @@ class ReviewerActionsRouter[F[_]: Monad](
       }
       .serverLogic { userType => body =>
         val domainStatus = body._4.newstatus match {
-          case ReviewStatus.Waiting => EstimateStatus.Waiting
+          case ReviewStatus.Waiting  => EstimateStatus.Waiting
           case ReviewStatus.Accepted => EstimateStatus.Accepted
           case ReviewStatus.Declined => EstimateStatus.Declined
           case ReviewStatus.Reviewed => EstimateStatus.Reviewed

@@ -23,8 +23,13 @@ class Migrations[F[_]: Sync: Logger](cfg: DatabaseConfig) {
           hikariConfig.setDriverClassName("org.postgresql.Driver")
           hikariConfig.setMaximumPoolSize(cfg.maxPoolSize)
           val dataSource: DataSource = new HikariDataSource(hikariConfig)
-          Flyway.configure().dataSource(dataSource).baselineOnMigrate(true)
-            .validateMigrationNaming(true).load().migrate()
+          Flyway
+            .configure()
+            .dataSource(dataSource)
+            .baselineOnMigrate(true)
+            .validateMigrationNaming(true)
+            .load()
+            .migrate()
         }
         .flatMap(c => Logger[F].info(s"Migrated $c scripts"))
         .handleErrorWith(e => Logger[F].error(e)(s"Migration failure: ${e.getMessage}") >> e.raiseError[F, Unit])
