@@ -13,7 +13,7 @@ object ReviewersAPI {
   def reviewersApi = List(
     postApiAdminReviewers,
     getApiAdminReviewers,
-    putApiAdminReviewersId,
+    putApiAdminReviewersId
   )
 
   def postApiAdminReviewers: Endpoint[String, CreateReviewerRequest, ApiError, ResponseIdPassword, Any] =

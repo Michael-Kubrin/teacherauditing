@@ -62,7 +62,8 @@ class TopicService[F[_]](
 
   def updateTopic(topicId: String, topicName: String): EitherT[F, AppError, Unit] =
     EitherT {
-      topicDAO.update(db.Topic(topicId, topicName, None))
+      topicDAO
+        .update(db.Topic(topicId, topicName, None))
         .map(_.asRight[AppError])
         .handleError(throwable => AppError.Unexpected(throwable).cast.asLeft[Unit])
     }

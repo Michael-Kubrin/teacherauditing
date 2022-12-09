@@ -14,7 +14,7 @@ object TopicsAPI {
     postApiAdminTopics,
     getApiAdminTopics,
     deleteApiAdminTopics,
-    putApiAdminTopicsTopicId,
+    putApiAdminTopicsTopicId
   )
 
   def postApiAdminTopics: Endpoint[String, CreateTopicsRequestDto, ApiError, Unit, Any] =

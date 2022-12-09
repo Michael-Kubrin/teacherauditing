@@ -4,8 +4,6 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
-
-import doobie.implicits.javasql._
 import doobie.postgres.implicits._
 
 class KpiDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {

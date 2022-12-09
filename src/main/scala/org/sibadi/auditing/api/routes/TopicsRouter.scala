@@ -3,9 +3,8 @@ package org.sibadi.auditing.api.routes
 import cats.Monad
 import cats.syntax.applicative._
 import cats.syntax.either._
-import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
 import org.sibadi.auditing.api.endpoints.TopicsAPI._
-import org.sibadi.auditing.api.model.{ApiError, TopicItemResponseDto, toApiError}
+import org.sibadi.auditing.api.model.{toApiError, ApiError, TopicItemResponseDto}
 import org.sibadi.auditing.service._
 
 class TopicsRouter[F[_]: Monad](
@@ -50,9 +49,8 @@ class TopicsRouter[F[_]: Monad](
       .serverSecurityLogic { token =>
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType =>
-        body =>
-          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
       }
 
   private def adminEditTopicsById =
@@ -61,7 +59,8 @@ class TopicsRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        topicService.updateTopic(body._1, body._2.name)
+        topicService
+          .updateTopic(body._1, body._2.name)
           .leftMap(toApiError)
           .value
       }

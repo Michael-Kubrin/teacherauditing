@@ -13,7 +13,7 @@ object TeachersAPI {
   def teachersApi = List(
     postApiAdminTeachers,
     getApiAdminTeachers,
-    putApiAdminTeachers,
+    putApiAdminTeachers
   )
 
   def postApiAdminTeachers: Endpoint[String, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =

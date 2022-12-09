@@ -4,8 +4,6 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
-import doobie.implicits.javasql._
-import doobie.postgres.implicits._
 
 class TeacherGroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
 
@@ -13,10 +11,7 @@ class TeacherGroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F
     sql"""
        INSERT INTO teacher_group (teacherId, groupId)
        VALUES (${link.teacherId}, ${link.groupId})
-       """
-      .update
-      .run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def getByGroupId(groupId: String): F[Option[TeacherGroup]] =
@@ -43,10 +38,7 @@ class TeacherGroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F
     sql"""
        DELETE FROM teacher_group
        WHERE group_id = ${link.groupId} AND teacher_id = ${link.teacherId}
-       """
-      .update
-      .run
-      .void
+       """.update.run.void
       .transact(transactor)
 
 }

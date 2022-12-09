@@ -4,8 +4,6 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
-import doobie.implicits.javasql._
-import doobie.postgres.implicits._
 
 class TopicKpiDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
 
@@ -13,10 +11,7 @@ class TopicKpiDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
     sql"""
        INSERT INTO topic_kpi (topicId, kpiId)
        VALUES (${link.topicId}, ${link.kpiId})
-       """
-      .update
-      .run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def getByTopicId(topicId: String): F[Option[TopicKpi]] =
@@ -43,10 +38,7 @@ class TopicKpiDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
     sql"""
        DELETE FROM topic_kpi
        WHERE topic_id = ${link.topicId} AND kpi_id = ${link.kpiId}
-       """
-      .update
-      .run
-      .void
+       """.update.run.void
       .transact(transactor)
 
 }

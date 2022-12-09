@@ -4,7 +4,6 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
-import doobie.implicits.javasql._
 import doobie.postgres.implicits._
 
 class TeacherDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
@@ -14,8 +13,7 @@ class TeacherDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Thr
     sql"""
        INSERT INTO teacher(id, firstName, lastName, middleName, deleteDt)
        VALUES (${teacher.id}, ${teacher.firstName}, ${teacher.lastName}, ${teacher.middleName}, null);
-       """.update.run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def updateTeacher(teacher: Teacher): F[Unit] =
@@ -27,8 +25,7 @@ class TeacherDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Thr
         middleName = ${teacher.middleName},
         deleteDt = ${teacher.deleteDt}
        WHERE id = ${teacher.id};
-       """.update.run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def getAllTeachers: F[List[Teacher]] =

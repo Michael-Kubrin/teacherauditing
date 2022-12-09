@@ -4,7 +4,6 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
-import doobie.implicits.javasql._
 import doobie.postgres.implicits._
 
 class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
@@ -13,8 +12,7 @@ class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
     sql"""
        INSERT INTO reviewer(id, firstName, lastName, middleName, deleteDt)
        VALUES (${reviewer.id}, ${reviewer.firstName}, ${reviewer.lastName}, ${reviewer.middleName}, null);
-       """.update.run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def updateReviewer(reviewer: Reviewer): F[Unit] =
@@ -26,8 +24,7 @@ class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
         middleName = ${reviewer.middleName},
         deleteDt = ${reviewer.deleteDt}
        WHERE id = ${reviewer.id};
-       """.update.run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def getAllReviewers: F[List[Reviewer]] =
@@ -47,7 +44,6 @@ class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
       .option
       .transact(transactor)
 
-
   //  def createTopics(topics: Topics): F[Unit] =
   //    sql"""
   //       INSERT INTO topics(topicId, nameOfTopic)
@@ -55,6 +51,5 @@ class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
   //       """.update.run
   //      .map(_ => ())
   //      .transact(transactor)
-
 
 }

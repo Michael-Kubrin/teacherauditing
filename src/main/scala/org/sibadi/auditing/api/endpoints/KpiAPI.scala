@@ -14,7 +14,7 @@ object KpiAPI {
     postApiAdminTopicsTopicIdKpi,
     getApiAdminTopicsTopicIdKpi,
     putApiAdminTopicsTopicIdKpiKpiId,
-    deleteApiAdminTopicsTopicIdKpiKpiId,
+    deleteApiAdminTopicsTopicIdKpiKpiId
   )
 
   def postApiAdminTopicsTopicIdKpi: Endpoint[String, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =

@@ -21,8 +21,8 @@ class Filer[F[_]: Sync] {
   private def saveTo(src: File, path: String): F[Unit] =
     (for {
       destinationFile <- Resource.eval(createFile(path))
-      in <- inputStream(src)
-      out <- outputStream(destinationFile)
+      in              <- inputStream(src)
+      out             <- outputStream(destinationFile)
     } yield (in, out)).use { case (in, out) =>
       Sync[F].blocking {
         out.getChannel.transferFrom(in.getChannel, 0, Long.MaxValue)

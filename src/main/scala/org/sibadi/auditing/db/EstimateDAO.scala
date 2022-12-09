@@ -4,7 +4,6 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
-import doobie.implicits.javasql._
 import doobie.postgres.implicits._
 
 class EstimateDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
@@ -13,10 +12,7 @@ class EstimateDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
     sql"""
        INSERT INTO estimate (topicId, kpiId, groupId, teacherId, status, score, lastReviewerId, lastChangesDt)
        VALUES (${estimate.topicId}, ${estimate.kpiId}, ${estimate.groupId}, ${estimate.teacherId}, ${estimate.status}, ${estimate.score}, ${estimate.lastReviewerId}, ${estimate.lastChangesDt})
-       """
-      .update
-      .run
-      .void
+       """.update.run.void
       .transact(transactor)
 
   def get(topicId: String, kpiId: String, teacherId: String): F[Option[Estimate]] =
@@ -42,10 +38,7 @@ class EstimateDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
        WHERE topicId = ${estimate.topicId}
          AND kpiId = ${estimate.kpiId}
          AND teacherId = ${estimate.teacherId}
-       """
-      .update
-      .run
-      .void
+       """.update.run.void
       .transact(transactor)
 
 }
