@@ -46,4 +46,11 @@ class GroupService[F[_]](groupDao: GroupDAO[F])(implicit M: MonadCancel[F, Throw
     )
 }
 
-object GroupService {}
+object GroupService {
+
+  def apply[F[_]](groupDao: GroupDAO[F])(implicit
+    M: MonadCancel[F, Throwable]
+  ): Resource[F, GroupService[F]] =
+    Resource.pure(new GroupService(groupDao))
+
+}
