@@ -17,6 +17,7 @@ object KpiGroupAPI {
 
   def putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, PutTeacherToGroupsRequest), ApiError, String, Any] =
     endpoint.put
+      .tag("Kpi-Group API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers" / path[String]("teacherId") / "groups")
       .in(jsonBody[PutTeacherToGroupsRequest])
@@ -33,6 +34,7 @@ object KpiGroupAPI {
 
   def deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
     endpoint.delete
+      .tag("Kpi-Group API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers" / path[String]("teacherId") / "groups" / path[String]("groupId"))
       .errorOut(

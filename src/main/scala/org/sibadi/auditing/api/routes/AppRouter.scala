@@ -1,11 +1,14 @@
 package org.sibadi.auditing.api.routes
 
-import cats.effect.{Async, Resource}
+import cats.effect.{Async, Resource, Sync}
 import org.http4s.HttpRoutes
-import org.sibadi.auditing.api.endpoints.AppEndpoints
+import org.sibadi.auditing.api.endpoints.{AppEndpoints, YamlDocAPI}
+import sttp.apispec.openapi.OpenAPI
+import sttp.tapir.docs.openapi.OpenAPIDocsInterpreter
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
+import sttp.apispec.openapi.circe.yaml._
 
 class AppRouter[F[_]: Async](
   groupsRouter: GroupsRouter[F],
@@ -22,7 +25,16 @@ class AppRouter[F[_]: Async](
 
   private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](AppEndpoints.allEndpoints, "aboba", "1.0.0")
 
-  def httpRoutes: HttpRoutes[F] = Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes)
+  def httpRoutes: HttpRoutes[F] = Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes :+ docAsYamlRoute)
+
+  def docAsYamlRoute =
+    YamlDocAPI.yamlDocAPIEndpoint
+      .serverLogicSuccess { _ =>
+        Sync[F].delay {
+          val docs: OpenAPI = OpenAPIDocsInterpreter().toOpenAPI(AppEndpoints.allEndpoints, "Teacher Auditing API", "1.0")
+          docs.toYaml
+        }
+      }
 
   private def allRoutes: List[ServerEndpoint[Any, F]] =
     groupsRouter.routes ++

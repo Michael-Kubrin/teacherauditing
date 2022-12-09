@@ -17,6 +17,7 @@ object ReviewerActionsAPI {
   def putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
     : Endpoint[String, (String, String, String, EditTeacherStatusRequest), ApiError, Unit, Any] =
     endpoint.put
+      .tag("Teacher Actions API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teachers" / path[String]("teacherId") / "status")
       .in(jsonBody[EditTeacherStatusRequest])

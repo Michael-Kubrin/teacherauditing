@@ -10,6 +10,7 @@ import org.sibadi.auditing.api.endpoints.ReviewersAPI.reviewersApi
 import org.sibadi.auditing.api.endpoints.TeacherActionsAPI.teacherActionsApi
 import org.sibadi.auditing.api.endpoints.TeachersAPI.teachersApi
 import org.sibadi.auditing.api.endpoints.TopicsAPI.topicsApi
+import org.sibadi.auditing.api.endpoints.YamlDocAPI.yamlDocApi
 
 object AppEndpoints {
 
@@ -23,6 +24,7 @@ object AppEndpoints {
       publicApi ++
       kpiGroupApi ++
       kpiTeacherApi ++
-      reviewerActionsApi
+      reviewerActionsApi ++
+      yamlDocApi
 
 }

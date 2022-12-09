@@ -17,6 +17,7 @@ object KpiTeacherAPI {
 
   def postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, Unit, Any] =
     endpoint.post
+      .tag("Kpi-Teacher API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teacher" / path[String]("teacherId"))
       .errorOut(
@@ -32,6 +33,7 @@ object KpiTeacherAPI {
 
   def deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, String, Any] =
     endpoint.delete
+      .tag("Kpi-Teacher API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teacher" / path[String]("teacherId"))
       .errorOut(

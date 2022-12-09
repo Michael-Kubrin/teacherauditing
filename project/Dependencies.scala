@@ -36,6 +36,7 @@ object Dependencies {
   val tapirHttp      = "org.http4s"                  %% "http4s-blaze-server"     % Versions.tapirHttp4s
   val tapirSwagger   = "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Versions.tapir
   val tapirJson      = "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir
+  val tapirApiSpec      = "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml"    % "0.3.1"
   val doobieCore     = "org.tpolecat"                %% "doobie-core"             % Versions.doobie
   val doobieHikari   = "org.tpolecat"                %% "doobie-hikari"           % Versions.doobie
   val doobiePostgres = "org.tpolecat"                %% "doobie-postgres"         % Versions.doobie
@@ -58,6 +59,7 @@ object Dependencies {
       tapirHttp,
       tapirSwagger,
       tapirJson,
+      tapirApiSpec,
       doobieCore,
       doobieHikari,
       doobiePostgres,
