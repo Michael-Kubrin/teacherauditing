@@ -84,5 +84,5 @@ CREATE TABLE IF NOT EXISTS estimate_files(
     teacherId TEXT,
     fileId TEXT,
     path TEXT NOT NULL,
-    PRIMARY KEY (topicId, kpiId, groupId, teacherId, fileId)
+    PRIMARY KEY (topicId, kpiId, teacherId, fileId)
 );
