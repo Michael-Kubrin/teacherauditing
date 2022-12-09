@@ -99,15 +99,6 @@ class TeacherService[F[_]](
         .handleError(throwable => AppError.TeacherByIdDoesNotExists(throwable).asLeft[Option[TeacherGroup]])
     )
 
-  //TODO: Which type of Link has to be need written?
-  def deleteGroup(link: ???): EitherT[F, AppError, Unit] =
-    EitherT(
-      teacherGroupDAO
-        .delete(link)
-        .map(_.asRight[AppError])
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
-    )
-
 }
 
 object TeacherService {

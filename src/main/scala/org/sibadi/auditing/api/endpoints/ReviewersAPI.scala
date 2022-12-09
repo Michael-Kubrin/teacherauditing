@@ -10,13 +10,13 @@ import io.circe.generic.auto._
 
 object ReviewersAPI {
 
-  val reviewersApi = List(
+  def reviewersApi = List(
     postApiAdminReviewers,
     getApiAdminReviewers,
     putApiAdminReviewersId,
   )
 
-  val postApiAdminReviewers: Endpoint[String, CreateReviewerRequest, ApiError, ResponseIdPassword, Any] =
+  def postApiAdminReviewers: Endpoint[String, CreateReviewerRequest, ApiError, ResponseIdPassword, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers")
@@ -32,7 +32,7 @@ object ReviewersAPI {
       )
       .out(jsonBody[ResponseIdPassword])
 
-  val getApiAdminReviewers: Endpoint[String, Unit, ApiError, List[ReviewerResponse], Any] =
+  def getApiAdminReviewers: Endpoint[String, Unit, ApiError, List[ReviewerResponse], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers")
@@ -47,7 +47,7 @@ object ReviewersAPI {
       .out(jsonBody[List[ReviewerResponse]])
       .description("")
 
-  val putApiAdminReviewersId: Endpoint[String, (String, EditReviewersRequest), ApiError, Unit, Any] =
+  def putApiAdminReviewersId: Endpoint[String, (String, EditReviewersRequest), ApiError, Unit, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers" / path[String]("reviewerId"))

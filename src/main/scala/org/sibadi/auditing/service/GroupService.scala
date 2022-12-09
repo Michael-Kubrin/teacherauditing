@@ -22,12 +22,12 @@ class GroupService[F[_]](groupDao: GroupDAO[F])(implicit M: MonadCancel[F, Throw
       )
     } yield ()
 
-  def getGroup(groupId: String): EitherT[F, AppError, Option[Group]] =
+  def getGroup(groupId: String): EitherT[F, AppError, Group] =
     EitherT(
       groupDao
         .get(groupId)
         .map(_.toRight(AppError.GroupDoesNotExists(groupId).cast))
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Group])
+        .handleError(throwable => AppError.Unexpected(throwable).cast.asLeft[Group])
     )
 
   def getAllGroups: EitherT[F, AppError, List[Group]] =

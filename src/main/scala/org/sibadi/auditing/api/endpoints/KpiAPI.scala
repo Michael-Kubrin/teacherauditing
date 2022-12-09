@@ -10,14 +10,14 @@ import io.circe.generic.auto._
 
 object KpiAPI {
 
-  val kpiApi = List(
+  def kpiApi = List(
     postApiAdminTopicsTopicIdKpi,
     getApiAdminTopicsTopicIdKpi,
     putApiAdminTopicsTopicIdKpiKpiId,
     deleteApiAdminTopicsTopicIdKpiKpiId,
   )
 
-  val postApiAdminTopicsTopicIdKpi: Endpoint[String, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
+  def postApiAdminTopicsTopicIdKpi: Endpoint[String, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
@@ -32,7 +32,7 @@ object KpiAPI {
       )
       .out(jsonBody[ResponseId])
 
-  val getApiAdminTopicsTopicIdKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
+  def getApiAdminTopicsTopicIdKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
@@ -46,7 +46,7 @@ object KpiAPI {
       )
       .out(jsonBody[List[TopicKpiResponse]])
 
-  val putApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
+  def putApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
@@ -61,7 +61,7 @@ object KpiAPI {
       .out(statusCode(StatusCode.NoContent))
       .description("")
 
-  val deleteApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
+  def deleteApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     endpoint.delete
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))

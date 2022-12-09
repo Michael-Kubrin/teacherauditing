@@ -10,14 +10,14 @@ import io.circe.generic.auto._
 
 object TopicsAPI {
 
-  val topicsApi = List(
+  def topicsApi = List(
     postApiAdminTopics,
     getApiAdminTopics,
     deleteApiAdminTopics,
     putApiAdminTopicsTopicId,
   )
 
-  val postApiAdminTopics: Endpoint[String, CreateTopicsRequestDto, ApiError, Unit, Any] =
+  def postApiAdminTopics: Endpoint[String, CreateTopicsRequestDto, ApiError, Unit, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics")
@@ -32,7 +32,7 @@ object TopicsAPI {
         )
       )
       .out(statusCode(StatusCode.unsafeApply(201)))
-  val getApiAdminTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
+  def getApiAdminTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics")
@@ -46,7 +46,7 @@ object TopicsAPI {
         )
       )
       .out(jsonBody[List[TopicItemResponseDto]])
-  val deleteApiAdminTopics: Endpoint[String, String, ApiError, Unit, Any] =
+  def deleteApiAdminTopics: Endpoint[String, String, ApiError, Unit, Any] =
     endpoint.delete
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId"))
@@ -61,7 +61,7 @@ object TopicsAPI {
       )
       .out(statusCode(StatusCode.NoContent))
 
-  val putApiAdminTopicsTopicId: Endpoint[String, (String, EditTopicRequestDto), ApiError, Unit, Any] =
+  def putApiAdminTopicsTopicId: Endpoint[String, (String, EditTopicRequestDto), ApiError, Unit, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId"))

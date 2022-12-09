@@ -5,6 +5,9 @@ import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
 
+import doobie.implicits.javasql._
+import doobie.postgres.implicits._
+
 class EstimateFilesDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
 
   def insert(estimateFiles: EstimateFiles): F[Unit] =

@@ -10,13 +10,13 @@ import io.circe.generic.auto._
 
 object PublicAPI {
 
-  val publicApi = List(
+  def publicApi = List(
     postLogin,
     editPassword,
     postApiPublicTopicsTopicIdKpiKpiIdFilesFileId
   )
 
-  val postLogin: Endpoint[Unit, CreateAccountRequestDto, ApiError, LoginResponse, Any] =
+  def postLogin: Endpoint[Unit, CreateAccountRequestDto, ApiError, LoginResponse, Any] =
     endpoint.post
       .in("api" / "login")
       .in(jsonBody[CreateAccountRequestDto])
@@ -31,7 +31,7 @@ object PublicAPI {
       )
       .out(jsonBody[LoginResponse])
 
-  val editPassword: Endpoint[String, ChangePasswordRequestDto, ApiError, PasswordResponse, Any] =
+  def editPassword: Endpoint[String, ChangePasswordRequestDto, ApiError, PasswordResponse, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
       .in("api" / "password")
@@ -47,7 +47,7 @@ object PublicAPI {
       )
       .out(jsonBody[PasswordResponse])
 
-  val postApiPublicTopicsTopicIdKpiKpiIdFilesFileId: Endpoint[String, (String, String, String), ApiError, _root_.sttp.tapir.TapirFile, Any] =
+  def postApiPublicTopicsTopicIdKpiKpiIdFilesFileId: Endpoint[String, (String, String, String), ApiError, _root_.sttp.tapir.TapirFile, Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files" / path[String]("fileId"))

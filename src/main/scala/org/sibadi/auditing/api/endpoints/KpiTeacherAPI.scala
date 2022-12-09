@@ -10,12 +10,12 @@ import io.circe.generic.auto._
 
 object KpiTeacherAPI {
 
-  val kpiTeacherApi = List(
+  def kpiTeacherApi = List(
     postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId,
     deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
   )
 
-  val postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, String, Any] =
+  def postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, Unit, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teacher" / path[String]("teacherId"))
@@ -27,10 +27,10 @@ object KpiTeacherAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
         )
       )
-      .out(statusCode(StatusCode.unsafeApply(201)).and(stringBody))
+      .out(statusCode(StatusCode.unsafeApply(201)))
       .description("")
 
-  val deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, String, Any] =
+  def deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, String, Any] =
     endpoint.delete
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teacher" / path[String]("teacherId"))

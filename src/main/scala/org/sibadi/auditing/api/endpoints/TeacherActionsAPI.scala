@@ -10,14 +10,14 @@ import io.circe.generic.auto._
 
 object TeacherActionsAPI {
 
-  val teacherActionsApi = List(
+  def teacherActionsApi = List(
     getApiPublicTopics,
     getApiPublicTopicsTopicIdKpi,
     postApiPublicTopicsTopicIdKpiKpiIdEstimate,
     postApiPublicTopicsTopicIdKpiKpiIdFiles
   )
 
-  val getApiPublicTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
+  def getApiPublicTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics")
@@ -32,7 +32,7 @@ object TeacherActionsAPI {
       .out(jsonBody[List[TopicItemResponseDto]])
       .description("")
 
-  val getApiPublicTopicsTopicIdKpi: Endpoint[String, String, ApiError, GetPublicKpiResponse, Any] =
+  def getApiPublicTopicsTopicIdKpi: Endpoint[String, String, ApiError, GetPublicKpiResponse, Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi")
@@ -47,7 +47,7 @@ object TeacherActionsAPI {
       .out(jsonBody[GetPublicKpiResponse])
       .description("")
 
-  val postApiPublicTopicsTopicIdKpiKpiIdEstimate: Endpoint[String, (String, String, EstimateRequest), ApiError, Unit, Any] =
+  def postApiPublicTopicsTopicIdKpiKpiIdEstimate: Endpoint[String, (String, String, EstimateRequest), ApiError, Unit, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "estimate")
@@ -63,7 +63,7 @@ object TeacherActionsAPI {
       .out(statusCode(StatusCode.Created))
       .description("")
 
-  val postApiPublicTopicsTopicIdKpiKpiIdFiles: Endpoint[String, (String, String, _root_.sttp.tapir.TapirFile), ApiError, Unit, Any] =
+  def postApiPublicTopicsTopicIdKpiKpiIdFiles: Endpoint[String, (String, String, _root_.sttp.tapir.TapirFile), ApiError, Unit, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files")

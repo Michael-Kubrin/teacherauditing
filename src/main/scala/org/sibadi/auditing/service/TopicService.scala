@@ -21,8 +21,8 @@ class TopicService[F[_]](
         .map { case (topic, kpis) => createTopic(topic, kpis) }
         .toList
         .sequence
-        .map(_.asRight[AppError])
         .void
+        .map(_.asRight[AppError])
         .handleError(throwable => AppError.Unexpected(throwable).cast.asLeft[Unit])
     }
 
@@ -44,16 +44,14 @@ class TopicService[F[_]](
     topicKpiDAO.insert(db.TopicKpi(topicId, kpiId))
 
   def getTopic(groupId: String): EitherT[F, AppError, Option[Topic]] =
-    for {
-      _ <- EitherT(
-        topicDAO
-          .get(groupId)
-          .map(_.asRight[AppError])
-          .handleError { case throwable =>
-            AppError.TopicDoesNotExists(throwable).asLeft[Option[Topic]]
-          }
-      )
-    } yield ()
+    EitherT(
+      topicDAO
+        .get(groupId)
+        .map(_.asRight[AppError])
+        .handleError { case throwable =>
+          AppError.TopicDoesNotExists(throwable).asLeft[Option[Topic]]
+        }
+    )
 
   def getAllTopics: EitherT[F, AppError, List[Topic]] =
     EitherT(

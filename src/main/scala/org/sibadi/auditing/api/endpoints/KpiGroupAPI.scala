@@ -10,12 +10,12 @@ import io.circe.generic.auto._
 
 object KpiGroupAPI {
 
-  val kpiGroupApi = List(
+  def kpiGroupApi = List(
     putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId,
     deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
   )
 
-  val putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, PutTeacherToGroupsRequest), ApiError, String, Any] =
+  def putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, PutTeacherToGroupsRequest), ApiError, String, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers" / path[String]("teacherId") / "groups")
@@ -31,7 +31,7 @@ object KpiGroupAPI {
       .out(statusCode(StatusCode.NoContent).and(stringBody))
       .description("")
 
-  val deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
+  def deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
     endpoint.delete
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers" / path[String]("teacherId") / "groups" / path[String]("groupId"))

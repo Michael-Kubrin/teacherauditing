@@ -10,13 +10,13 @@ import io.circe.generic.auto._
 
 object TeachersAPI {
 
-  val teachersApi = List(
+  def teachersApi = List(
     postApiAdminTeachers,
     getApiAdminTeachers,
     putApiAdminTeachers,
   )
 
-  val postApiAdminTeachers: Endpoint[String, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
+  def postApiAdminTeachers: Endpoint[String, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers")
@@ -32,7 +32,7 @@ object TeachersAPI {
       )
       .out(jsonBody[ResponseIdPassword])
 
-  val getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherResponse], Any] =
+  def getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherResponse], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers")
@@ -46,7 +46,7 @@ object TeachersAPI {
       )
       .out(jsonBody[List[TeacherResponse]])
       .description("")
-  val putApiAdminTeachers: Endpoint[String, (String, EditTeacherRequest), ApiError, Unit, Any] =
+  def putApiAdminTeachers: Endpoint[String, (String, EditTeacherRequest), ApiError, Unit, Any] =
     endpoint.put
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers" / path[String]("teacherId"))

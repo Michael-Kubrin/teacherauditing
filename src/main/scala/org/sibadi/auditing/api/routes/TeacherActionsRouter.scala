@@ -1,6 +1,8 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.syntax.either._
+import cats.syntax.applicative._
 import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
@@ -47,7 +49,7 @@ class TeacherActionsRouter[F[_]: Monad](
         authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        ApiError.InternalError("Not implemented").cast.asLeft[GetPublicKpiResponse].pure[F]
       }
 
   private def publicGetTopics =

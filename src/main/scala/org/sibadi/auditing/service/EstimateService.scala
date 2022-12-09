@@ -5,6 +5,7 @@ import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
 import org.sibadi.auditing.db._
+import org.sibadi.auditing.domain.EstimateStatus.EstimateStatus
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.util.Filer
@@ -32,26 +33,22 @@ class EstimateService[F[_]](
     } yield ()
 
   // TODO implement as changing estimate state
-  def updateEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Unit] =
+  def updateEstimate(topicId: String, kpiId: String, teacherId: String, newStatus: EstimateStatus): EitherT[F, AppError, Unit] = {
     for {
-      group <- EitherT.fromOptionF(teacherGroupDAO.getByTeacherId(teacherId), AppError.TeacherWithoutGroup(teacherId).cast)
-      _ <- EitherT(
-        estimateDAO
-          .update(db.Estimate(topicId, kpiId, group.groupId, teacherId, EstimateStatus.Waiting.toString, None, LocalDateTime.now(ZoneId.of("UTC"))))
-          .map(_.asRight[AppError])
-          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
-      )
+      estimate <- EitherT.fromOptionF(estimateDAO.get(topicId, kpiId, teacherId), AppError.EstimateDoesNotExists(topicId, kpiId, teacherId).cast)
+      updateEstimate = estimate.copy(status = newStatus.toString)
+      _ <- EitherT.liftF(estimateDAO.update(updateEstimate))
     } yield ()
 
+  }
+
   def getEstimate(topicId: String, kpiId: String, teacherId: String): EitherT[F, AppError, Option[Estimate]] =
-    for {
-      _ <- EitherT(
-        estimateDAO
-          .get(topicId, kpiId, teacherId)
-          .map(_.asRight[AppError])
-          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Option[Estimate]])
-      )
-    } yield ()
+    EitherT(
+      estimateDAO
+        .get(topicId, kpiId, teacherId)
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Option[Estimate]])
+    )
 
   def createEstimateFiles(topicId: String, kpiId: String, teacherId: String, file: File): EitherT[F, AppError, Unit] = {
     val fileId   = Option(file.getName).filterNot(_.isBlank).getOrElse(UUID.randomUUID().toString)

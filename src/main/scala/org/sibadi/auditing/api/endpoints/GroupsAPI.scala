@@ -10,12 +10,12 @@ import io.circe.generic.auto._
 
 object GroupsAPI {
 
-  val groupsApi = List(
+  def groupsApi = List(
     postApiAdminGroups,
     getApiAdminGroups
   )
 
-  val postApiAdminGroups: Endpoint[String, CreateGroupRequestDtp, ApiError, Unit, Any] =
+  def postApiAdminGroups: Endpoint[String, CreateGroupRequestDtp, ApiError, Unit, Any] =
     endpoint.post
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "groups")
@@ -31,7 +31,7 @@ object GroupsAPI {
       .out(statusCode(StatusCode.unsafeApply(201)))
       .description("")
 
-  val getApiAdminGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
+  def getApiAdminGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
     endpoint.get
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "groups")

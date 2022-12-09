@@ -22,7 +22,7 @@ object AppError {
 
   final case class GroupByIdDoesNotExists(t: Throwable) extends AppError
 
-  final case class EstimateDoesNotExists(t: Throwable) extends AppError
+  final case class EstimateDoesNotExists(topicId: String, kpiId: String, teacherId: String) extends AppError
 
   final case class KpiByIdDoesNotExists(t: Throwable) extends AppError
 
