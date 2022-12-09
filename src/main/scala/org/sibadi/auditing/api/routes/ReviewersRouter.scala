@@ -1,15 +1,20 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
-import cats.syntax.either._
 import cats.syntax.applicative._
-import org.sibadi.auditing.api.endpoints.ReviewersAPI.{getApiAdminReviewers, postApiAdminReviewers, putApiAdminReviewersId}
-import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, ReviewerResponse, toApiError}
-import org.sibadi.auditing.service.{Authenticator, ReviewerService}
+import cats.syntax.either._
+import org.sibadi.auditing.api.endpoints.ReviewersAPI._
+import org.sibadi.auditing.api.model.{toApiError, ApiError, ResponseIdPassword, ReviewerResponse}
+import org.sibadi.auditing.service._
 
 class ReviewersRouter[F[_]: Monad](
   authenticator: Authenticator[F],
-  reviewerService: ReviewerService[F]
+  estimateService: EstimateService[F],
+  groupService: GroupService[F],
+  kpiService: KpiService[F],
+  reviewerService: ReviewerService[F],
+  teacherService: TeacherService[F],
+  topicService: TopicService[F]
 ) {
 
   def routes = List(adminCreateReviewers, adminGetReviewers, adminEditReviewers)
@@ -38,8 +43,7 @@ class ReviewersRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        reviewerService
-          .getAllReviewers
+        reviewerService.getAllReviewers
           .map(_.map(reviewer => ReviewerResponse(reviewer.id, reviewer.firstName, reviewer.lastName, reviewer.middleName)))
           .leftMap(toApiError)
           .value
@@ -50,9 +54,8 @@ class ReviewersRouter[F[_]: Monad](
       .serverSecurityLogic { token =>
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType =>
-        body =>
-          ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+      .serverLogic { userType => body =>
+        ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
       }
 
 }

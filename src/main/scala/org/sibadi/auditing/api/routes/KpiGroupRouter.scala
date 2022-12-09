@@ -1,11 +1,13 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
-import org.sibadi.auditing.api.endpoints.GroupsAPI._
+import cats.syntax.applicative._
+import cats.syntax.either._
+import org.sibadi.auditing.api.endpoints.KpiGroupAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
 
-class GroupsRouter[F[_]: Monad](
+class KpiGroupRouter[F[_]: Monad](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -15,30 +17,25 @@ class GroupsRouter[F[_]: Monad](
   topicService: TopicService[F]
 ) {
 
-  def routes = List(adminCreateGroups, adminGetGroups)
-
-  private def adminCreateGroups =
-    postApiAdminGroups
+  private def adminEditGroups =
+    putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        groupService
-          .createGroup(title = body.name)
-          .leftMap(toApiError)
-          .value
+        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  private def adminGetGroups =
-    getApiAdminGroups
+  private def adminDeleteGropus =
+    deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
-        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator
+          .isAdmin(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
       }
       .serverLogic { userType => body =>
-        groupService.getAllGroups
-          .leftMap(toApiError)
-          .map(_.map(group => GroupResponseItemDto(group.id, group.title)))
-          .value
+        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
 }

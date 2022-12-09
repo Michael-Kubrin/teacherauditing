@@ -1,19 +1,24 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
-import cats.syntax.either._
 import cats.syntax.applicative._
+import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
 import org.sibadi.auditing.api.endpoints.TopicsAPI._
 import org.sibadi.auditing.api.model.{ApiError, TopicItemResponseDto, toApiError}
-import org.sibadi.auditing.service.{Authenticator, TopicService}
+import org.sibadi.auditing.service._
 
-class TopicRouter[F[_]: Monad](
+class TopicsRouter[F[_]: Monad](
   authenticator: Authenticator[F],
+  estimateService: EstimateService[F],
+  groupService: GroupService[F],
+  kpiService: KpiService[F],
+  reviewerService: ReviewerService[F],
+  teacherService: TeacherService[F],
   topicService: TopicService[F]
 ) {
 
-  def routes = List(adminCreateTopic, adminGetTopic, adminDeleteTopic, adminEditTopicsById, publicGetTopics)
+  def routes = List(adminCreateTopic, adminGetTopic, adminDeleteTopic, adminEditTopicsById)
 
   private def adminCreateTopic =
     postApiAdminTopics
@@ -58,19 +63,6 @@ class TopicRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         topicService.updateTopic(body._1, body._2.name)
           .leftMap(toApiError)
-          .value
-      }
-
-  private def publicGetTopics =
-    getApiPublicTopics
-      .serverSecurityLogic { token =>
-        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
-      }
-      .serverLogic { userType => body =>
-        topicService
-          .getAllTopics
-          .leftMap(toApiError)
-          .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty))) // TODO
           .value
       }
 

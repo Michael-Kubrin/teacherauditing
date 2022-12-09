@@ -9,13 +9,13 @@ import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 class AppRouter[F[_]: Async](
-  authenticator: Authenticator[F],
-  service: Service[F],
-  teacherRouter: TeacherRouter[F],
-  reviewersRouter: ReviewersRouter[F],
-  topicRouter: TopicRouter[F],
-  estimateRouter: EstimateRouter[F],
-  groupsRouter: GroupsRouter[F]
+                              authenticator: Authenticator[F],
+                              service: Service[F],
+                              teacherRouter: TeachersRouter[F],
+                              reviewersRouter: ReviewersRouter[F],
+                              topicRouter: TopicsRouter[F],
+                              estimateRouter: EstimateRouter[F],
+                              groupsRouter: GroupsRouter[F]
 ) {
 
   private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](AppEndpoints.allEndpoints, "aboba", "1.0.0")
@@ -35,13 +35,13 @@ class AppRouter[F[_]: Async](
 
 object AppRouter {
   def apply[F[_]: Async](
-    authenticator: Authenticator[F],
-    service: Service[F],
-    teacherRouter: TeacherRouter[F],
-    reviewersRouter: ReviewersRouter[F],
-    topicRouter: TopicRouter[F],
-    estimateRouter: EstimateRouter[F],
-    groupsRouter: GroupsRouter[F]
+                          authenticator: Authenticator[F],
+                          service: Service[F],
+                          teacherRouter: TeachersRouter[F],
+                          reviewersRouter: ReviewersRouter[F],
+                          topicRouter: TopicsRouter[F],
+                          estimateRouter: EstimateRouter[F],
+                          groupsRouter: GroupsRouter[F]
   ): Resource[F, AppRouter[F]] =
     Resource.pure(new AppRouter(authenticator, service, teacherRouter, reviewersRouter, topicRouter, estimateRouter, groupsRouter))
 }
