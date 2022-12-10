@@ -26,11 +26,11 @@ class KpiGroupRouter[F[_]: Monad](
       }
       .serverLogic { userType => body =>
         groupService
-          .updateGroup(body._2.groupIds, body._1)
-          .leftMap(toApiError)
-          .map(_.toString)
-          .value
-//        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+//          .updateGroup(body._2.groupIds, body._1)
+//          .leftMap(toApiError)
+//          .map(_.toString)
+//          .value
+        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
   private def adminDeleteGroups =
