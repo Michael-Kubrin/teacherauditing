@@ -87,7 +87,12 @@ services:
       - POSTGRES_USER=teacherauditing
     ports:
       - "5432:5432"
+```
 
+In the project directory (near the `docker-compose.yaml`):
+
+```shell
+docker-compose up
 ```
 
 
