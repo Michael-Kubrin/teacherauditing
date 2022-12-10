@@ -25,7 +25,7 @@ class KpiGroupRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        groupService
+//        groupService
 //          .updateGroup(body._2.groupIds, body._1)
 //          .leftMap(toApiError)
 //          .map(_.toString)
