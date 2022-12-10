@@ -31,15 +31,9 @@ Application will create `public` schema in `POSTGRES_DB_NAME` database.
 When successfully connected, application will migrate schema with scripts defined in 
 project resources.
 
-## Docker
+## Running app
 
-You can build image from Dockerfile using this command: 
-
-```shell
-docker build -t teacherauditing:0.0.1 .
-```
-
-## Build via SBT
+### Build via SBT
 
 Before build cleanup assembly files. Just delete `target` folder 
 or delete file `target/scala-2.13/teacherauditing.jar`.
@@ -50,7 +44,15 @@ After cleanup run `sbt`. This action assembles fat-jar in `target/scala-2.13` di
 sbt "clean; assembly"
 ```
 
-## Run example via docker-compose
+### Docker
+
+Build image from Dockerfile using this command:
+
+```shell
+docker build -t teacherauditing:0.0.1 .
+```
+
+### Run example via docker-compose
 
 ```yaml
 version: '3'
