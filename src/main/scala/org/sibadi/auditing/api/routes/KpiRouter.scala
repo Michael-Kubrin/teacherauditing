@@ -30,15 +30,28 @@ class KpiRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
+//        kpiService
+//          .createKpi(body._2.title)
+//          .map { x =>
+//            ResponseId(id = x)
+//          }
+//          .leftMap(toApiError)
+//          .value
         ApiError.InternalError("Not implemented").cast.asLeft[ResponseId].pure[F]
       }
 
+  //TODO: Not sure about it
   private def adminGetTopicKpi =
     getApiAdminTopicsTopicIdKpi
       .serverSecurityLogic { token =>
         authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
-      .serverLogic { userType => body =>
+      .serverLogic { userType => kpiId =>
+//        kpiService
+//          .getByKpiId(kpiId)
+//          .leftMap(toApiError)
+//          .map(_.map(x => TopicKpiResponse(x.kpiId, x.groupId)))
+//          .value
         ApiError.InternalError("Not implemented").cast.asLeft[List[TopicKpiResponse]].pure[F]
       }
 
@@ -48,7 +61,10 @@ class KpiRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+        kpiService
+          .updateKpi(body._1, body._2)
+          .leftMap(toApiError)
+          .value
       }
 
   private def adminDeleteTopicKpiId =

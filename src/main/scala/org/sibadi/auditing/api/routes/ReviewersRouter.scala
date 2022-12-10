@@ -1,8 +1,6 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
-import cats.syntax.applicative._
-import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.ReviewersAPI._
 import org.sibadi.auditing.api.model.{toApiError, ApiError, ResponseIdPassword, ReviewerResponse}
 import org.sibadi.auditing.service._
@@ -55,7 +53,10 @@ class ReviewersRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+        reviewerService
+          .updateReviewer(body._2.name, body._2.surName, body._2.middleName, body._1)
+          .leftMap(toApiError)
+          .value
       }
 
 }

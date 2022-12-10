@@ -17,7 +17,7 @@ class KpiGroupRouter[F[_]: Monad](
   topicService: TopicService[F]
 ) {
 
-  def routes = List(adminEditGroups, adminDeleteGropus)
+  def routes = List(adminEditGroups, adminDeleteGroups)
 
   private def adminEditGroups =
     putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
@@ -25,10 +25,14 @@ class KpiGroupRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
+//        groupService
+//          .updateGroup(body._2.groupIds, body._1)
+//          .leftMap(toApiError)
+//          .value
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
-  private def adminDeleteGropus =
+  private def adminDeleteGroups =
     deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
         authenticator

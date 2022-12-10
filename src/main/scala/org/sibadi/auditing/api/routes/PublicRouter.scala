@@ -41,6 +41,10 @@ class PublicRouter[F[_]: Monad](
         authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
+//        estimateService
+//          .createEstimateFiles(body._1, body._2, body._3, file = TapirFile)
+//          .leftMap(toApiError)
+//          .value
         ApiError.InternalError("Not implemented").cast.asLeft[TapirFile].pure[F]
       }
 }

@@ -44,6 +44,11 @@ class TeachersRouter[F[_]: Monad](
         authenticator.isAdmin(bearer).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
+//        teacherService.getAllTeachers
+//          .leftMap(toApiError)
+//          TODO: how to set groupNames?)
+//          .map(_.map(x => TeacherResponse(x.id, x.firstName, x.lastName, x.middleName, groupNames = ???)))
+//          .value
         ApiError.InternalError("Not implemented").cast.asLeft[List[TeacherResponse]].pure[F]
       }
 
@@ -53,7 +58,10 @@ class TeachersRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
+        teacherService
+          .updateTeacher(body._2.name, body._2.surName, body._2.middleName, body._1)
+          .leftMap(toApiError)
+          .value
       }
 
 }
