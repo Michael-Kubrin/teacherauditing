@@ -13,23 +13,19 @@ import org.sibadi.auditing.util.{Filer, TokenGenerator}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import scala.io.StdIn
-
 object Main extends IOApp.Simple {
 
   implicit def logger[F[_]: Sync]: Logger[F] = Slf4jLogger.getLogger
 
   override def run: IO[Unit] =
-    main[IO].use { server =>
-      IO.blocking {
-        println(s"Go to http://${server.address.getHostName}:${server.address.getPort}/docs to open SwaggerUI. Press ENTER key to exit.")
-        StdIn.readLine()
-      }
+    main[IO].use { _ =>
+      IO.never
     }.void
 
   private def main[F[_]: Async]: Resource[F, Server] =
     for {
       cfg        <- Resource.eval(AppConfig.read)
+      _          <- Resource.eval(Logger[F].trace(AppConfig.show.show(cfg)))
       _          <- Resource.eval(Migrations(cfg.database).migrate())
       transactor <- createTransactor(cfg.database)
       // DAOs

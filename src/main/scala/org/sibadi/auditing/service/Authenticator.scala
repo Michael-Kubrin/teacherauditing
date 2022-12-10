@@ -28,7 +28,7 @@ class Authenticator[F[_]: Monad](
     OptionT(reviewerCredentialsDAO.getCredentialsByBearer(token)).map(u => UserType.Reviewer(u.id).cast)
 
   def isAdmin(token: String): OptionT[F, UserType] =
-    OptionT.pure((Admin("")).cast).filter(_ => token === adminConfig.bearer)
+    OptionT.pure(Admin("").cast).filter(_ => token === adminConfig.bearer)
 
 }
 
