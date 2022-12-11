@@ -25,12 +25,13 @@ class KpiGroupRouter[F[_]: Monad](
         authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-//        groupService
-//          .updateGroup(body._2.groupIds, body._1)
-//          .leftMap(toApiError)
-//          .map(_.toString)
-//          .value
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        groupService
+          // Todo: it's not right
+          .updateGroup(body._2.groupIds.toString, body._1)
+          .leftMap(toApiError)
+          .map(_.toString)
+          .value
+//        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
       }
 
   private def adminDeleteGroups =

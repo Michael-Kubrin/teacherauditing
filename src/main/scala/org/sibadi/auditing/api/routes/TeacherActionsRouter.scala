@@ -1,8 +1,8 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
-import cats.syntax.either._
 import cats.syntax.applicative._
+import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
@@ -49,6 +49,9 @@ class TeacherActionsRouter[F[_]: Monad](
         authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
+//        topicService.getTopicKpiByKpiId(body)
+//          .leftMap(toApiError)
+//          .map(_.map(x => GetPublicKpiResponse()))
         ApiError.InternalError("Not implemented").cast.asLeft[GetPublicKpiResponse].pure[F]
       }
 
