@@ -14,14 +14,14 @@ class TopicKpiDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
        """.update.run.void
       .transact(transactor)
 
-  def getByTopicId(topicId: String): F[Option[TopicKpi]] =
+  def getByTopicId(topicId: String): F[List[TopicKpi]] =
     sql"""
        SELECT topicId, kpiId
        FROM topic_kpi
        WHERE topicId = $topicId
        """
       .query[TopicKpi]
-      .option
+      .to[List]
       .transact(transactor)
 
   def getByKpiId(kpiId: String): F[Option[TopicKpi]] =

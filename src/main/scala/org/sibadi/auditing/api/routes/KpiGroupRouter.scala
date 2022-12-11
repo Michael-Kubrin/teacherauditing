@@ -27,7 +27,7 @@ class KpiGroupRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         groupService
           // Todo: it's not right
-          .updateGroup(body._2.groupIds.toString, body._1)
+          .updateGroup(body._1, body._2)
           .leftMap(toApiError)
           .map(_.toString)
           .value

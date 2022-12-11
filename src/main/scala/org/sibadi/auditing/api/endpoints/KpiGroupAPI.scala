@@ -1,12 +1,12 @@
 package org.sibadi.auditing.api.endpoints
 
+import io.circe.generic.auto._
+import org.sibadi.auditing.api.model.ApiError._
 import org.sibadi.auditing.api.model._
-import ApiError._
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.generic.auto.schemaForCaseClass
 import sttp.tapir.json.circe.jsonBody
-import io.circe.generic.auto._
 
 object KpiGroupAPI {
 
@@ -15,12 +15,11 @@ object KpiGroupAPI {
     deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
   )
 
-  def putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, PutTeacherToGroupsRequest), ApiError, String, Any] =
+  def putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
     endpoint.put
       .tag("Kpi-Group API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers" / path[String]("teacherId") / "groups")
-      .in(jsonBody[PutTeacherToGroupsRequest])
+      .in("api" / "admin" / "groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
