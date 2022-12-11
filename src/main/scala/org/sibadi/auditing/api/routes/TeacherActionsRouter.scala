@@ -43,6 +43,7 @@ class TeacherActionsRouter[F[_]: Monad](
           .value
       }
 
+  //TODO: How to put all values of GetPublicKpiResponse?
   private def publicGetKpi =
     getApiPublicTopicsTopicIdKpi
       .serverSecurityLogic { token =>

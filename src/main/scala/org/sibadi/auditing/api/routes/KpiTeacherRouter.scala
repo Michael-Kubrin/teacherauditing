@@ -19,6 +19,7 @@ class KpiTeacherRouter[F[_]: Monad](
 
   def routes = List(adminCreateTeacherId, adminDeleteTeacherId)
 
+  //TODO: How to set up teacherId?
   private def adminCreateTeacherId =
     postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId
       .serverSecurityLogic { token =>

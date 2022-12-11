@@ -3,7 +3,7 @@ package org.sibadi.auditing.api.routes
 import cats.Monad
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.TeachersAPI._
-import org.sibadi.auditing.api.model.{toApiError, ApiError, ResponseIdPassword, TeacherResponse}
+import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, TeacherResponse, toApiError}
 import org.sibadi.auditing.service._
 
 class TeachersRouter[F[_]: Monad](
