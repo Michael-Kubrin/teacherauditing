@@ -5,10 +5,10 @@ import cats.effect.Sync
 import cats.syntax.applicative._
 import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.PublicAPI._
-import org.sibadi.auditing.api.model.{toApiError, ApiError, LoginResponse, PasswordResponse}
+import org.sibadi.auditing.api.model.{ApiError, LoginResponse, PasswordResponse}
 import org.sibadi.auditing.service._
-import sttp.tapir.{Defaults, TapirFile}
 import sttp.tapir.model.ServerRequest
+import sttp.tapir.{Defaults, TapirFile}
 
 class PublicRouter[F[_]: Monad](
   authenticator: Authenticator[F],
@@ -44,12 +44,12 @@ class PublicRouter[F[_]: Monad](
         authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
       }
       .serverLogic { userType => body =>
-        estimateService
-          .createEstimateFiles(body._1, body._2, body._3, defaultCreateFile)
-          .leftMap(toApiError)
-          .map(x => TapirFile)
-          .value
-//        ApiError.InternalError("Not implemented").cast.asLeft[TapirFile].pure[F]
+//        estimateService
+//          .createEstimateFiles(body._1, body._2, body._3, defaultCreateFile)
+//          .leftMap(toApiError)
+//          .map(x => TapirFile)
+//          .value
+        ApiError.InternalError("Not implemented").cast.asLeft[TapirFile].pure[F]
       }
   def defaultCreateFile[F[_]](implicit sync: Sync[F]): ServerRequest => F[TapirFile] = _ => sync.blocking(Defaults.createTempFile())
 
