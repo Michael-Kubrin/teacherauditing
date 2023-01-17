@@ -12,7 +12,7 @@ class TeacherDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Thr
   def createTeacher(teacher: Teacher): F[Unit] =
     sql"""
        INSERT INTO teacher(id, firstName, lastName, middleName, deleteDt)
-       VALUES (${teacher.id}, ${teacher.firstName}, ${teacher.lastName}, ${teacher.middleName}, null);
+       VALUES (${teacher.id}, ${teacher.firstName}, ${teacher.lastName}, ${teacher.middleName}, null)
        """.update.run.void
       .transact(transactor)
 

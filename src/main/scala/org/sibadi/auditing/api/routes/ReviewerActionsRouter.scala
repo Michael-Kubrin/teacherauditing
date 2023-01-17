@@ -1,12 +1,15 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.effect.kernel.Sync
 import org.sibadi.auditing.api.endpoints.ReviewerActionsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.domain.EstimateStatus
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class ReviewerActionsRouter[F[_]: Monad](
+class ReviewerActionsRouter[F[_]: Sync](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -15,6 +18,8 @@ class ReviewerActionsRouter[F[_]: Monad](
   teacherService: TeacherService[F],
   topicService: TopicService[F]
 ) {
+
+  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
 
   def routes = List(adminEditStatus)
 
@@ -32,7 +37,7 @@ class ReviewerActionsRouter[F[_]: Monad](
         }
         estimateService
           .updateEstimate(topicId = body._1, kpiId = body._2, teacherId = body._3, newStatus = domainStatus)
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 

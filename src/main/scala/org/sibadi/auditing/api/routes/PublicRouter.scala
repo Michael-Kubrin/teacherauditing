@@ -1,16 +1,17 @@
 package org.sibadi.auditing.api.routes
 
-import cats.Monad
 import cats.effect.Sync
 import cats.syntax.applicative._
 import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.PublicAPI._
 import org.sibadi.auditing.api.model.{ApiError, LoginResponse, PasswordResponse}
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import sttp.tapir.model.ServerRequest
 import sttp.tapir.{Defaults, TapirFile}
 
-class PublicRouter[F[_]: Monad](
+class PublicRouter[F[_]: Sync](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -19,6 +20,8 @@ class PublicRouter[F[_]: Monad](
   teacherService: TeacherService[F],
   topicService: TopicService[F]
 ) {
+
+  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
 
   def routes = List(createLogin, changePassword, publicUploadFileId)
 
@@ -46,7 +49,7 @@ class PublicRouter[F[_]: Monad](
       .serverLogic { userType => body =>
 //        estimateService
 //          .createEstimateFiles(body._1, body._2, body._3, defaultCreateFile)
-//          .leftMap(toApiError)
+//          .leftSemiflatMap(toApiError[F])
 //          .map(x => TapirFile)
 //          .value
         ApiError.InternalError("Not implemented").cast.asLeft[TapirFile].pure[F]

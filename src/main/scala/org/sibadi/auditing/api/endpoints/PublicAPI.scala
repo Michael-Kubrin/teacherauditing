@@ -56,10 +56,10 @@ object PublicAPI {
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files" / path[String]("fileId"))
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(sttp.model.StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(sttp.model.StatusCode.Unauthorized).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(sttp.model.StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(sttp.model.StatusCode.InternalServerError).and(jsonBody[NotFound].description("Server down")))
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
       .out(fileBody)

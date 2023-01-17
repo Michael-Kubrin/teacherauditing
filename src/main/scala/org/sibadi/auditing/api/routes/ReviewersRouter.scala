@@ -1,11 +1,14 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.effect.Sync
 import org.sibadi.auditing.api.endpoints.ReviewersAPI._
-import org.sibadi.auditing.api.model.{toApiError, ApiError, ResponseIdPassword, ReviewerResponse}
+import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, ReviewerResponse, toApiError}
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class ReviewersRouter[F[_]: Monad](
+class ReviewersRouter[F[_]: Sync](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -14,6 +17,8 @@ class ReviewersRouter[F[_]: Monad](
   teacherService: TeacherService[F],
   topicService: TopicService[F]
 ) {
+
+  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
 
   def routes = List(adminCreateReviewers, adminGetReviewers, adminEditReviewers)
 
@@ -30,7 +35,7 @@ class ReviewersRouter[F[_]: Monad](
             middleName = body.middleName,
             login = body.login
           )
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .map(reviewer => ResponseIdPassword(id = reviewer.id, password = reviewer.password))
           .value
       }
@@ -43,7 +48,7 @@ class ReviewersRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         reviewerService.getAllReviewers
           .map(_.map(reviewer => ReviewerResponse(reviewer.id, reviewer.firstName, reviewer.lastName, reviewer.middleName)))
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 
@@ -55,7 +60,7 @@ class ReviewersRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         reviewerService
           .updateReviewer(body._2.name, body._2.surName, body._2.middleName, body._1)
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 

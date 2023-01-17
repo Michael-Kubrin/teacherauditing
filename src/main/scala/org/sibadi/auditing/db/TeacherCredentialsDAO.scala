@@ -10,7 +10,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
   def insertCredentials(credentials: TeacherCredentials): F[Unit] =
     sql"""
        INSERT INTO teacher_credentials (id, login, passwordHash, bearer)
-       VALUES (${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer}
+       VALUES (${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer})
        """.update.run.void
       .transact(transactor)
 

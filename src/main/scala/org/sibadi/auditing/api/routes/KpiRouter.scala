@@ -1,13 +1,16 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.effect.Sync
 import cats.syntax.applicative._
 import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.KpiAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class KpiRouter[F[_]: Monad](
+class KpiRouter[F[_]: Sync](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -16,6 +19,8 @@ class KpiRouter[F[_]: Monad](
   teacherService: TeacherService[F],
   topicService: TopicService[F]
 ) {
+
+  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
 
   def routes = List(
     adminCreateTopicKpi,
@@ -36,7 +41,7 @@ class KpiRouter[F[_]: Monad](
           .map { id =>
             ResponseId(id.toString)
           }
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 
@@ -48,8 +53,8 @@ class KpiRouter[F[_]: Monad](
       }
       .serverLogic { userType => body =>
         kpiService.getAllKpi
-          .leftMap(toApiError)
-          .map(_.map(x => TopicKpiResponse(x.id, x.title)).toList)
+          .leftSemiflatMap(toApiError[F])
+          .map(_.map(x => TopicKpiResponse(x.id, x.title)))
           .value
       }
 
@@ -61,7 +66,7 @@ class KpiRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         kpiService
           .updateKpi(body._1, body._2)
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 

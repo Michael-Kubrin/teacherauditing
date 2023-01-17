@@ -25,7 +25,8 @@ class AppRouter[F[_]: Async](
 
   private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](AppEndpoints.allEndpoints, "aboba", "1.0.0")
 
-  def httpRoutes: HttpRoutes[F] = Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes :+ docAsYamlRoute)
+  def httpRoutes: HttpRoutes[F] =
+    Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes :+ docAsYamlRoute)
 
   def docAsYamlRoute =
     YamlDocAPI.yamlDocAPIEndpoint

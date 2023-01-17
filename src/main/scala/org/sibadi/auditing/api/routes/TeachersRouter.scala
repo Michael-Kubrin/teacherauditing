@@ -1,12 +1,15 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.effect.Sync
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.TeachersAPI._
 import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, TeacherResponse, toApiError}
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class TeachersRouter[F[_]: Monad](
+class TeachersRouter[F[_]: Sync](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -16,12 +19,14 @@ class TeachersRouter[F[_]: Monad](
   topicService: TopicService[F]
 ) {
 
+  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
+
   def routes = List(adminCreateTeacher, adminGetTeachers, adminEditTeacher)
 
   private def adminCreateTeacher =
     postApiAdminTeachers
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized(s"Unauthorized by token: $token").cast).value
       }
       .serverLogic { userType => body =>
         teacherService
@@ -34,7 +39,7 @@ class TeachersRouter[F[_]: Monad](
           .map { createdTeacher =>
             ResponseIdPassword(createdTeacher.id, createdTeacher.password)
           }
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 
@@ -45,7 +50,7 @@ class TeachersRouter[F[_]: Monad](
       }
       .serverLogic { userType => body =>
 //        teacherService.getAllTeachers
-//          .leftMap(toApiError)
+//          .leftSemiflatMap(toApiError[F])
 //          TODO: how to set groupNames?)
 //          .map(_.map(x => TeacherResponse(x.id, x.firstName, x.lastName, x.middleName, groupNames = ???)))
 //          .value
@@ -60,7 +65,7 @@ class TeachersRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         teacherService
           .updateTeacher(body._2.name, body._2.surName, body._2.middleName, body._1)
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .value
       }
 

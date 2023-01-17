@@ -1,7 +1,9 @@
 package org.sibadi.auditing.api
 
+import cats.Functor
 import io.circe.{Decoder, Encoder}
 import org.sibadi.auditing.domain.errors.AppError
+import org.typelevel.log4cats.Logger
 // import io.circe.generic.auto.{exportDecoder, exportEncoder}
 
 package object model {
@@ -83,9 +85,43 @@ package object model {
     implicit val enumEncoder: Encoder[ReviewStatus.ReviewStatus] = Encoder.encodeEnumeration(ReviewStatus)
   }
 
-  def toApiError(appError: AppError): ApiError =
+  def toApiError[F[_]: Logger : Functor](appError: AppError): F[ApiError] =
     appError match {
-      case t => ApiError.NotFound(t.toString)
+      case AppError.Unexpected(t) => 
+        Functor[F].map(Logger[F].error(t)("Unexpected error"))(_ => ApiError.InternalError(s"Unexpected error: ${t.getMessage}"))
+
+      case AppError.TeacherDoesNotExists(teacherId) =>
+        Functor[F].map(Logger[F].error(s"Teacher not found by id $teacherId"))(_ => ApiError.NotFound("Teacher not found"))
+
+      case AppError.GroupDoesNotExists(groupId) => 
+        Functor[F].map(Logger[F].error(s"Group not found by id $groupId"))(_ => ApiError.NotFound("Group not found"))
+
+      case AppError.KpiDoesNotExists(id) => 
+        Functor[F].map(Logger[F].error(s"KPI not found by id $id"))(_ => ApiError.NotFound("KPI not found"))
+
+      case AppError.ReviewerDoesNotExists(id) => 
+        Functor[F].map(Logger[F].error(s"Reviewer not found by id $id"))(_ => ApiError.NotFound("Reviewer not found"))
+
+      case AppError.TopicDoesNotExists(t) => 
+        Functor[F].map(Logger[F].error(t)("Topic doesn't exists"))(_ => ApiError.NotFound("Topic doesn't exists"))
+
+      case AppError.TopicKPIDoesNotExists(t) => 
+        Functor[F].map(Logger[F].error("Topic doesn't linked to KPI"))(_ => ApiError.NotFound("TopicKPIDoesNotExists"))
+
+      case AppError.GroupByIdDoesNotExists(t) => 
+        Functor[F].map(Logger[F].error(""))(_ => ApiError.NotFound("GroupByIdDoesNotExists"))
+
+      case AppError.EstimateDoesNotExists(topicId, kpiId, teacherId) => 
+        Functor[F].map(Logger[F].error(s"EstimateDoesNotExists topicId $topicId kpiId $kpiId teacherId $teacherId"))(_ => ApiError.NotFound("EstimateDoesNotExists"))
+
+      case AppError.KpiByIdDoesNotExists(t) => 
+        Functor[F].map(Logger[F].error(t)("KpiByIdDoesNotExists"))(_ => ApiError.NotFound("KpiByIdDoesNotExists"))
+
+      case AppError.TeacherByIdDoesNotExists(t) => 
+        Functor[F].map(Logger[F].error(t)("TeacherByIdDoesNotExists"))(_ => ApiError.NotFound("Teacher not found"))
+
+      case AppError.TeacherWithoutGroup(teacherId) => 
+        Functor[F].map(Logger[F].error(s"Group not found for teacher $teacherId"))(_ => ApiError.NotFound("Teacher without group"))
     }
 
 }

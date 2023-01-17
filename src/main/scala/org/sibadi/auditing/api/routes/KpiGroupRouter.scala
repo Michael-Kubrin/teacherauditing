@@ -1,13 +1,15 @@
 package org.sibadi.auditing.api.routes
 
-import cats.Monad
+import cats.effect.Sync
 import cats.syntax.applicative._
 import cats.syntax.either._
 import org.sibadi.auditing.api.endpoints.KpiGroupAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class KpiGroupRouter[F[_]: Monad](
+class KpiGroupRouter[F[_]: Sync](
   authenticator: Authenticator[F],
   estimateService: EstimateService[F],
   groupService: GroupService[F],
@@ -16,6 +18,8 @@ class KpiGroupRouter[F[_]: Monad](
   teacherService: TeacherService[F],
   topicService: TopicService[F]
 ) {
+
+  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
 
   def routes = List(adminEditGroups, adminDeleteGroups)
 
@@ -27,7 +31,7 @@ class KpiGroupRouter[F[_]: Monad](
       .serverLogic { userType => body =>
         groupService
           .updateGroup(body._1, body._2)
-          .leftMap(toApiError)
+          .leftSemiflatMap(toApiError[F])
           .map(_.toString)
           .value
       }
