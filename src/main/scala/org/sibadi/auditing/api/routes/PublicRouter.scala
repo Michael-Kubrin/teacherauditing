@@ -1,8 +1,7 @@
 package org.sibadi.auditing.api.routes
 
 import cats.effect.Sync
-import cats.syntax.applicative._
-import cats.syntax.either._
+import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.PublicAPI._
 import org.sibadi.auditing.api.model.{ApiError, LoginResponse, PasswordResponse}
 import org.sibadi.auditing.service._
@@ -35,7 +34,7 @@ class PublicRouter[F[_]: Sync](
   private def changePassword =
     editPassword
       .serverSecurityLogic { token =>
-        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]
@@ -44,14 +43,14 @@ class PublicRouter[F[_]: Sync](
   private def publicUploadFileId =
     postApiPublicTopicsTopicIdKpiKpiIdFilesFileId
       .serverSecurityLogic { token =>
-        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
 //        estimateService
 //          .createEstimateFiles(body._1, body._2, body._3, defaultCreateFile)
 //          .leftSemiflatMap(toApiError[F])
 //          .map(x => TapirFile)
-//          .value
+//          .value.handleErrorWith(throwableToUnexpected[F, Unit])
         ApiError.InternalError("Not implemented").cast.asLeft[TapirFile].pure[F]
       }
   def defaultCreateFile[F[_]](implicit sync: Sync[F]): ServerRequest => F[TapirFile] = _ => sync.blocking(Defaults.createTempFile())

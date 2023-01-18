@@ -1,6 +1,7 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.syntax.all._
 import cats.effect.Sync
 import org.sibadi.auditing.api.endpoints.GroupsAPI._
 import org.sibadi.auditing.api.model._
@@ -25,25 +26,25 @@ class GroupsRouter[F[_]: Sync](
   private def adminCreateGroups =
     postApiAdminGroups
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         groupService
           .createGroup(title = body.name)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
   private def adminGetGroups =
     getApiAdminGroups
       .serverSecurityLogic { token =>
-        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         groupService.getAllGroups
           .leftSemiflatMap(toApiError[F])
           .map(_.map(group => GroupResponseItemDto(group.id, group.title)))
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, List[GroupResponseItemDto]])
       }
 
 }

@@ -1,6 +1,7 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.syntax.all._
 import cats.effect.kernel.Sync
 import org.sibadi.auditing.api.endpoints.ReviewerActionsAPI._
 import org.sibadi.auditing.api.model._
@@ -26,7 +27,7 @@ class ReviewerActionsRouter[F[_]: Sync](
   private def adminEditStatus =
     putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
       .serverSecurityLogic { token =>
-        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         val domainStatus = body._4.newstatus match {
@@ -38,7 +39,7 @@ class ReviewerActionsRouter[F[_]: Sync](
         estimateService
           .updateEstimate(topicId = body._1, kpiId = body._2, teacherId = body._3, newStatus = domainStatus)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }

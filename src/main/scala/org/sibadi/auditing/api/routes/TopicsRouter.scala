@@ -2,8 +2,7 @@ package org.sibadi.auditing.api.routes
 
 import cats.Monad
 import cats.effect.Sync
-import cats.syntax.applicative._
-import cats.syntax.either._
+import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.TopicsAPI._
 import org.sibadi.auditing.api.model.{ApiError, TopicItemResponseDto, toApiError}
 import org.sibadi.auditing.service._
@@ -27,32 +26,32 @@ class TopicsRouter[F[_]: Sync](
   private def adminCreateTopic =
     postApiAdminTopics
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { admin => body =>
         val topics = body.topics.map(dto => (dto.title, dto.kpis.map(_.title).toSet)).toMap
         topicService
           .createTopics(topics)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
   private def adminGetTopic =
     getApiAdminTopics
       .serverSecurityLogic { token =>
-        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         topicService.getAllTopics
           .leftSemiflatMap(toApiError[F])
           .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty)))
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicItemResponseDto]])
       }
 
   private def adminDeleteTopic =
     deleteApiAdminTopics
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[Unit].pure[F]
@@ -61,13 +60,13 @@ class TopicsRouter[F[_]: Sync](
   private def adminEditTopicsById =
     putApiAdminTopicsTopicId
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         topicService
           .updateTopic(body._1, body._2.name)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }

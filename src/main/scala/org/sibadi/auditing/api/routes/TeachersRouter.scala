@@ -26,7 +26,9 @@ class TeachersRouter[F[_]: Sync](
   private def adminCreateTeacher =
     postApiAdminTeachers
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized(s"Unauthorized by token: $token").cast).value
+        authenticator.isAdmin(token)
+          .toRight(ApiError.Unauthorized(s"Unauthorized by token: $token").cast)
+          .value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         teacherService
@@ -40,33 +42,33 @@ class TeachersRouter[F[_]: Sync](
             ResponseIdPassword(createdTeacher.id, createdTeacher.password)
           }
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, ResponseIdPassword])
       }
 
   private def adminGetTeachers =
     getApiAdminTeachers
       .serverSecurityLogic { bearer =>
-        authenticator.isAdmin(bearer).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(bearer).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
 //        teacherService.getAllTeachers
 //          .leftSemiflatMap(toApiError[F])
 //          TODO: how to set groupNames?)
 //          .map(_.map(x => TeacherResponse(x.id, x.firstName, x.lastName, x.middleName, groupNames = ???)))
-//          .value
+//          .value.handleErrorWith(throwableToUnexpected[F, Unit])
         ApiError.InternalError("Not implemented").cast.asLeft[List[TeacherResponse]].pure[F]
       }
 
   private def adminEditTeacher =
     putApiAdminTeachers
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         teacherService
           .updateTeacher(body._2.name, body._2.surName, body._2.middleName, body._1)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }

@@ -2,8 +2,7 @@ package org.sibadi.auditing.api.routes
 
 import cats.Monad
 import cats.effect.Sync
-import cats.syntax.applicative._
-import cats.syntax.either._
+import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.TeacherActionsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
@@ -27,32 +26,32 @@ class TeacherActionsRouter[F[_]: Sync](
   private def publicEstimate =
     postApiPublicTopicsTopicIdKpiKpiIdEstimate
       .serverSecurityLogic { token =>
-        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         estimateService
           .createEstimate(topicId = body._1, kpiId = body._2, teacherId = userType.id, score = body._3.score)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
   def publicUploadFile =
     postApiPublicTopicsTopicIdKpiKpiIdFiles
       .serverSecurityLogic { token =>
-        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         estimateService
           .createEstimateFiles(topicId = body._1, kpiId = body._2, userType.id, body._3)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
   //TODO: How to put all values of GetPublicKpiResponse?
   private def publicGetKpi =
     getApiPublicTopicsTopicIdKpi
       .serverSecurityLogic { token =>
-        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
 //        topicService.getTopicKpiByKpiId(body)
@@ -64,13 +63,13 @@ class TeacherActionsRouter[F[_]: Sync](
   private def publicGetTopics =
     getApiPublicTopics
       .serverSecurityLogic { token =>
-        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         topicService.getAllTopics
           .leftSemiflatMap(toApiError[F])
           .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty))) // TODO
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicItemResponseDto]])
       }
 
 }

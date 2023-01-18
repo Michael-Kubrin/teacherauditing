@@ -1,8 +1,7 @@
 package org.sibadi.auditing.api.routes
 
 import cats.effect.Sync
-import cats.syntax.applicative._
-import cats.syntax.either._
+import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.KpiGroupAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
@@ -26,14 +25,14 @@ class KpiGroupRouter[F[_]: Sync](
   private def adminEditGroups =
     putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         groupService
           .updateGroup(body._1, body._2)
           .leftSemiflatMap(toApiError[F])
           .map(_.toString)
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, String])
       }
 
   private def adminDeleteGroups =
@@ -42,7 +41,7 @@ class KpiGroupRouter[F[_]: Sync](
         authenticator
           .isAdmin(token)
           .toRight(ApiError.Unauthorized("Unauthorized").cast)
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]

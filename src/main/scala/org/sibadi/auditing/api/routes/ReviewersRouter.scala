@@ -1,6 +1,7 @@
 package org.sibadi.auditing.api.routes
 
 import cats.Monad
+import cats.syntax.all._
 import cats.effect.Sync
 import org.sibadi.auditing.api.endpoints.ReviewersAPI._
 import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, ReviewerResponse, toApiError}
@@ -25,7 +26,7 @@ class ReviewersRouter[F[_]: Sync](
   private def adminCreateReviewers =
     postApiAdminReviewers
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         reviewerService
@@ -37,31 +38,31 @@ class ReviewersRouter[F[_]: Sync](
           )
           .leftSemiflatMap(toApiError[F])
           .map(reviewer => ResponseIdPassword(id = reviewer.id, password = reviewer.password))
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, ResponseIdPassword])
       }
 
   private def adminGetReviewers =
     getApiAdminReviewers
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         reviewerService.getAllReviewers
           .map(_.map(reviewer => ReviewerResponse(reviewer.id, reviewer.firstName, reviewer.lastName, reviewer.middleName)))
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.ReviewerResponse]])
       }
 
   private def adminEditReviewers =
     putApiAdminReviewersId
       .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value
+        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         reviewerService
           .updateReviewer(body._2.name, body._2.surName, body._2.middleName, body._1)
           .leftSemiflatMap(toApiError[F])
-          .value
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }
