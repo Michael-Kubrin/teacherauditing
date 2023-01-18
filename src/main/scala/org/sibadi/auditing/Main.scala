@@ -108,6 +108,7 @@ object Main extends IOApp.Simple {
         topicsRouter
       )
       server <- server[F](cfg.server, router.httpRoutes)
+      _      <- Resource.eval(Logger[F].info(s"Server started at ${cfg.server.host}:${cfg.server.port}"))
     } yield server
 
   private def createTransactor[F[_]: Async](cfg: DatabaseConfig): Resource[F, Transactor[F]] =
