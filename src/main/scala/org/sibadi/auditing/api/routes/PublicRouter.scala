@@ -24,11 +24,14 @@ class PublicRouter[F[_]: Sync](
 
   def routes = List(createLogin, changePassword, publicUploadFileId)
 
-  //TODO: How to set up login?
   private def createLogin =
     postLogin
-      .serverLogic { userType =>
-        ApiError.InternalError("Not implemented").cast.asLeft[LoginResponse].pure[F]
+      .serverLogic { credentials =>
+        authenticator.authenticate(credentials.login, credentials.password)
+          .map(LoginResponse)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, LoginResponse])
       }
 
   private def changePassword =

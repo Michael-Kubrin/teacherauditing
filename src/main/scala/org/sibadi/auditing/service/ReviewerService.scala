@@ -3,19 +3,19 @@ package org.sibadi.auditing.service
 import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
-import com.roundeights.hasher.Implicits._
 import org.sibadi.auditing.db
 import org.sibadi.auditing.db.{Reviewer, ReviewerCredentialsDAO, ReviewerDAO}
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
-import org.sibadi.auditing.util.{PasswordGenerator, TokenGenerator}
+import org.sibadi.auditing.util.{HashGenerator, PasswordGenerator, TokenGenerator}
 
 import java.util.UUID
 
 class ReviewerService[F[_]](
   tokenGenerator: TokenGenerator[F],
   reviewerDAO: ReviewerDAO[F],
-  reviewerCredsDAO: ReviewerCredentialsDAO[F]
+  reviewerCredsDAO: ReviewerCredentialsDAO[F],
+  hashGenerator: HashGenerator[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
   def createReviewer(
@@ -33,7 +33,7 @@ class ReviewerService[F[_]](
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
       password = PasswordGenerator.randomPassword(10)
-      hash     = password.bcrypt.hex
+      hash   <- EitherT.liftF(hashGenerator.hashPassword(password))
       bearer <- EitherT.liftF(tokenGenerator.generate)
       _      <- EitherT.liftF(reviewerCredsDAO.insertCredentials(db.ReviewerCredentials(id, login, hash, bearer)))
     } yield CreatedReviewer(id = id, password = password)
@@ -71,8 +71,9 @@ class ReviewerService[F[_]](
 }
 
 object ReviewerService {
-  def apply[F[_]](tokenGenerator: TokenGenerator[F], reviewerDAO: ReviewerDAO[F], reviewerCredsDAO: ReviewerCredentialsDAO[F])(implicit
+  def apply[F[_]](tokenGenerator: TokenGenerator[F], reviewerDAO: ReviewerDAO[F], reviewerCredsDAO: ReviewerCredentialsDAO[F],
+                  hashGenerator: HashGenerator[F])(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, ReviewerService[F]] =
-    Resource.pure(new ReviewerService(tokenGenerator, reviewerDAO, reviewerCredsDAO))
+    Resource.pure(new ReviewerService(tokenGenerator, reviewerDAO, reviewerCredsDAO, hashGenerator))
 }

@@ -40,4 +40,14 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
       .option
       .transact(transactor)
 
+  def getByLoginAndPassword(login: String): F[Option[ReviewerCredentials]] =
+    sql"""
+       SELECT id, login, passwordHash, bearer
+       FROM reviewer_credentials
+       WHERE login = $login
+       """
+      .query[ReviewerCredentials]
+      .option
+      .transact(transactor)
+
 }

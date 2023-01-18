@@ -3,12 +3,11 @@ package org.sibadi.auditing.service
 import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
-import com.roundeights.hasher.Implicits._
 import org.sibadi.auditing.db
 import org.sibadi.auditing.db._
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
-import org.sibadi.auditing.util.{PasswordGenerator, TokenGenerator}
+import org.sibadi.auditing.util.{HashGenerator, PasswordGenerator, TokenGenerator}
 
 import java.util.UUID
 
@@ -16,7 +15,8 @@ class TeacherService[F[_]](
   tokenGenerator: TokenGenerator[F],
   teacherDAO: TeacherDAO[F],
   teacherCredsDAO: TeacherCredentialsDAO[F],
-  teacherGroupDAO: TeacherGroupDAO[F]
+  teacherGroupDAO: TeacherGroupDAO[F],
+  hashGenerator: HashGenerator[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
   def createTeacher(
@@ -34,7 +34,7 @@ class TeacherService[F[_]](
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
       password = PasswordGenerator.randomPassword(10)
-      hash     = password.bcrypt.hex
+      hash     <- EitherT.liftF(hashGenerator.hashPassword(password))
       bearer <- EitherT.liftF(tokenGenerator.generate)
       _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(teacherId, login, hash, bearer)))
     } yield CreatedTeacher(id = teacherId, password = password)
@@ -106,9 +106,10 @@ object TeacherService {
     tokenGenerator: TokenGenerator[F],
     teacherDAO: TeacherDAO[F],
     teacherCredsDAO: TeacherCredentialsDAO[F],
-    teacherGroupDAO: TeacherGroupDAO[F]
+    teacherGroupDAO: TeacherGroupDAO[F],
+    hashGenerator: HashGenerator[F]
   )(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, TeacherService[F]] =
-    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, teacherGroupDAO))
+    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, teacherGroupDAO, hashGenerator))
 }
