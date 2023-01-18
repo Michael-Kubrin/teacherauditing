@@ -1,8 +1,7 @@
 package org.sibadi.auditing.api.routes
 
-import cats.Monad
-import cats.syntax.all._
 import cats.effect.Sync
+import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.GroupsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._

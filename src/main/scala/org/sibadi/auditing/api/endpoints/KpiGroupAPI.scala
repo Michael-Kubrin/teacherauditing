@@ -1,6 +1,5 @@
 package org.sibadi.auditing.api.endpoints
 
-import io.circe.generic.auto._
 import org.sibadi.auditing.api.model.ApiError._
 import org.sibadi.auditing.api.model._
 import sttp.model.StatusCode

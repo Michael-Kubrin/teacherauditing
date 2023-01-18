@@ -6,7 +6,7 @@ lazy val root = (project in file("."))
     name         := "teacherauditing",
     version      := "0.0.1",
     scalacOptions ++= Seq(
-      //"-Xfatal-warnings",
+      "-Xfatal-warnings",
       "-Wunused:imports,privates,locals,patvars",
       "-Wconf:src=src_managed/.*:silent",
       "-Wdead-code",

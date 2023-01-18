@@ -1,10 +1,10 @@
 package org.sibadi.auditing.util
 
 import cats.data.EitherT
-import cats.syntax.applicativeError._
-import cats.syntax.functor._
-import cats.syntax.either._
 import cats.effect.{Resource, Sync}
+import cats.syntax.applicativeError._
+import cats.syntax.either._
+import cats.syntax.functor._
 import org.sibadi.auditing.domain.errors.AppError
 
 import java.io.{File, FileInputStream, FileOutputStream}

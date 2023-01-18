@@ -5,7 +5,7 @@ import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import com.roundeights.hasher.Implicits._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{Teacher, TeacherCredentialsDAO, TeacherDAO, TeacherGroup, TeacherGroupDAO}
+import org.sibadi.auditing.db._
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.util.{PasswordGenerator, TokenGenerator}

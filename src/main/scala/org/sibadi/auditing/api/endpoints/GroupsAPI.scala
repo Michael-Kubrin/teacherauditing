@@ -1,12 +1,12 @@
 package org.sibadi.auditing.api.endpoints
 
+import io.circe.generic.auto._
+import org.sibadi.auditing.api.model.ApiError._
 import org.sibadi.auditing.api.model._
-import ApiError._
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.generic.auto.schemaForCaseClass
 import sttp.tapir.json.circe.jsonBody
-import io.circe.generic.auto._
 
 object GroupsAPI {
 

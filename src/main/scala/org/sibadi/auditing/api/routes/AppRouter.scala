@@ -4,11 +4,11 @@ import cats.effect.{Async, Resource, Sync}
 import org.http4s.HttpRoutes
 import org.sibadi.auditing.api.endpoints.{AppEndpoints, YamlDocAPI}
 import sttp.apispec.openapi.OpenAPI
+import sttp.apispec.openapi.circe.yaml._
 import sttp.tapir.docs.openapi.OpenAPIDocsInterpreter
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
-import sttp.apispec.openapi.circe.yaml._
 
 class AppRouter[F[_]: Async](
   groupsRouter: GroupsRouter[F],

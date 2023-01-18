@@ -1,8 +1,7 @@
 package org.sibadi.auditing.api.routes
 
-import cats.Monad
-import cats.syntax.all._
 import cats.effect.kernel.Sync
+import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.ReviewerActionsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.domain.EstimateStatus

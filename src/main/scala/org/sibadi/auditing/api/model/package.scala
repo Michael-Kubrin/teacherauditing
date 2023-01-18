@@ -105,11 +105,11 @@ package object model {
       case AppError.TopicDoesNotExists(t) => 
         Functor[F].map(Logger[F].error(t)("Topic doesn't exists"))(_ => ApiError.NotFound("Topic doesn't exists"))
 
-      case AppError.TopicKPIDoesNotExists(t) => 
-        Functor[F].map(Logger[F].error("Topic doesn't linked to KPI"))(_ => ApiError.NotFound("TopicKPIDoesNotExists"))
+      case AppError.TopicKPIDoesNotExists(t) =>
+        Functor[F].map(Logger[F].error(t)("Topic doesn't linked to KPI"))(_ => ApiError.NotFound("TopicKPIDoesNotExists"))
 
-      case AppError.GroupByIdDoesNotExists(t) => 
-        Functor[F].map(Logger[F].error(""))(_ => ApiError.NotFound("GroupByIdDoesNotExists"))
+      case AppError.GroupByIdDoesNotExists(t) =>
+        Functor[F].map(Logger[F].error(t)(""))(_ => ApiError.NotFound("GroupByIdDoesNotExists"))
 
       case AppError.EstimateDoesNotExists(topicId, kpiId, teacherId) => 
         Functor[F].map(Logger[F].error(s"EstimateDoesNotExists topicId $topicId kpiId $kpiId teacherId $teacherId"))(_ => ApiError.NotFound("EstimateDoesNotExists"))

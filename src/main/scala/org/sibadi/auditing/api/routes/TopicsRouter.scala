@@ -1,13 +1,12 @@
 package org.sibadi.auditing.api.routes
 
-import cats.Monad
 import cats.effect.Sync
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.TopicsAPI._
 import org.sibadi.auditing.api.model.{ApiError, TopicItemResponseDto, toApiError}
 import org.sibadi.auditing.service._
+import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 
 class TopicsRouter[F[_]: Sync](
   authenticator: Authenticator[F],

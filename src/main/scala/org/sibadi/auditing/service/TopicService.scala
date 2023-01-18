@@ -4,7 +4,7 @@ import cats.data.EitherT
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{KpiDAO, Topic, TopicDAO, TopicKpi, TopicKpiDAO}
+import org.sibadi.auditing.db._
 import org.sibadi.auditing.domain.errors.AppError
 
 import java.util.UUID
