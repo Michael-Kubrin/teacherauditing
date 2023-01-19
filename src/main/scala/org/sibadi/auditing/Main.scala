@@ -45,13 +45,13 @@ object Main extends IOApp.Simple {
       filer          = new Filer[F]
       tokenGenerator = TokenGenerator()
       hashGenerator  = new HashGenerator()
-      authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, hashGenerator)
+      authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
       estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
       groupService    <- GroupService[F](group)
       kpiService      <- KpiService[F](kpi, kpiGroup)
-      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, reviewerCredentials, hashGenerator)
-      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, teacherGroup, hashGenerator)
+      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
+      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, hashGenerator)
       topicService    <- TopicService[F](topic, kpi, topicKpi)
       // Router
       groupsRouter   = new GroupsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)

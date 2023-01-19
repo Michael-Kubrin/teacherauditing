@@ -30,4 +30,6 @@ object AppError {
 
   final case class TeacherWithoutGroup(teacherId: String) extends AppError
 
+  final case class LoginExists(login: String) extends AppError
+
 }

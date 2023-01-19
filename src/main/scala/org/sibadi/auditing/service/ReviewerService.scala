@@ -1,10 +1,10 @@
 package org.sibadi.auditing.service
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{Reviewer, ReviewerCredentialsDAO, ReviewerDAO}
+import org.sibadi.auditing.db.{Reviewer, ReviewerCredentialsDAO, ReviewerDAO, TeacherCredentialsDAO}
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.util.{HashGenerator, PasswordGenerator, TokenGenerator}
@@ -14,6 +14,7 @@ import java.util.UUID
 class ReviewerService[F[_]](
   tokenGenerator: TokenGenerator[F],
   reviewerDAO: ReviewerDAO[F],
+  teacherCredsDAO: TeacherCredentialsDAO[F],
   reviewerCredsDAO: ReviewerCredentialsDAO[F],
   hashGenerator: HashGenerator[F]
 )(implicit M: MonadCancel[F, Throwable]) {
@@ -25,6 +26,8 @@ class ReviewerService[F[_]](
     login: String
   ): EitherT[F, AppError, CreatedReviewer] =
     for {
+      isLoginExists <- EitherT.liftF(isLoginExists(login))
+      _             <- EitherT.cond(!isLoginExists, (), AppError.LoginExists(login))
       id <- EitherT.pure(UUID.randomUUID().toString)
       _ <- EitherT(
         reviewerDAO
@@ -37,6 +40,11 @@ class ReviewerService[F[_]](
       bearer <- EitherT.liftF(tokenGenerator.generate)
       _      <- EitherT.liftF(reviewerCredsDAO.insertCredentials(db.ReviewerCredentials(id, login, hash, bearer)))
     } yield CreatedReviewer(id = id, password = password)
+
+
+  private def isLoginExists(login: String): F[Boolean] =
+    OptionT(teacherCredsDAO.getByLogin(login)).map(_ => true).orElse(OptionT(reviewerCredsDAO.getByLogin(login)).map(_ => true))
+      .getOrElse(false)
 
   def updateReviewer(
     firstName: String,
@@ -71,9 +79,10 @@ class ReviewerService[F[_]](
 }
 
 object ReviewerService {
-  def apply[F[_]](tokenGenerator: TokenGenerator[F], reviewerDAO: ReviewerDAO[F], reviewerCredsDAO: ReviewerCredentialsDAO[F],
+  def apply[F[_]](tokenGenerator: TokenGenerator[F], reviewerDAO: ReviewerDAO[F],
+                  teacherCredsDAO: TeacherCredentialsDAO[F], reviewerCredsDAO: ReviewerCredentialsDAO[F],
                   hashGenerator: HashGenerator[F])(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, ReviewerService[F]] =
-    Resource.pure(new ReviewerService(tokenGenerator, reviewerDAO, reviewerCredsDAO, hashGenerator))
+    Resource.pure(new ReviewerService(tokenGenerator, reviewerDAO, teacherCredsDAO, reviewerCredsDAO, hashGenerator))
 }

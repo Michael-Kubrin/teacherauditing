@@ -122,6 +122,10 @@ package object model {
 
       case AppError.TeacherWithoutGroup(teacherId) => 
         Functor[F].map(Logger[F].error(s"Group not found for teacher $teacherId"))(_ => ApiError.NotFound("Teacher without group"))
+
+      case AppError.LoginExists(login) =>
+        Functor[F].map(Logger[F].warn(s"Trying to register user but user with login `$login` already exists"))(_ => ApiError.BadRequest(s"User with login `$login` already exists"))
+
     }
 
 }

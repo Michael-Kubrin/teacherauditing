@@ -42,7 +42,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
       .option
       .transact(transactor)
 
-  def getByLoginAndPassword(login: String): F[Option[TeacherCredentials]] =
+  def getByLogin(login: String): F[Option[TeacherCredentials]] =
     sql"""
        SELECT id, login, passwordHash, bearer
        FROM teacher_credentials

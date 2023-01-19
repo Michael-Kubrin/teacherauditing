@@ -5,18 +5,20 @@ import cats.effect.Resource
 import cats.syntax.eq._
 import cats.syntax.functor._
 import cats.syntax.option._
+import cats.syntax.flatMap._
 import cats.{Eq, Monad}
 import org.sibadi.auditing.configs.AdminConfig
 import org.sibadi.auditing.db.{ReviewerCredentialsDAO, TeacherCredentialsDAO}
 import org.sibadi.auditing.service.Authenticator.UserType
 import org.sibadi.auditing.service.Authenticator.UserType.Admin
-import org.sibadi.auditing.util.HashGenerator
+import org.sibadi.auditing.util.{HashGenerator, TokenGenerator}
 import org.typelevel.log4cats.Logger
 
 class Authenticator[F[_]: Monad](
   teacherCredentialsDAO: TeacherCredentialsDAO[F],
   reviewerCredentialsDAO: ReviewerCredentialsDAO[F],
   adminConfig: AdminConfig,
+  tokenGenerator: TokenGenerator[F],
   hashGen: HashGenerator[F]
 ) {
 
@@ -29,25 +31,51 @@ class Authenticator[F[_]: Monad](
   def isTeacher(token: String): OptionT[F, UserType] =
     OptionT(teacherCredentialsDAO.getCredentialsByBearer(token)).map(u => UserType.Teacher(u.id).cast)
 
-  def isReviewer(token: String): OptionT[F, UserType] =
+  private def isReviewer(token: String): OptionT[F, UserType] =
     OptionT(reviewerCredentialsDAO.getCredentialsByBearer(token)).map(u => UserType.Reviewer(u.id).cast)
 
   def isAdmin(token: String): OptionT[F, UserType] =
     OptionT.pure(Admin("").cast).filter(_ => token === adminConfig.bearer)
 
   def authenticate(login: String, password: String)(implicit L: Logger[F]): OptionT[F, String] = {
-    OptionT(teacherCredentialsDAO.getByLoginAndPassword(login)).map(c => (c.passwordHash, c.bearer))
-      .orElse(OptionT(reviewerCredentialsDAO.getByLoginAndPassword(login)).map(c => (c.passwordHash, c.bearer)))
-      .semiflatTap {
-        case (_, bearer) => L.info(s"Found creds by login $login. Bearer: $bearer")
+    authAsTeacher(login, password).orElse(authAsReviewer(login, password))
+  }
+
+  private def authAsTeacher(login: String, password: String)(implicit L: Logger[F]): OptionT[F, String] =
+    OptionT(teacherCredentialsDAO.getByLogin(login))
+      .semiflatTap { creds =>
+        L.info(s"Found creds by login $login. Bearer: ${creds.bearer}")
       }
       .flatTapNone(L.error(s"Not found creds by login $login"))
-      .flatMapF { case (hash, bearer) =>
-        hashGen.checkPassword(password, hash).map { isEqual =>
-          if (isEqual) bearer.some else none
+      .flatMapF { creds =>
+        hashGen.checkPassword(password, creds.passwordHash).map { isEqual =>
+          if (isEqual) creds.some else none
         }
       }
-  }
+      .semiflatMap { creds =>
+        for {
+          newBearer <- tokenGenerator.generate // new bearer needed for invalidate other sessions
+          _         <- teacherCredentialsDAO.insertCredentials(creds.copy(bearer = newBearer))
+        } yield newBearer
+      }
+
+  private def authAsReviewer(login: String, password: String)(implicit L: Logger[F]): OptionT[F, String] =
+    OptionT(reviewerCredentialsDAO.getByLogin(login))
+      .semiflatTap { creds =>
+        L.info(s"Found creds by login $login. Bearer: ${creds.bearer}")
+      }
+      .flatTapNone(L.error(s"Not found creds by login $login"))
+      .flatMapF { creds =>
+        hashGen.checkPassword(password, creds.passwordHash).map { isEqual =>
+          if (isEqual) creds.some else none
+        }
+      }
+      .semiflatMap { creds =>
+        for {
+          newBearer <- tokenGenerator.generate // new bearer needed for invalidate other sessions
+          _ <- reviewerCredentialsDAO.insertCredentials(creds.copy(bearer = newBearer))
+        } yield newBearer
+      }
 
 }
 
@@ -56,10 +84,11 @@ object Authenticator {
     teacherCredentialsDAO: TeacherCredentialsDAO[F],
     reviewerCredentialsDAO: ReviewerCredentialsDAO[F],
     adminConfig: AdminConfig,
+    tokenGenerator: TokenGenerator[F],
     hashGen: HashGenerator[F]
   ): Resource[F, Authenticator[F]] =
     Resource.pure {
-      new Authenticator(teacherCredentialsDAO, reviewerCredentialsDAO, adminConfig, hashGen)
+      new Authenticator(teacherCredentialsDAO, reviewerCredentialsDAO, adminConfig, tokenGenerator, hashGen)
     }
 
   sealed trait UserType {

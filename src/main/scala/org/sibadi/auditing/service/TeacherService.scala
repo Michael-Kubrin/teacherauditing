@@ -1,6 +1,6 @@
 package org.sibadi.auditing.service
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
@@ -15,6 +15,7 @@ class TeacherService[F[_]](
   tokenGenerator: TokenGenerator[F],
   teacherDAO: TeacherDAO[F],
   teacherCredsDAO: TeacherCredentialsDAO[F],
+  reviewerCredsDAO: ReviewerCredentialsDAO[F],
   teacherGroupDAO: TeacherGroupDAO[F],
   hashGenerator: HashGenerator[F]
 )(implicit M: MonadCancel[F, Throwable]) {
@@ -26,6 +27,8 @@ class TeacherService[F[_]](
     login: String
   ): EitherT[F, AppError, CreatedTeacher] =
     for {
+      isLoginExists <- EitherT.liftF(isLoginExists(login))
+      _             <- EitherT.cond(!isLoginExists, (), AppError.LoginExists(login))
       teacherId <- EitherT.pure(UUID.randomUUID().toString)
       _ <- EitherT(
         teacherDAO
@@ -38,6 +41,10 @@ class TeacherService[F[_]](
       bearer <- EitherT.liftF(tokenGenerator.generate)
       _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(teacherId, login, hash, bearer)))
     } yield CreatedTeacher(id = teacherId, password = password)
+
+  private def isLoginExists(login: String): F[Boolean] =
+    OptionT(teacherCredsDAO.getByLogin(login)).map(_ => true).orElse(OptionT(reviewerCredsDAO.getByLogin(login)).map(_ => true))
+      .getOrElse(false)
 
   def updateTeacher(
     firstName: String,
@@ -106,10 +113,11 @@ object TeacherService {
     tokenGenerator: TokenGenerator[F],
     teacherDAO: TeacherDAO[F],
     teacherCredsDAO: TeacherCredentialsDAO[F],
+    reviewerCredsDAO: ReviewerCredentialsDAO[F],
     teacherGroupDAO: TeacherGroupDAO[F],
     hashGenerator: HashGenerator[F]
   )(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, TeacherService[F]] =
-    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, teacherGroupDAO, hashGenerator))
+    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, reviewerCredsDAO, teacherGroupDAO, hashGenerator))
 }
