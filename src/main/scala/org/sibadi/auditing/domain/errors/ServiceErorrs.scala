@@ -32,4 +32,8 @@ object AppError {
 
   final case class LoginExists(login: String) extends AppError
 
+  final case class IncorrectOldPassword() extends AppError
+
+  final case class AdminCantChangePassword() extends AppError
+
 }

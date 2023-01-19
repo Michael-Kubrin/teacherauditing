@@ -1,9 +1,12 @@
 package org.sibadi.auditing.api.routes
 
+import cats.data.EitherT
 import cats.effect.Sync
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.PublicAPI._
-import org.sibadi.auditing.api.model.{ApiError, LoginResponse, PasswordResponse}
+import org.sibadi.auditing.api.model.{ApiError, LoginResponse, PasswordResponse, toApiError}
+import org.sibadi.auditing.domain.errors.AppError
+import org.sibadi.auditing.service.Authenticator.UserType
 import org.sibadi.auditing.service._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -40,7 +43,19 @@ class PublicRouter[F[_]: Sync](
         authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[PasswordResponse].pure[F]
+        val logic: EitherT[F, AppError, String] = userType match {
+          case UserType.Teacher(id) =>
+            teacherService.changePassword(id, body.oldPassword, body.NewPassword)
+          case UserType.Reviewer(id) =>
+            reviewerService.changePassword(id, body.oldPassword, body.NewPassword)
+          case UserType.Admin(_) =>
+            EitherT.leftT(AppError.AdminCantChangePassword().cast)
+        }
+        logic
+          .map(PasswordResponse)
+          .leftSemiflatMap(toApiError[F])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, PasswordResponse])
       }
 
   private def publicUploadFileId =

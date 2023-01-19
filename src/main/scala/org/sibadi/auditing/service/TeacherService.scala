@@ -29,7 +29,7 @@ class TeacherService[F[_]](
     for {
       isLoginExists <- EitherT.liftF(isLoginExists(login))
       _             <- EitherT.cond(!isLoginExists, (), AppError.LoginExists(login))
-      teacherId <- EitherT.pure(UUID.randomUUID().toString)
+      teacherId     <- EitherT.pure(UUID.randomUUID().toString)
       _ <- EitherT(
         teacherDAO
           .createTeacher(db.Teacher(teacherId, firstName, lastName, middleName, none))
@@ -37,14 +37,30 @@ class TeacherService[F[_]](
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
       password = PasswordGenerator.randomPassword(10)
-      hash     <- EitherT.liftF(hashGenerator.hashPassword(password))
+      hash   <- EitherT.liftF(hashGenerator.hashPassword(password))
       bearer <- EitherT.liftF(tokenGenerator.generate)
       _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(teacherId, login, hash, bearer)))
     } yield CreatedTeacher(id = teacherId, password = password)
 
   private def isLoginExists(login: String): F[Boolean] =
-    OptionT(teacherCredsDAO.getByLogin(login)).map(_ => true).orElse(OptionT(reviewerCredsDAO.getByLogin(login)).map(_ => true))
+    OptionT(teacherCredsDAO.getByLogin(login))
+      .map(_ => true)
+      .orElse(OptionT(reviewerCredsDAO.getByLogin(login)).map(_ => true))
       .getOrElse(false)
+
+  def changePassword(teacherId: String, oldPassword: String, newPassword: String): EitherT[F, AppError, String] =
+    for {
+      creds <- EitherT.fromOptionF(
+        teacherCredsDAO.getCredentialsById(teacherId),
+        AppError.TeacherByIdDoesNotExists(new IllegalStateException("Teacher doesn't exists")).cast
+      )
+      isOldPasswordMatchesItsHash <- EitherT.liftF(hashGenerator.checkPassword(oldPassword, creds.passwordHash))
+      _                           <- EitherT.cond(isOldPasswordMatchesItsHash, (), AppError.IncorrectOldPassword().cast)
+      newHash                     <- EitherT.liftF(hashGenerator.hashPassword(newPassword))
+      newBearer                   <- EitherT.liftF(tokenGenerator.generate)
+      _                           <- EitherT.liftF(teacherCredsDAO.deleteCredentials(creds.id, creds.login))
+      _                           <- EitherT.liftF(teacherCredsDAO.insertCredentials(creds.copy(passwordHash = newHash, bearer = newBearer)))
+    } yield newBearer
 
   def updateTeacher(
     firstName: String,

@@ -55,6 +55,7 @@ class Authenticator[F[_]: Monad](
       .semiflatMap { creds =>
         for {
           newBearer <- tokenGenerator.generate // new bearer needed for invalidate other sessions
+          _         <- teacherCredentialsDAO.deleteCredentials(creds.id, creds.login)
           _         <- teacherCredentialsDAO.insertCredentials(creds.copy(bearer = newBearer))
         } yield newBearer
       }
@@ -73,7 +74,8 @@ class Authenticator[F[_]: Monad](
       .semiflatMap { creds =>
         for {
           newBearer <- tokenGenerator.generate // new bearer needed for invalidate other sessions
-          _ <- reviewerCredentialsDAO.insertCredentials(creds.copy(bearer = newBearer))
+          _         <- reviewerCredentialsDAO.deleteCredentials(creds.id, creds.login)
+          _         <- reviewerCredentialsDAO.insertCredentials(creds.copy(bearer = newBearer))
         } yield newBearer
       }
 

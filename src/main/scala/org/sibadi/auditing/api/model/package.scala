@@ -1,6 +1,6 @@
 package org.sibadi.auditing.api
 
-import cats.Functor
+import cats.{Applicative, Functor, Monad}
 import io.circe.{Decoder, Encoder}
 import org.sibadi.auditing.domain.errors.AppError
 import org.typelevel.log4cats.Logger
@@ -85,7 +85,7 @@ package object model {
     implicit val enumEncoder: Encoder[ReviewStatus.ReviewStatus] = Encoder.encodeEnumeration(ReviewStatus)
   }
 
-  def toApiError[F[_]: Logger : Functor](appError: AppError): F[ApiError] =
+  def toApiError[F[_]: Logger : Monad](appError: AppError): F[ApiError] =
     appError match {
       case AppError.Unexpected(t) => 
         Functor[F].map(Logger[F].error(t)("Unexpected error"))(_ => ApiError.InternalError(s"Unexpected error: ${t.getMessage}"))
@@ -125,6 +125,12 @@ package object model {
 
       case AppError.LoginExists(login) =>
         Functor[F].map(Logger[F].warn(s"Trying to register user but user with login `$login` already exists"))(_ => ApiError.BadRequest(s"User with login `$login` already exists"))
+
+      case AppError.IncorrectOldPassword() =>
+        Functor[F].map(Logger[F].warn(s"User trying to change password but hash doesn't matches"))(_ => ApiError.BadRequest(s"Incorrect old password"))
+
+      case AppError.AdminCantChangePassword() =>
+        Applicative[F].pure(ApiError.BadRequest(s"You can't change password").cast)
 
     }
 
