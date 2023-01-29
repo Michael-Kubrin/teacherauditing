@@ -7,7 +7,7 @@ import org.sibadi.auditing.db
 import org.sibadi.auditing.db._
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
-import org.sibadi.auditing.util.{HashGenerator, PasswordGenerator, TokenGenerator}
+import org.sibadi.auditing.util.{PasswordGenerator, TokenGenerator}
 
 import java.util.UUID
 
@@ -17,7 +17,7 @@ class TeacherService[F[_]](
   teacherCredsDAO: TeacherCredentialsDAO[F],
   reviewerCredsDAO: ReviewerCredentialsDAO[F],
   teacherGroupDAO: TeacherGroupDAO[F],
-  hashGenerator: HashGenerator[F]
+//  hashGenerator: HashGenerator[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
   def createTeacher(
@@ -37,9 +37,9 @@ class TeacherService[F[_]](
           .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
       )
       password = PasswordGenerator.randomPassword(10)
-      hash   <- EitherT.liftF(hashGenerator.hashPassword(password))
+//      hash   <- EitherT.liftF(hashGenerator.hashPassword(password))
       bearer <- EitherT.liftF(tokenGenerator.generate)
-      _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(teacherId, login, hash, bearer)))
+      _      <- EitherT.liftF(teacherCredsDAO.insertCredentials(db.TeacherCredentials(teacherId, login, bearer)))
     } yield CreatedTeacher(id = teacherId, password = password)
 
   private def isLoginExists(login: String): F[Boolean] =
@@ -54,12 +54,12 @@ class TeacherService[F[_]](
         teacherCredsDAO.getCredentialsById(teacherId),
         AppError.TeacherByIdDoesNotExists(new IllegalStateException("Teacher doesn't exists")).cast
       )
-      isOldPasswordMatchesItsHash <- EitherT.liftF(hashGenerator.checkPassword(oldPassword, creds.passwordHash))
-      _                           <- EitherT.cond(isOldPasswordMatchesItsHash, (), AppError.IncorrectOldPassword().cast)
-      newHash                     <- EitherT.liftF(hashGenerator.hashPassword(newPassword))
+//      isOldPasswordMatchesItsHash <- EitherT.liftF(hashGenerator.checkPassword(oldPassword, creds.passwordHash))
+//      _                           <- EitherT.cond(isOldPasswordMatchesItsHash, (), AppError.IncorrectOldPassword().cast)
+//      newHash                     <- EitherT.liftF(hashGenerator.hashPassword(newPassword))
       newBearer                   <- EitherT.liftF(tokenGenerator.generate)
       _                           <- EitherT.liftF(teacherCredsDAO.deleteCredentials(creds.id, creds.login))
-      _                           <- EitherT.liftF(teacherCredsDAO.insertCredentials(creds.copy(passwordHash = newHash, bearer = newBearer)))
+      _                           <- EitherT.liftF(teacherCredsDAO.insertCredentials(creds.copy(bearer = newBearer)))
     } yield newBearer
 
   def updateTeacher(
@@ -131,9 +131,9 @@ object TeacherService {
     teacherCredsDAO: TeacherCredentialsDAO[F],
     reviewerCredsDAO: ReviewerCredentialsDAO[F],
     teacherGroupDAO: TeacherGroupDAO[F],
-    hashGenerator: HashGenerator[F]
+//    hashGenerator: HashGenerator[F]
   )(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, TeacherService[F]] =
-    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, reviewerCredsDAO, teacherGroupDAO, hashGenerator))
+    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, reviewerCredsDAO, teacherGroupDAO))
 }

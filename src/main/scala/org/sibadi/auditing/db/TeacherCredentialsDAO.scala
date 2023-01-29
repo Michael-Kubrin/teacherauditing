@@ -10,7 +10,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
   def insertCredentials(credentials: TeacherCredentials): F[Unit] =
     sql"""
        INSERT INTO teacher_credentials (id, login, passwordHash, bearer)
-       SELECT ${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer}
+       SELECT ${credentials.id}, ${credentials.login}, ${credentials.bearer}
        FROM teacher_credentials
        WHERE NOT EXISTS (SELECT 1 FROM teacher_credentials WHERE login = ${credentials.login})
        """.update.run.void

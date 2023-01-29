@@ -10,7 +10,7 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
   def insertCredentials(credentials: ReviewerCredentials): F[Unit] =
     sql"""
        INSERT INTO reviewer_credentials (id, login, passwordHash, bearer)
-       VALUES (${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer}
+       VALUES (${credentials.id}, ${credentials.login}, ${credentials.bearer}
        """.update.run.void
       .transact(transactor)
 

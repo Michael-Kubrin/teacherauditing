@@ -15,7 +15,7 @@ package object db {
   final case class TeacherCredentials(
     id: String,
     login: String,
-    passwordHash: String,
+//    passwordHash: String,
     bearer: String
   )
 
@@ -30,7 +30,7 @@ package object db {
   final case class ReviewerCredentials(
     id: String,
     login: String,
-    passwordHash: String,
+//    passwordHash: String,
     bearer: String
   )
 

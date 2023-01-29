@@ -9,7 +9,7 @@ import org.sibadi.auditing.api.routes._
 import org.sibadi.auditing.configs.{AppConfig, DatabaseConfig, ServerConfig}
 import org.sibadi.auditing.db._
 import org.sibadi.auditing.service._
-import org.sibadi.auditing.util.{Filer, HashGenerator, TokenGenerator}
+import org.sibadi.auditing.util.{Filer, TokenGenerator}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -44,14 +44,14 @@ object Main extends IOApp.Simple {
       // Utils
       filer          = new Filer[F]
       tokenGenerator = TokenGenerator()
-      hashGenerator  = new HashGenerator()
-      authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
+//      hashGenerator  = new HashGenerator()
+      authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator)
       // Service
       estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
       groupService    <- GroupService[F](group)
       kpiService      <- KpiService[F](kpi, kpiGroup)
-      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
-      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, hashGenerator)
+      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials)
+      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup)
       topicService    <- TopicService[F](topic, kpi, topicKpi)
       // Router
       groupsRouter   = new GroupsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
