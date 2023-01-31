@@ -9,7 +9,7 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
 
   def insertCredentials(credentials: ReviewerCredentials): F[Unit] =
     sql"""
-       INSERT INTO reviewer_credentials (id, login, passwordHash, bearer)
+       INSERT INTO reviewer_credentials (id, login, bearer)
        VALUES (${credentials.id}, ${credentials.login}, ${credentials.bearer}
        """.update.run.void
       .transact(transactor)
@@ -22,7 +22,7 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
 
   def getCredentialsByBearer(bearer: String): F[Option[ReviewerCredentials]] =
     sql"""
-       SELECT id, login, passwordHash, bearer
+       SELECT id, login, bearer
        FROM reviewer_credentials
        WHERE bearer = $bearer
        """
@@ -32,7 +32,7 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
 
   def getCredentialsById(id: String): F[Option[ReviewerCredentials]] =
     sql"""
-       SELECT id, login, passwordHash, bearer
+       SELECT id, login, bearer
        FROM reviewer_credentials
        WHERE id = $id
        """
@@ -42,7 +42,7 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
 
   def getByLogin(login: String): F[Option[ReviewerCredentials]] =
     sql"""
-       SELECT id, login, passwordHash, bearer
+       SELECT id, login, bearer
        FROM reviewer_credentials
        WHERE login = $login
        """

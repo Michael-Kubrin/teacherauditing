@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS teacher(
 CREATE TABLE IF NOT EXISTS teacher_credentials(
     id TEXT NOT NULL,
     login TEXT NOT NULL,
-    passwordHash TEXT NOT NULL,
+--    passwordHash TEXT NOT NULL,
     bearer TEXT NOT NULL,
     PRIMARY KEY (id, login)
 );
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS reviewer(
 CREATE TABLE IF NOT EXISTS reviewer_credentials(
     id TEXT NOT NULL,
     login TEXT NOT NULL,
-    passwordHash TEXT NOT NULL,
+--    passwordHash TEXT NOT NULL,
     bearer TEXT NOT NULL,
     PRIMARY KEY (id, login)
 );

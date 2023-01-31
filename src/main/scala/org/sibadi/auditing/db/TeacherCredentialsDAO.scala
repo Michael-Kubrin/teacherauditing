@@ -9,7 +9,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
 
   def insertCredentials(credentials: TeacherCredentials): F[Unit] =
     sql"""
-       INSERT INTO teacher_credentials (id, login, passwordHash, bearer)
+       INSERT INTO teacher_credentials (id, login, bearer)
        SELECT ${credentials.id}, ${credentials.login}, ${credentials.bearer}
        FROM teacher_credentials
        WHERE NOT EXISTS (SELECT 1 FROM teacher_credentials WHERE login = ${credentials.login})
@@ -24,7 +24,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
 
   def getCredentialsByBearer(bearer: String): F[Option[TeacherCredentials]] =
     sql"""
-       SELECT id, login, passwordHash, bearer
+       SELECT id, login, bearer
        FROM teacher_credentials
        WHERE bearer = $bearer
        """
@@ -34,7 +34,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
 
   def getCredentialsById(id: String): F[Option[TeacherCredentials]] =
     sql"""
-       SELECT id, login, passwordHash, bearer
+       SELECT id, login, bearer
        FROM teacher_credentials
        WHERE id = $id
        """
@@ -44,7 +44,7 @@ class TeacherCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCa
 
   def getByLogin(login: String): F[Option[TeacherCredentials]] =
     sql"""
-       SELECT id, login, passwordHash, bearer
+       SELECT id, login, bearer
        FROM teacher_credentials
        WHERE login = $login
        """
