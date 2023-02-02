@@ -48,7 +48,7 @@ object Main extends IOApp.Simple {
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
       estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
-      groupService    <- GroupService[F](group)
+      groupService    <- GroupService[F](group, kpi, kpiGroup)
       kpiService      <- KpiService[F](kpi, kpiGroup)
       reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
       teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, hashGenerator)

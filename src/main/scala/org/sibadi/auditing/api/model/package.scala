@@ -63,9 +63,11 @@ package object model {
 
   final case class EstimateRequest(score: Long)
 
-  final case class CreateGroupRequestDtp(name: String)
+  final case class CreateGroupRequestDto(name: String)
 
-  final case class GroupResponseItemDto(id: String, name: String)
+  final case class GroupResponseItemDto(id: String, name: String, kpis: List[KpiInGroupItemDto])
+
+  final case class KpiInGroupItemDto(id: String, title: String)
 
   final case class CreateAccountRequestDto(login: String, password: String)
 

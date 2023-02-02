@@ -14,7 +14,7 @@ object KpiGroupAPI {
     deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId
   )
 
-  def putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
+  def putApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     endpoint.put
       .tag("Kpi-Group API")
       .securityIn(auth.bearer[String]())
@@ -27,10 +27,10 @@ object KpiGroupAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(statusCode(StatusCode.NoContent).and(stringBody))
+      .out(statusCode(StatusCode.NoContent))
       .description("")
 
-  def deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, String, Any] =
+  def deleteApiAdminGroupsGroupIdTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     endpoint.delete
       .tag("Kpi-Group API")
       .securityIn(auth.bearer[String]())
@@ -43,7 +43,7 @@ object KpiGroupAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(statusCode(StatusCode.NoContent).and(stringBody))
+      .out(statusCode(StatusCode.NoContent))
       .description("")
 
 }

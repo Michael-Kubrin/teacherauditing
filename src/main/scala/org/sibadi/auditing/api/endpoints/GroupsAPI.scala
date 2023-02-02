@@ -15,12 +15,12 @@ object GroupsAPI {
     getApiAdminGroups
   )
 
-  def postApiAdminGroups: Endpoint[String, CreateGroupRequestDtp, ApiError, Unit, Any] =
+  def postApiAdminGroups: Endpoint[String, CreateGroupRequestDto, ApiError, Unit, Any] =
     endpoint.post
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "groups")
-      .in(jsonBody[CreateGroupRequestDtp])
+      .in(jsonBody[CreateGroupRequestDto])
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),

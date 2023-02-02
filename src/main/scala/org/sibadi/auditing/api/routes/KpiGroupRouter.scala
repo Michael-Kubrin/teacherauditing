@@ -29,10 +29,9 @@ class KpiGroupRouter[F[_]: Sync](
       }
       .serverLogic { userType => body =>
         groupService
-          .updateGroup(body._1, body._2)
+          .addKpiToGroup(body._1, body._2)
           .leftSemiflatMap(toApiError[F])
-          .map(_.toString)
-          .value.handleErrorWith(throwableToUnexpected[F, String])
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
   private def adminDeleteGroups =
@@ -44,7 +43,10 @@ class KpiGroupRouter[F[_]: Sync](
           .value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
-        ApiError.InternalError("Not implemented").cast.asLeft[String].pure[F]
+        groupService
+          .removeKpiFromGroup(body._1, body._2)
+          .leftSemiflatMap(toApiError[F])
+          .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }

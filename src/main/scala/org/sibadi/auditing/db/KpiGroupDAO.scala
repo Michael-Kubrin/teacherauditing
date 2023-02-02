@@ -14,24 +14,24 @@ class KpiGroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
        """.update.run.void
       .transact(transactor)
 
-  def getByGroupId(groupId: String): F[Option[KpiGroup]] =
+  def getByGroupId(groupId: String): F[List[KpiGroup]] =
     sql"""
        SELECT kpiId, groupId
        FROM kpi_group
        WHERE groupId = $groupId
        """
       .query[KpiGroup]
-      .option
+      .to[List]
       .transact(transactor)
 
-  def getByKpiId(kpiId: String): F[Option[KpiGroup]] =
+  def getByKpiId(kpiId: String): F[List[KpiGroup]] =
     sql"""
        SELECT kpiId, groupId
        FROM kpi_group
        WHERE kpiId = $kpiId
        """
       .query[KpiGroup]
-      .option
+      .to[List]
       .transact(transactor)
 
   def delete(link: KpiGroup): F[Unit] =

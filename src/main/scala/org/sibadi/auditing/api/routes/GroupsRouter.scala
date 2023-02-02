@@ -42,7 +42,7 @@ class GroupsRouter[F[_]: Sync](
       .serverLogic { userType => body =>
         groupService.getAllGroups
           .leftSemiflatMap(toApiError[F])
-          .map(_.map(group => GroupResponseItemDto(group.id, group.title)))
+          .map(_.map(group => GroupResponseItemDto(group.id, group.title, group.kpis.map(kpi => KpiInGroupItemDto(kpi.id, kpi.title)))))
           .value.handleErrorWith(throwableToUnexpected[F, List[GroupResponseItemDto]])
       }
 

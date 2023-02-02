@@ -19,6 +19,12 @@ package object domain {
     title: String
   )
 
+  final case class FullGroup(
+    id: String,
+    title: String,
+    kpis: List[FullKpi]
+  )
+
   object EstimateStatus extends Enumeration() {
     type EstimateStatus = Value
     val Waiting  = Value("waiting")
