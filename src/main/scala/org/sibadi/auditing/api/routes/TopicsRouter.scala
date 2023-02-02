@@ -3,7 +3,7 @@ package org.sibadi.auditing.api.routes
 import cats.effect.Sync
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.TopicsAPI._
-import org.sibadi.auditing.api.model.{ApiError, TopicItemResponseDto, toApiError}
+import org.sibadi.auditing.api.model.{ApiError, KPIItemResponseDto, TopicItemResponseDto, toApiError}
 import org.sibadi.auditing.service._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -43,7 +43,7 @@ class TopicsRouter[F[_]: Sync](
       .serverLogic { userType => body =>
         topicService.getAllTopics
           .leftSemiflatMap(toApiError[F])
-          .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty)))
+          .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, topic.kpis.map(kpi => KPIItemResponseDto(kpi.id, kpi.title)))))
           .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicItemResponseDto]])
       }
 

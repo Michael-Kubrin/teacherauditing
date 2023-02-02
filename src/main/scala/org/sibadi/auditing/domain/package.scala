@@ -8,6 +8,17 @@ package object domain {
 
   final case class CreatedTopicKPI(kpiId: String, topicId: String)
 
+  final case class FullTopic(
+    id: String,
+    title: String,
+    kpis: List[FullKpi]
+  )
+
+  final case class FullKpi(
+    id: String,
+    title: String
+  )
+
   object EstimateStatus extends Enumeration() {
     type EstimateStatus = Value
     val Waiting  = Value("waiting")

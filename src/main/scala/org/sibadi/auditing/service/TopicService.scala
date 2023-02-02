@@ -5,6 +5,8 @@ import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
 import org.sibadi.auditing.db._
+import org.sibadi.auditing.domain.FullTopic
+import org.sibadi.auditing.domain.FullKpi
 import org.sibadi.auditing.domain.errors.AppError
 
 import java.util.UUID
@@ -53,12 +55,23 @@ class TopicService[F[_]](
         }
     )
 
-  def getAllTopics: EitherT[F, AppError, List[Topic]] =
+  def getAllTopics: EitherT[F, AppError, List[FullTopic]] = {
+    val dbLogic = for {
+      topics <- topicDAO.getAll
+      topicsWithKpis <- topics.map { topic =>
+        for {
+          links <- topicKpiDAO.getByTopicId(topic.id)
+          kpis <- links.map(link => kpiDAO.get(link.kpiId)).flatTraverse(f => f.map(_.toList)).map(_.map(kpi => FullKpi(kpi.id, kpi.title)))
+        } yield FullTopic(topic.id, topic.title, kpis)
+      }.sequence
+    } yield topicsWithKpis
+
     EitherT(
-      topicDAO.getAll
+      dbLogic
         .map(_.asRight[AppError])
-        .handleError(throwable => AppError.TopicDoesNotExists(throwable).asLeft[List[Topic]])
+        .handleError(throwable => AppError.TopicDoesNotExists(throwable).asLeft[List[FullTopic]])
     )
+  }
 
   def updateTopic(topicId: String, topicName: String): EitherT[F, AppError, Unit] =
     EitherT {
