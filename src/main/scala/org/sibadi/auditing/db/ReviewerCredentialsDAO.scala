@@ -10,7 +10,8 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
   def insertCredentials(credentials: ReviewerCredentials): F[Unit] =
     sql"""
        INSERT INTO reviewer_credentials (id, login, passwordHash, bearer)
-       VALUES (${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer}
+       SELECT ${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer}
+       WHERE NOT EXISTS (SELECT 1 FROM reviewer_credentials WHERE login = ${credentials.login})
        """.update.run.void
       .transact(transactor)
 
