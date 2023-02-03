@@ -23,7 +23,7 @@ object TopicsAPI {
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics")
       .in(jsonBody[CreateTopicsRequestDto])
-      .description("")
+      .description("Создание раздела")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -38,7 +38,7 @@ object TopicsAPI {
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics")
-      .description("")
+      .description("Получение всех разделов")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -53,7 +53,7 @@ object TopicsAPI {
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId"))
-      .description("")
+      .description("Удаление раздела")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -70,7 +70,7 @@ object TopicsAPI {
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId"))
       .in(jsonBody[EditTopicRequestDto])
-      .description("")
+      .description("Внесение изменений в раздел")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),

@@ -28,7 +28,7 @@ object KpiTeacherAPI {
         )
       )
       .out(statusCode(StatusCode.unsafeApply(201)))
-      .description("")
+      .description("Создание KPI для преподавателей. KPI - Ключевой Показатель эффективности")
 
   def deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, String, Any] =
     endpoint.delete
@@ -44,6 +44,6 @@ object KpiTeacherAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent).and(stringBody))
-      .description("")
+      .description("Удаление KPI для преподавателей. KPI - Ключевой Показатель эффективности")
 
 }

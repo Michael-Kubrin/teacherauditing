@@ -12,5 +12,6 @@ object YamlDocAPI {
       .in("api" / "docs.yaml")
       .out(stringBody)
       .out(header("Content-Type", "application/yaml"))
+      .description("Список всех запросов")
 
 }

@@ -23,7 +23,7 @@ object KpiAPI {
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
       .in(jsonBody[CreateKPIRequestDto])
-      .description("")
+      .description("Создание KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
@@ -38,7 +38,7 @@ object KpiAPI {
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
-      .description("")
+      .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
@@ -62,7 +62,7 @@ object KpiAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent))
-      .description("")
+      .description("Изменения KPI. KPI - Ключевой Показатель эффективности")
 
   def deleteApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     endpoint.delete
@@ -77,6 +77,6 @@ object KpiAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent))
-      .description("")
+      .description("Удаления KPI. KPI - Ключевой Показатель эффективности")
 
 }

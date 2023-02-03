@@ -30,7 +30,7 @@ object GroupsAPI {
         )
       )
       .out(statusCode(StatusCode.unsafeApply(201)))
-      .description("")
+      .description("Создание груп от роли админа")
 
   def getApiAdminGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
     endpoint.get
@@ -46,6 +46,6 @@ object GroupsAPI {
         )
       )
       .out(jsonBody[List[GroupResponseItemDto]])
-      .description("")
+      .description("Получения списков групп от роли админа")
 
 }

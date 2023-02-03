@@ -22,7 +22,7 @@ object ReviewersAPI {
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers")
       .in(jsonBody[CreateReviewerRequest])
-      .description("")
+      .description("Создание роли проверяющего")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -47,7 +47,7 @@ object ReviewersAPI {
         )
       )
       .out(jsonBody[List[ReviewerResponse]])
-      .description("")
+      .description("Получение списка с ролью Проверяющий")
 
   def putApiAdminReviewersId: Endpoint[String, (String, EditReviewersRequest), ApiError, Unit, Any] =
     endpoint.put
@@ -64,6 +64,6 @@ object ReviewersAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent))
-      .description("")
+      .description("Изменения в роли Проверяющий")
 
 }

@@ -30,6 +30,6 @@ object ReviewerActionsAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent))
-      .description("")
+      .description("Запрос на изменения статуса проверки")
 
 }

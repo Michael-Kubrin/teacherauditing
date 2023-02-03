@@ -21,7 +21,7 @@ object PublicAPI {
       .tag("Public API")
       .in("api" / "login")
       .in(jsonBody[CreateAccountRequestDto])
-      .description("")
+      .description("Создание логина")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -37,7 +37,7 @@ object PublicAPI {
       .tag("Public API")
       .securityIn(auth.bearer[String]())
       .in("api" / "password")
-      .description("")
+      .description("Изменение пароля")
       .in(jsonBody[ChangePasswordRequestDto])
       .errorOut(
         oneOf[ApiError](
