@@ -17,7 +17,7 @@ object PublicAPI {
   )
 
   def postLogin: Endpoint[Unit, CreateAccountRequestDto, ApiError, LoginResponse, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Public API")
       .in("api" / "login")
       .in(jsonBody[CreateAccountRequestDto])
@@ -33,7 +33,7 @@ object PublicAPI {
       .out(jsonBody[LoginResponse])
 
   def editPassword: Endpoint[String, ChangePasswordRequestDto, ApiError, PasswordResponse, Any] =
-    endpoint.put
+    baseEndpoint.put
       .tag("Public API")
       .securityIn(auth.bearer[String]())
       .in("api" / "password")
@@ -50,7 +50,7 @@ object PublicAPI {
       .out(jsonBody[PasswordResponse])
 
   def postApiPublicTopicsTopicIdKpiKpiIdFilesFileId: Endpoint[String, (String, String, String), ApiError, _root_.sttp.tapir.TapirFile, Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Public API")
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files" / path[String]("fileId"))

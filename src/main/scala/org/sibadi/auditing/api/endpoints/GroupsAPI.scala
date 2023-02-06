@@ -16,7 +16,7 @@ object GroupsAPI {
   )
 
   def postApiAdminGroups: Endpoint[String, CreateGroupRequestDto, ApiError, Unit, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "groups")
@@ -33,7 +33,7 @@ object GroupsAPI {
       .description("Создание груп от роли админа")
 
   def getApiAdminGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "groups")

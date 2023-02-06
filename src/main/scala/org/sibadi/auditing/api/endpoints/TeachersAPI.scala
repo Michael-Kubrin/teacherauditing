@@ -17,7 +17,7 @@ object TeachersAPI {
   )
 
   def postApiAdminTeachers: Endpoint[String, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers")
@@ -34,7 +34,7 @@ object TeachersAPI {
       .out(jsonBody[ResponseIdPassword])
 
   def getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherResponse], Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers")
@@ -49,7 +49,7 @@ object TeachersAPI {
       .out(jsonBody[List[TeacherResponse]])
       .description("")
   def putApiAdminTeachers: Endpoint[String, (String, EditTeacherRequest), ApiError, Unit, Any] =
-    endpoint.put
+    baseEndpoint.put
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "teachers" / path[String]("teacherId"))

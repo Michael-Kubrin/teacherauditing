@@ -18,7 +18,7 @@ object KpiAPI {
   )
 
   def postApiAdminTopicsTopicIdKpi: Endpoint[String, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
@@ -34,7 +34,7 @@ object KpiAPI {
       .out(jsonBody[ResponseId])
 
   def getApiAdminTopicsTopicIdKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
@@ -49,7 +49,7 @@ object KpiAPI {
       .out(jsonBody[List[TopicKpiResponse]])
 
   def putApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
-    endpoint.put
+    baseEndpoint.put
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
@@ -65,7 +65,7 @@ object KpiAPI {
       .description("Изменения KPI. KPI - Ключевой Показатель эффективности")
 
   def deleteApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
-    endpoint.delete
+    baseEndpoint.delete
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))

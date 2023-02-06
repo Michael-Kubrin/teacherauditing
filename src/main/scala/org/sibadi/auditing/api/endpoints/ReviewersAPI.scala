@@ -17,7 +17,7 @@ object ReviewersAPI {
   )
 
   def postApiAdminReviewers: Endpoint[String, CreateReviewerRequest, ApiError, ResponseIdPassword, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers")
@@ -34,7 +34,7 @@ object ReviewersAPI {
       .out(jsonBody[ResponseIdPassword])
 
   def getApiAdminReviewers: Endpoint[String, Unit, ApiError, List[ReviewerResponse], Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers")
@@ -50,7 +50,7 @@ object ReviewersAPI {
       .description("Получение списка с ролью Проверяющий")
 
   def putApiAdminReviewersId: Endpoint[String, (String, EditReviewersRequest), ApiError, Unit, Any] =
-    endpoint.put
+    baseEndpoint.put
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "reviewers" / path[String]("reviewerId"))

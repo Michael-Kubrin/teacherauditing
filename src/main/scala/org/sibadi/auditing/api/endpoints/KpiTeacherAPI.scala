@@ -15,7 +15,7 @@ object KpiTeacherAPI {
   )
 
   def postApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, Unit, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Kpi-Teacher API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teacher" / path[String]("teacherId"))
@@ -31,7 +31,7 @@ object KpiTeacherAPI {
       .description("Создание KPI для преподавателей. KPI - Ключевой Показатель эффективности")
 
   def deleteApiAdminTopicsTopicIdKpiKpiIdTeacherTeacherId: Endpoint[String, (String, String, String), ApiError, String, Any] =
-    endpoint.delete
+    baseEndpoint.delete
       .tag("Kpi-Teacher API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teacher" / path[String]("teacherId"))

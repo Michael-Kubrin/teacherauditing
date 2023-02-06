@@ -18,7 +18,7 @@ object TopicsAPI {
   )
 
   def postApiAdminTopics: Endpoint[String, CreateTopicsRequestDto, ApiError, Unit, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics")
@@ -34,7 +34,7 @@ object TopicsAPI {
       )
       .out(statusCode(StatusCode.unsafeApply(201)))
   def getApiAdminTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics")
@@ -49,7 +49,7 @@ object TopicsAPI {
       )
       .out(jsonBody[List[TopicItemResponseDto]])
   def deleteApiAdminTopics: Endpoint[String, String, ApiError, Unit, Any] =
-    endpoint.delete
+    baseEndpoint.delete
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId"))
@@ -65,7 +65,7 @@ object TopicsAPI {
       .out(statusCode(StatusCode.NoContent))
 
   def putApiAdminTopicsTopicId: Endpoint[String, (String, EditTopicRequestDto), ApiError, Unit, Any] =
-    endpoint.put
+    baseEndpoint.put
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
       .in("api" / "admin" / "topics" / path[String]("topicId"))

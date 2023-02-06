@@ -7,7 +7,7 @@ object YamlDocAPI {
   def yamlDocApi = List(yamlDocAPIEndpoint)
 
   def yamlDocAPIEndpoint: Endpoint[Unit, Unit, Unit, String, Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Docs")
       .in("api" / "docs.yaml")
       .out(stringBody)

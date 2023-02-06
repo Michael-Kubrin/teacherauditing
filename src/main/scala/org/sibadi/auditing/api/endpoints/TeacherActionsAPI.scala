@@ -18,7 +18,7 @@ object TeacherActionsAPI {
   )
 
   def getApiPublicTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Teacher Actions API")
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics")
@@ -34,7 +34,7 @@ object TeacherActionsAPI {
       .description("")
 
   def getApiPublicTopicsTopicIdKpi: Endpoint[String, String, ApiError, GetPublicKpiResponse, Any] =
-    endpoint.get
+    baseEndpoint.get
       .tag("Teacher Actions API")
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi")
@@ -50,7 +50,7 @@ object TeacherActionsAPI {
       .description("")
 
   def postApiPublicTopicsTopicIdKpiKpiIdEstimate: Endpoint[String, (String, String, EstimateRequest), ApiError, Unit, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Teacher Actions API")
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "estimate")
@@ -67,7 +67,7 @@ object TeacherActionsAPI {
       .description("")
 
   def postApiPublicTopicsTopicIdKpiKpiIdFiles: Endpoint[String, (String, String, _root_.sttp.tapir.TapirFile), ApiError, Unit, Any] =
-    endpoint.post
+    baseEndpoint.post
       .tag("Teacher Actions API")
       .securityIn(auth.bearer[String]())
       .in("api" / "public" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "files")
