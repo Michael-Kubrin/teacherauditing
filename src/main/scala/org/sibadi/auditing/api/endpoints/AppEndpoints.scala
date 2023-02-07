@@ -2,8 +2,6 @@ package org.sibadi.auditing.api.endpoints
 
 import org.sibadi.auditing.api.endpoints.GroupsAPI.groupsApi
 import org.sibadi.auditing.api.endpoints.KpiAPI.kpiApi
-import org.sibadi.auditing.api.endpoints.KpiGroupAPI.kpiGroupApi
-import org.sibadi.auditing.api.endpoints.KpiTeacherAPI.kpiTeacherApi
 import org.sibadi.auditing.api.endpoints.PublicAPI.publicApi
 import org.sibadi.auditing.api.endpoints.ReviewerActionsAPI.reviewerActionsApi
 import org.sibadi.auditing.api.endpoints.ReviewersAPI.reviewersApi
@@ -22,8 +20,6 @@ object AppEndpoints {
       groupsApi ++
       teacherActionsApi ++
       publicApi ++
-      kpiGroupApi ++
-      kpiTeacherApi ++
       reviewerActionsApi ++
       yamlDocApi
 

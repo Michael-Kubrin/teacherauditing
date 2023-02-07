@@ -43,7 +43,16 @@ package object model {
     name: String,
     surName: String,
     middleName: Option[String],
-    groupNames: List[String]
+    groupNames: List[TeacherGroupItemResponse]
+  )
+
+  final case class TeacherGroupItemResponse(id: String, name: String)
+
+  final case class TeacherItemResponse(
+    id: String,
+    name: String,
+    surName: String,
+    middleName: Option[String]
   )
 
   final case class EditTeacherRequest(name: String, surName: String, middleName: Option[String])
@@ -65,7 +74,19 @@ package object model {
 
   final case class CreateGroupRequestDto(name: String)
 
-  final case class GroupResponseItemDto(id: String, name: String, kpis: List[KpiInGroupItemDto])
+  final case class GroupResponseItemDto(
+    id: String,
+    name: String,
+    kpis: List[KpiInGroupItemDto],
+    teachers: List[TeacherInGroupItemDto]
+  )
+
+  final case class TeacherInGroupItemDto(
+    id: String,
+    firstName: String,
+    lastName: String,
+    middleName: Option[String]
+  )
 
   final case class KpiInGroupItemDto(id: String, title: String)
 

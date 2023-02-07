@@ -13,7 +13,8 @@ object TeachersAPI {
   def teachersApi = List(
     postApiAdminTeachers,
     getApiAdminTeachers,
-    putApiAdminTeachers
+    putApiAdminTeachers,
+    getApiAdminTeachersTeacherId
   )
 
   def postApiAdminTeachers: Endpoint[String, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
@@ -33,7 +34,7 @@ object TeachersAPI {
       )
       .out(jsonBody[ResponseIdPassword])
 
-  def getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherResponse], Any] =
+  def getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherItemResponse], Any] =
     baseEndpoint.get
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
@@ -46,8 +47,25 @@ object TeachersAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[TeacherResponse]])
+      .out(jsonBody[List[TeacherItemResponse]])
       .description("")
+
+  def getApiAdminTeachersTeacherId: Endpoint[String, String, ApiError, TeacherResponse, Any] =
+    baseEndpoint.get
+      .tag("Teachers API")
+      .securityIn(auth.bearer[String]())
+      .in("api" / "admin" / "teachers" / path[String]("teacherId"))
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[TeacherResponse])
+      .description("")
+
   def putApiAdminTeachers: Endpoint[String, (String, EditTeacherRequest), ApiError, Unit, Any] =
     baseEndpoint.put
       .tag("Teachers API")

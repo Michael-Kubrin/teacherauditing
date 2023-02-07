@@ -48,24 +48,14 @@ object Main extends IOApp.Simple {
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
       estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
-      groupService    <- GroupService[F](group, kpi, kpiGroup)
+      groupService    <- GroupService[F](group, kpi, kpiGroup, teacherGroup, teacher)
       kpiService      <- KpiService[F](kpi, kpiGroup)
       reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
-      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, hashGenerator)
+      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, group, hashGenerator)
       topicService    <- TopicService[F](topic, kpi, topicKpi)
       // Router
       groupsRouter   = new GroupsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      kpiGroupRouter = new KpiGroupRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
       kpiRouter      = new KpiRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      kpiTeacherRouter = new KpiTeacherRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
       publicRouter = new PublicRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
       reviewerActionsRouter = new ReviewerActionsRouter[F](
         authenticator,
@@ -98,9 +88,7 @@ object Main extends IOApp.Simple {
       topicsRouter  = new TopicsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
       router <- AppRouter[F](
         groupsRouter,
-        kpiGroupRouter,
         kpiRouter,
-        kpiTeacherRouter,
         publicRouter,
         reviewerActionsRouter,
         reviewersRouter,

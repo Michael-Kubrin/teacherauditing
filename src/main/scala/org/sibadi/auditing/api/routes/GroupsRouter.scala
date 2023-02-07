@@ -1,7 +1,7 @@
 package org.sibadi.auditing.api.routes
 
 import cats.effect.Sync
-import cats.syntax.all._
+import cats.syntax.applicativeError._
 import org.sibadi.auditing.api.endpoints.GroupsAPI._
 import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
@@ -20,14 +20,14 @@ class GroupsRouter[F[_]: Sync](
 
   private implicit def logger: Logger[F] = Slf4jLogger.getLogger
 
-  def routes = List(adminCreateGroups, adminGetGroups)
+  private implicit val auth: Authenticator[F] = authenticator
+
+  def routes = List(adminCreateGroups, adminGetGroups, adminAddKpiToGroup, adminDeleteKpiFromGroup, adminAddTeacherToGroup, adminDeleteTeacherFromGroup)
 
   private def adminCreateGroups =
     postApiAdminGroups
-      .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
-      }
-      .serverLogic { userType => body =>
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ => body =>
         groupService
           .createGroup(title = body.name)
           .leftSemiflatMap(toApiError[F])
@@ -36,14 +36,60 @@ class GroupsRouter[F[_]: Sync](
 
   private def adminGetGroups =
     getApiAdminGroups
-      .serverSecurityLogic { token =>
-        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
-      }
-      .serverLogic { userType => body =>
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ => _ =>
         groupService.getAllGroups
           .leftSemiflatMap(toApiError[F])
-          .map(_.map(group => GroupResponseItemDto(group.id, group.title, group.kpis.map(kpi => KpiInGroupItemDto(kpi.id, kpi.title)))))
+          .map(_.map(group => {
+            val kpis = group.kpis.map(kpi => KpiInGroupItemDto(kpi.id, kpi.title))
+            val teachers = group.teachers.map(teacher => TeacherInGroupItemDto(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName))
+            GroupResponseItemDto(group.id, group.title, kpis, teachers)
+          }))
           .value.handleErrorWith(throwableToUnexpected[F, List[GroupResponseItemDto]])
+      }
+
+  private def adminAddKpiToGroup =
+    putApiAdminGroupsGroupIdKpiKpiId
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ =>
+        body =>
+          groupService
+            .addKpiToGroup(body._1, body._2)
+            .leftSemiflatMap(toApiError[F])
+            .value.handleErrorWith(throwableToUnexpected[F, Unit])
+      }
+
+  private def adminDeleteKpiFromGroup =
+    deleteApiAdminGroupsGroupIdKpiKpiId
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ =>
+        body =>
+          groupService
+            .removeKpiFromGroup(body._1, body._2)
+            .leftSemiflatMap(toApiError[F])
+            .value.handleErrorWith(throwableToUnexpected[F, Unit])
+      }
+
+  private def adminAddTeacherToGroup =
+    putApiAdminGroupsGroupIdTeacherTeacherId
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ =>
+        body =>
+          groupService
+            .addTeacherToGroup(body._1, body._2)
+            .leftSemiflatMap(toApiError[F])
+            .value.handleErrorWith(throwableToUnexpected[F, Unit])
+      }
+
+  private def adminDeleteTeacherFromGroup =
+    deleteApiAdminGroupsGroupIdTeacherTeacherId
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ =>
+        body =>
+          groupService
+            .removeTeacherFromGroup(body._1, body._2)
+            .leftSemiflatMap(toApiError[F])
+            .value.handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }

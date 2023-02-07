@@ -14,24 +14,24 @@ class TeacherGroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F
        """.update.run.void
       .transact(transactor)
 
-  def getByGroupId(groupId: String): F[Option[TeacherGroup]] =
+  def getByGroupId(groupId: String): F[List[TeacherGroup]] =
     sql"""
        SELECT teacherId, groupId
        FROM teacher_group
        WHERE groupId = $groupId
        """
       .query[TeacherGroup]
-      .option
+      .to[List]
       .transact(transactor)
 
-  def getByTeacherId(teacherId: String): F[Option[TeacherGroup]] =
+  def getByTeacherId(teacherId: String): F[List[TeacherGroup]] =
     sql"""
        SELECT teacherId, groupId
        FROM teacher_group
        WHERE teacherId = $teacherId
        """
       .query[TeacherGroup]
-      .option
+      .to[List]
       .transact(transactor)
 
   def delete(link: TeacherGroup): F[Unit] =

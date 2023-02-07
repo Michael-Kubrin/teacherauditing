@@ -23,7 +23,7 @@ class EstimateService[F[_]](
 
   def createEstimate(topicId: String, kpiId: String, teacherId: String, score: Long): EitherT[F, AppError, Unit] =
     for {
-      group <- EitherT.fromOptionF(teacherGroupDAO.getByTeacherId(teacherId), AppError.TeacherWithoutGroup(teacherId).cast)
+      group <- EitherT.fromOptionF(teacherGroupDAO.getByTeacherId(teacherId).map(_.headOption), AppError.TeacherWithoutGroup(teacherId).cast)
       _ <- EitherT(
         estimateDAO
           .insert(

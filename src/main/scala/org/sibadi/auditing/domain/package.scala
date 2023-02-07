@@ -19,10 +19,31 @@ package object domain {
     title: String
   )
 
+  final case class FullTeacher(
+    id: String,
+    firstName: String,
+    lastName: String,
+    middleName: Option[String]
+  )
+
+  final case class TeacherDetails(
+    id: String,
+    firstName: String,
+    lastName: String,
+    middleName: Option[String],
+    groups: List[GroupName]
+  )
+
+  final case class GroupName(
+    id: String,
+    name: String
+  )
+
   final case class FullGroup(
     id: String,
     title: String,
-    kpis: List[FullKpi]
+    kpis: List[FullKpi],
+    teachers: List[FullTeacher]
   )
 
   object EstimateStatus extends Enumeration() {

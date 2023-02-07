@@ -12,9 +12,7 @@ import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 class AppRouter[F[_]: Async](
   groupsRouter: GroupsRouter[F],
-  kpiGroupRouter: KpiGroupRouter[F],
   kpiRouter: KpiRouter[F],
-  kpiTeacherRouter: KpiTeacherRouter[F],
   publicRouter: PublicRouter[F],
   reviewerActionsRouter: ReviewerActionsRouter[F],
   reviewersRouter: ReviewersRouter[F],
@@ -39,9 +37,7 @@ class AppRouter[F[_]: Async](
 
   private def allRoutes: List[ServerEndpoint[Any, F]] =
     groupsRouter.routes ++
-      kpiGroupRouter.routes ++
       kpiRouter.routes ++
-      kpiTeacherRouter.routes ++
       publicRouter.routes ++
       reviewerActionsRouter.routes ++
       reviewersRouter.routes ++
@@ -54,9 +50,7 @@ class AppRouter[F[_]: Async](
 object AppRouter {
   def apply[F[_]: Async](
     groupsRouter: GroupsRouter[F],
-    kpiGroupRouter: KpiGroupRouter[F],
     kpiRouter: KpiRouter[F],
-    kpiTeacherRouter: KpiTeacherRouter[F],
     publicRouter: PublicRouter[F],
     reviewerActionsRouter: ReviewerActionsRouter[F],
     reviewersRouter: ReviewersRouter[F],
@@ -67,9 +61,7 @@ object AppRouter {
     Resource.pure(
       new AppRouter(
         groupsRouter,
-        kpiGroupRouter,
         kpiRouter,
-        kpiTeacherRouter,
         publicRouter,
         reviewerActionsRouter,
         reviewersRouter,

@@ -17,6 +17,7 @@ class TeacherService[F[_]](
   teacherCredsDAO: TeacherCredentialsDAO[F],
   reviewerCredsDAO: ReviewerCredentialsDAO[F],
   teacherGroupDAO: TeacherGroupDAO[F],
+  groupDAO: GroupDAO[F],
   hashGenerator: HashGenerator[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
@@ -77,49 +78,50 @@ class TeacherService[F[_]](
 
   def getTeacher(
     teacherId: String
-  ): EitherT[F, AppError, Teacher] =
-    EitherT(
-      teacherDAO
-        .getTeacherById(teacherId)
-        .map(_.toRight(AppError.TeacherDoesNotExists(teacherId).cast))
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Teacher])
-    )
+  ): EitherT[F, AppError, TeacherDetails] = {
 
-  def getAllTeachers: EitherT[F, AppError, List[Teacher]] =
+    def getTeacher: OptionT[F, Teacher] =
+      OptionT(teacherDAO.getTeacherById(teacherId))
+
+    def getGroupsForTeacher: F[List[TeacherGroup]] =
+      teacherGroupDAO.getByTeacherId(teacherId)
+
+    def logic: OptionT[F, TeacherDetails] =
+      getTeacher.semiflatMap { teacher =>
+        getGroupsForTeacher.flatMap { groupLinks =>
+          groupLinks
+            .map { groupLink =>
+              groupDAO.get(groupLink.groupId)
+            }
+            .flatTraverse(_.map(_.toList))
+            .map { groups =>
+              TeacherDetails(
+                id = teacher.id,
+                firstName = teacher.firstName,
+                lastName = teacher.lastName,
+                middleName = teacher.middleName,
+                groups = groups.map(group => GroupName(group.id, group.title))
+              )
+            }
+        }
+      }
+
+    EitherT(
+      logic
+        .toRight(AppError.TeacherDoesNotExists(teacherId).cast)
+        .value
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[TeacherDetails])
+    )
+  }
+
+  def getAllTeachers: EitherT[F, AppError, List[FullTeacher]] =
     EitherT(
       teacherDAO.getAllTeachers
+        .map(
+          _.map(teacher => FullTeacher(id = teacher.id, firstName = teacher.firstName, lastName = teacher.lastName, middleName = teacher.middleName))
+        )
         .map(_.asRight[AppError])
-        .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[Teacher]])
-    )
-
-  //TODO: TeacherGroupService:
-
-  def createGroup: EitherT[F, AppError, Unit] =
-    for {
-      teacherId <- EitherT.pure(UUID.randomUUID().toString) // TODO: Not sure, that we must create teacherId here
-      groupId   <- EitherT.pure(UUID.randomUUID().toString)
-      _ <- EitherT(
-        teacherGroupDAO
-          .insert(db.TeacherGroup(teacherId, groupId))
-          .map(_.asRight[AppError])
-          .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
-      )
-    } yield ()
-
-  def getByGroupId(groupId: String): EitherT[F, AppError, Option[TeacherGroup]] =
-    EitherT(
-      teacherGroupDAO
-        .getByGroupId(groupId)
-        .map(_.asRight[AppError])
-        .handleError(throwable => AppError.GroupByIdDoesNotExists(throwable).asLeft[Option[TeacherGroup]])
-    )
-
-  def getByTeacherId(teacherId: String): EitherT[F, AppError, Option[TeacherGroup]] =
-    EitherT(
-      teacherGroupDAO
-        .getByTeacherId(teacherId)
-        .map(_.asRight[AppError])
-        .handleError(throwable => AppError.TeacherByIdDoesNotExists(throwable).asLeft[Option[TeacherGroup]])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[FullTeacher]])
     )
 
 }
@@ -131,9 +133,10 @@ object TeacherService {
     teacherCredsDAO: TeacherCredentialsDAO[F],
     reviewerCredsDAO: ReviewerCredentialsDAO[F],
     teacherGroupDAO: TeacherGroupDAO[F],
+    groupDAO: GroupDAO[F],
     hashGenerator: HashGenerator[F]
   )(implicit
     M: MonadCancel[F, Throwable]
   ): Resource[F, TeacherService[F]] =
-    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, reviewerCredsDAO, teacherGroupDAO, hashGenerator))
+    Resource.pure(new TeacherService(tokenGenerator, teacherDAO, teacherCredsDAO, reviewerCredsDAO, teacherGroupDAO, groupDAO, hashGenerator))
 }

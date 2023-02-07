@@ -1,9 +1,9 @@
 package org.sibadi.auditing.api.routes
 
 import cats.effect.Sync
-import cats.syntax.all._
+import cats.syntax.applicativeError._
 import org.sibadi.auditing.api.endpoints.TeachersAPI._
-import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, TeacherResponse, toApiError}
+import org.sibadi.auditing.api.model._
 import org.sibadi.auditing.service._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -18,18 +18,16 @@ class TeachersRouter[F[_]: Sync](
   topicService: TopicService[F]
 ) {
 
-  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
+  implicit private def logger: Logger[F] = Slf4jLogger.getLogger
 
-  def routes = List(adminCreateTeacher, adminGetTeachers, adminEditTeacher)
+  implicit private val auth: Authenticator[F] = authenticator
+
+  def routes = List(adminCreateTeacher, adminGetTeachers, adminEditTeacher, adminGetTeacher)
 
   private def adminCreateTeacher =
     postApiAdminTeachers
-      .serverSecurityLogic { token =>
-        authenticator.isAdmin(token)
-          .toRight(ApiError.Unauthorized(s"Unauthorized by token: $token").cast)
-          .value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
-      }
-      .serverLogic { userType => body =>
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ => body =>
         teacherService
           .createTeacher(
             firstName = body.name,
@@ -41,33 +39,50 @@ class TeachersRouter[F[_]: Sync](
             ResponseIdPassword(createdTeacher.id, createdTeacher.password)
           }
           .leftSemiflatMap(toApiError[F])
-          .value.handleErrorWith(throwableToUnexpected[F, ResponseIdPassword])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, ResponseIdPassword])
       }
 
   private def adminGetTeachers =
     getApiAdminTeachers
-      .serverSecurityLogic { bearer =>
-        authenticator.isAdmin(bearer).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ => _ =>
+        teacherService.getAllTeachers
+          .map(_.map(teacher => TeacherItemResponse(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName)))
+          .leftSemiflatMap(toApiError[F])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, List[TeacherItemResponse]])
       }
-      .serverLogic { userType => body =>
-//        teacherService.getAllTeachers
-//          .leftSemiflatMap(toApiError[F])
-//          TODO: how to set groupNames?)
-//          .map(_.map(x => TeacherResponse(x.id, x.firstName, x.lastName, x.middleName, groupNames = ???)))
-//          .value.handleErrorWith(throwableToUnexpected[F, Unit])
-        ApiError.InternalError("Not implemented").cast.asLeft[List[TeacherResponse]].pure[F]
+
+  private def adminGetTeacher =
+    getApiAdminTeachersTeacherId
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ => teacherId =>
+        teacherService
+          .getTeacher(teacherId)
+          .map(teacher =>
+            TeacherResponse(
+              teacher.id,
+              teacher.firstName,
+              teacher.lastName,
+              teacher.middleName,
+              teacher.groups.map(group => TeacherGroupItemResponse(group.id, group.name))
+            )
+          )
+          .leftSemiflatMap(toApiError[F])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, TeacherResponse])
       }
 
   private def adminEditTeacher =
     putApiAdminTeachers
-      .serverSecurityLogic { token =>
-        authenticator.isAdmin(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
-      }
-      .serverLogic { userType => body =>
+      .serverSecurityLogic(adminSecurityLogic[F])
+      .serverLogic { _ => body =>
         teacherService
           .updateTeacher(body._2.name, body._2.surName, body._2.middleName, body._1)
           .leftSemiflatMap(toApiError[F])
-          .value.handleErrorWith(throwableToUnexpected[F, Unit])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Unit])
       }
 
 }
