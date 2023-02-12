@@ -19,14 +19,18 @@ class ReviewerActionsRouter[F[_]: Sync](
   topicService: TopicService[F]
 ) {
 
-  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
+  implicit private def logger: Logger[F] = Slf4jLogger.getLogger
 
-  def routes = List(adminEditStatus)
+  def routes = List(adminEditStatus, getTeachers)
 
   private def adminEditStatus =
     putApiAdminTopicsTopicIdKpiKpiIdTeachersTeacherIdStatus
       .serverSecurityLogic { token =>
-        authenticator.atLeastReviewer(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+        authenticator
+          .atLeastReviewer(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         val domainStatus = body._4.newstatus match {
@@ -38,7 +42,53 @@ class ReviewerActionsRouter[F[_]: Sync](
         estimateService
           .updateEstimate(topicId = body._1, kpiId = body._2, teacherId = body._3, newStatus = domainStatus)
           .leftSemiflatMap(toApiError[F])
-          .value.handleErrorWith(throwableToUnexpected[F, Unit])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Unit])
       }
+
+  private def getTeachers =
+    getApiReviewerTeachers
+      .serverSecurityLogic { token =>
+        authenticator
+          .atLeastReviewer(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+      }
+      .serverLogic { _ => teacherId =>
+        teacherService
+          .getTeacher(teacherId)
+          .map(teacher =>
+            TeacherResponse(
+              teacher.id,
+              teacher.firstName,
+              teacher.lastName,
+              teacher.middleName,
+              teacher.groups.map(group => TeacherGroupItemResponse(group.id, group.name))
+            )
+          )
+          .leftSemiflatMap(toApiError[F])
+          .value
+          .handleErrorWith(throwableToUnexpected[F, TeacherResponse])
+      }
+
+//Todo: check teacherId
+
+//  private def adminGetEstimate =
+//    getApiReviewerEstimate
+//      .serverSecurityLogic { token =>
+//        authenticator
+//          .atLeastReviewer(token)
+//          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+//          .value
+//          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+//      }
+//      .serverLogic { userType => body =>
+//        reviewerService
+//          .getEstimate(kpiId = body, teacherId = body)
+//          .leftSemiflatMap(toApiError[F])
+//          .value
+//          .handleErrorWith(throwableToUnexpected[F, EstimateResponse])
+//      }
 
 }

@@ -3,8 +3,8 @@ package org.sibadi.auditing.db
 import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
-import doobie.syntax.all._
 import doobie.postgres.implicits._
+import doobie.syntax.all._
 
 class GroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
 
@@ -42,4 +42,10 @@ class GroupDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throw
        """.update.run.void
       .transact(transactor)
 
+  def deleteGroup(group: Group): F[Unit] =
+    sql"""
+       DELETE FROM teacher_group
+       WHERE group_id = ${group.id}, title = ${group.title}, deleteDt = ${group.deleteDt}
+       """.update.run.void
+      .transact(transactor)
 }

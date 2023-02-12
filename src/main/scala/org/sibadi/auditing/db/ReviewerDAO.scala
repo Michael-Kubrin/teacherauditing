@@ -3,8 +3,8 @@ package org.sibadi.auditing.db
 import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
-import doobie.syntax.all._
 import doobie.postgres.implicits._
+import doobie.syntax.all._
 
 class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
 
@@ -51,5 +51,16 @@ class ReviewerDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Th
   //       """.update.run
   //      .map(_ => ())
   //      .transact(transactor)
+
+  def getEstimateById(teacherId: String, kpiId: String): F[Option[Estimate]] =
+    sql"""
+       SELECT topicId, kpiId, groupId, teacherId, status, score, lastReviewerId, lastChangesDt
+       FROM estimate
+       WHERE kpiId = $kpiId
+       AND teacherId = $teacherId
+       """
+      .query[Estimate]
+      .option
+      .transact(transactor)
 
 }

@@ -133,6 +133,21 @@ class GroupService[F[_]](
     } yield ()
   }
 
+  def deleteGroup(groupId: String, title: String): EitherT[F, AppError, Unit] = {
+
+    def removeLinkF(): EitherT[F, AppError, Unit] = EitherT(
+      groupDao
+        .deleteGroup(db.Group(groupId, title, None))
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Unit])
+    )
+
+    for {
+      _ <- getGroupF(groupId) // check group exists
+      _ <- removeLinkF()
+    } yield ()
+  }
+
 }
 
 object GroupService {

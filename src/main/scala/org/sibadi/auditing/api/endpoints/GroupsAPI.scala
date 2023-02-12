@@ -16,7 +16,8 @@ object GroupsAPI {
     putApiAdminGroupsGroupIdKpiKpiId,
     deleteApiAdminGroupsGroupIdKpiKpiId,
     putApiAdminGroupsGroupIdTeacherTeacherId,
-    deleteApiAdminGroupsGroupIdTeacherTeacherId
+    deleteApiAdminGroupsGroupIdTeacherTeacherId,
+    deleteApiAdminGroupsGroupId
   )
 
   def postApiAdminGroups: Endpoint[String, CreateGroupRequestDto, ApiError, Unit, Any] =
@@ -101,6 +102,22 @@ object GroupsAPI {
       .description("Привязка учителя к группе")
 
   def deleteApiAdminGroupsGroupIdTeacherTeacherId: Endpoint[String, (String, String), ApiError, Unit, Any] =
+    baseEndpoint.delete
+      .tag("Groups API")
+      .securityIn(auth.bearer[String]())
+      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(statusCode(StatusCode.NoContent))
+      .description("Отвязка учителя от группы")
+
+  def deleteApiAdminGroupsGroupId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     baseEndpoint.delete
       .tag("Groups API")
       .securityIn(auth.bearer[String]())

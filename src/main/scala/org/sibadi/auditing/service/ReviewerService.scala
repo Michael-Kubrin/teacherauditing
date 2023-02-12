@@ -4,7 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.effect.{MonadCancel, Resource}
 import cats.syntax.all._
 import org.sibadi.auditing.db
-import org.sibadi.auditing.db.{Reviewer, ReviewerCredentialsDAO, ReviewerDAO, TeacherCredentialsDAO}
+import org.sibadi.auditing.db._
 import org.sibadi.auditing.domain._
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.util.{HashGenerator, PasswordGenerator, TokenGenerator}
@@ -91,6 +91,13 @@ class ReviewerService[F[_]](
         .handleError(throwable => AppError.Unexpected(throwable).asLeft[List[Reviewer]])
     )
 
+  def getEstimate(kpiId: String, teacherId: String): EitherT[F, AppError, Option[Estimate]] =
+    EitherT(
+      reviewerDAO
+        .getEstimateById(kpiId, teacherId)
+        .map(_.asRight[AppError])
+        .handleError(throwable => AppError.Unexpected(throwable).asLeft[Option[Estimate]])
+    )
 }
 
 object ReviewerService {

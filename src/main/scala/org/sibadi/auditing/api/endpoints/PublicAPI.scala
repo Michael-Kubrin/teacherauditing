@@ -13,7 +13,9 @@ object PublicAPI {
   def publicApi = List(
     postLogin,
     editPassword,
-    postApiPublicTopicsTopicIdKpiKpiIdFilesFileId
+    postApiPublicTopicsTopicIdKpiKpiIdFilesFileId,
+    getPublicGroups,
+    getApiPublicAllTopics
   )
 
   def postLogin: Endpoint[Unit, CreateAccountRequestDto, ApiError, LoginResponse, Any] =
@@ -64,5 +66,52 @@ object PublicAPI {
       )
       .out(fileBody)
       .description("")
+
+  def getPublicGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
+    baseEndpoint.get
+      .tag("Public API")
+      .securityIn(auth.bearer[String]())
+      .in("api" / "public" / "groups")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[List[GroupResponseItemDto]])
+      .description("Получения списков групп от роли админа")
+
+  def getApiPublicAllTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
+    baseEndpoint.get
+      .tag("Teacher Actions API")
+      .securityIn(auth.bearer[String]())
+      .in("api" / "public" / "topics")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[List[TopicItemResponseDto]])
+      .description("")
+
+  def getApiPublicAllKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
+    baseEndpoint.get
+      .tag("Kpi API")
+      .securityIn(auth.bearer[String]())
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
+      .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[List[TopicKpiResponse]])
 
 }

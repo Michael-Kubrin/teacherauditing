@@ -4,7 +4,17 @@ import cats.data.EitherT
 import cats.effect.Sync
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.PublicAPI._
-import org.sibadi.auditing.api.model.{ApiError, LoginResponse, PasswordResponse, toApiError}
+import org.sibadi.auditing.api.model.{
+  toApiError,
+  ApiError,
+  GroupResponseItemDto,
+  KpiInGroupItemDto,
+  LoginResponse,
+  PasswordResponse,
+  TeacherInGroupItemDto,
+  TopicItemResponseDto,
+  TopicKpiResponse
+}
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.service.Authenticator.UserType
 import org.sibadi.auditing.service._
@@ -23,14 +33,15 @@ class PublicRouter[F[_]: Sync](
   topicService: TopicService[F]
 ) {
 
-  private implicit def logger: Logger[F] = Slf4jLogger.getLogger
+  implicit private def logger: Logger[F] = Slf4jLogger.getLogger
 
-  def routes = List(createLogin, changePassword, publicUploadFileId)
+  def routes = List(createLogin, changePassword, publicUploadFileId, getGroups, publicGetTopics, publicGetAllKpi)
 
   private def createLogin =
     postLogin
       .serverLogic { credentials =>
-        authenticator.authenticate(credentials.login, credentials.password)
+        authenticator
+          .authenticate(credentials.login, credentials.password)
           .map(LoginResponse)
           .toRight(ApiError.Unauthorized("Unauthorized").cast)
           .value
@@ -40,7 +51,11 @@ class PublicRouter[F[_]: Sync](
   private def changePassword =
     editPassword
       .serverSecurityLogic { token =>
-        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+        authenticator
+          .atLeastTeacher(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
         val logic: EitherT[F, AppError, String] = userType match {
@@ -61,7 +76,11 @@ class PublicRouter[F[_]: Sync](
   private def publicUploadFileId =
     postApiPublicTopicsTopicIdKpiKpiIdFilesFileId
       .serverSecurityLogic { token =>
-        authenticator.atLeastTeacher(token).toRight(ApiError.Unauthorized("Unauthorized").cast).value.handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+        authenticator
+          .atLeastTeacher(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
       }
       .serverLogic { userType => body =>
 //        estimateService
@@ -74,4 +93,59 @@ class PublicRouter[F[_]: Sync](
   def defaultCreateFile[F[_]](implicit sync: Sync[F]): ServerRequest => F[TapirFile] = _ => sync.blocking(Defaults.createTempFile())
 
   // https://github.com/softwaremill/tapir/blob/master/server/http4s-server/src/main/scala/sttp/tapir/server/http4s/Http4sServerOptions.scala
+
+  private def getGroups =
+    getPublicGroups
+      .serverSecurityLogic { token =>
+        authenticator
+          .atLeastTeacher(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+      }
+      .serverLogic { _ => _ =>
+        groupService.getAllGroups
+          .leftSemiflatMap(toApiError[F])
+          .map(_.map { group =>
+            val kpis     = group.kpis.map(kpi => KpiInGroupItemDto(kpi.id, kpi.title))
+            val teachers = group.teachers.map(teacher => TeacherInGroupItemDto(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName))
+            GroupResponseItemDto(group.id, group.title, kpis, teachers)
+          })
+          .value
+          .handleErrorWith(throwableToUnexpected[F, List[GroupResponseItemDto]])
+      }
+
+  private def publicGetTopics =
+    getApiPublicAllTopics
+      .serverSecurityLogic { token =>
+        authenticator
+          .atLeastTeacher(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+      }
+      .serverLogic { userType => body =>
+        topicService.getAllTopics
+          .leftSemiflatMap(toApiError[F])
+          .map(_.map(topic => TopicItemResponseDto(topic.id, topic.title, List.empty)))
+          .value
+          .handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicItemResponseDto]])
+      }
+
+  private def publicGetAllKpi =
+    getApiPublicAllKpi
+      .serverSecurityLogic { token =>
+        authenticator
+          .atLeastReviewer(token)
+          .toRight(ApiError.Unauthorized("Unauthorized").cast)
+          .value
+          .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
+      }
+      .serverLogic { userType => body =>
+        kpiService.getAllKpi
+          .leftSemiflatMap(toApiError[F])
+          .map(_.map(x => TopicKpiResponse(x.id, x.title)))
+          .value
+          .handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicKpiResponse]])
+      }
 }

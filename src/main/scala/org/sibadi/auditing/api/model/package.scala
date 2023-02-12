@@ -72,6 +72,8 @@ package object model {
 
   final case class EstimateRequest(score: Long)
 
+  final case class EstimateResponse(score: Long)
+
   final case class CreateGroupRequestDto(name: String)
 
   final case class GroupResponseItemDto(
