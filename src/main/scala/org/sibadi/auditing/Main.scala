@@ -4,6 +4,7 @@ import cats.effect._
 import doobie.util.transactor.Transactor
 import org.http4s.HttpRoutes
 import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.server.middleware.CORS
 import org.http4s.server.{Router, Server}
 import org.sibadi.auditing.api.routes._
 import org.sibadi.auditing.configs.{AppConfig, DatabaseConfig, ServerConfig}
@@ -84,6 +85,7 @@ object Main extends IOApp.Simple {
         teacherService,
         topicService
       )
+
       teacherRouter = new TeachersRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
       topicsRouter  = new TopicsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
       router <- AppRouter[F](
@@ -96,9 +98,17 @@ object Main extends IOApp.Simple {
         teacherRouter,
         topicsRouter
       )
-      server <- server[F](cfg.server, router.httpRoutes)
+
+      cors = CORS.policy
+        .withAllowOriginAll
+        .withAllowCredentials(false)
+        .apply(router.httpRoutes)
+
+      server <- server[F](cfg.server, cors)
       _      <- Resource.eval(Logger[F].info(s"Server started at ${cfg.server.host}:${cfg.server.port}"))
     } yield server
+
+
 
   private def createTransactor[F[_]: Async](cfg: DatabaseConfig): Resource[F, Transactor[F]] =
     Resource.eval {

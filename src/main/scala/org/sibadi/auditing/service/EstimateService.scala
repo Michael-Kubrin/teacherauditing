@@ -51,7 +51,7 @@ class EstimateService[F[_]](
     )
 
   def createEstimateFiles(topicId: String, kpiId: String, teacherId: String, file: File): EitherT[F, AppError, Unit] = {
-    val fileId   = Option(file.getName).filterNot(_.isBlank).getOrElse(UUID.randomUUID().toString)
+    val fileId   = Option(file.getName).filterNot(_.isEmpty).getOrElse(UUID.randomUUID().toString)
     val filePath = s"/$topicId/$kpiId/$teacherId/$fileId"
     for {
       _ <- filer.saveToF(file, filePath)
