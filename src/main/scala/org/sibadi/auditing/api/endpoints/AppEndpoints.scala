@@ -21,6 +21,7 @@ object AppEndpoints {
       teacherActionsApi ++
       publicApi ++
       reviewerActionsApi ++
-      yamlDocApi
+      yamlDocApi ++
+      AdminAPI.all
 
 }

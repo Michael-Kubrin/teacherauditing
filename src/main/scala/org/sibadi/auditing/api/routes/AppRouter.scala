@@ -21,10 +21,8 @@ class AppRouter[F[_]: Async](
   topicsRouter: TopicsRouter[F]
 ) {
 
-  private val docRoutes: List[ServerEndpoint[Any, F]] = SwaggerInterpreter().fromEndpoints[F](AppEndpoints.allEndpoints, "aboba", "1.0.0")
-
   def httpRoutes: HttpRoutes[F] =
-    Http4sServerInterpreter[F]().toRoutes(allRoutes ++ docRoutes :+ docAsYamlRoute)
+    Http4sServerInterpreter[F]().toRoutes(allRoutes ++ AppRouter.docRoutes :+ docAsYamlRoute)
 
   def docAsYamlRoute =
     YamlDocAPI.yamlDocAPIEndpoint
@@ -48,6 +46,14 @@ class AppRouter[F[_]: Async](
 }
 
 object AppRouter {
+
+  def docRoutes[F[_]]: List[ServerEndpoint[Any, F]] =
+    SwaggerInterpreter().fromEndpoints[F](
+      AppEndpoints.allEndpoints,
+      "Оценка показателей эффективности API",
+      "1.0.0"
+    )
+
   def apply[F[_]: Async](
     groupsRouter: GroupsRouter[F],
     kpiRouter: KpiRouter[F],
