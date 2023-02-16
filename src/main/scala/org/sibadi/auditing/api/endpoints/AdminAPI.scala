@@ -1,8 +1,8 @@
 package org.sibadi.auditing.api.endpoints
 
-import org.sibadi.auditing.api.model.ApiError.{BadRequest, InternalError, NotFound, Unauthorized}
+import org.sibadi.auditing.api.model.ApiError._
 import org.sibadi.auditing.api.endpoints.Examples._
-import org.sibadi.auditing.api.model.{ApiError, CreateGroupRequestDto, GroupResponseItemDto}
+import org.sibadi.auditing.api.model._
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.generic.auto._
@@ -16,13 +16,15 @@ object AdminAPI {
   // kpi crud
   // link/unlink teacher to group
   // link/unlink kpi to group
-  
+
   def all = List(
     // group crud
     createGroupEndpoint,
     getAllGroupsEndpoint,
     deleteGroupEndpoint,
+    editGroupEndpoint,
     // topics crud
+    createTopicEndpoint,
 
   )
 
@@ -38,7 +40,9 @@ object AdminAPI {
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description("Параметры запроса невалидны"))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description("Недостаточно прав для авторизованного пользователя"))),
+          oneOfVariant(
+            statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description("Недостаточно прав для авторизованного пользователя"))
+          ),
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Критическая ошибка")))
         )
       )
@@ -75,11 +79,28 @@ object AdminAPI {
       )
       .out(statusCode(StatusCode.NoContent).description("Успешное удаление группы"))
 
-  def createTopicEndpoint: Endpoint[Unit, Unit, ApiError, Unit, Any] =
+  def editGroupEndpoint: Endpoint[String, EditGroupName, ApiError, Unit, Any] =
+    baseEndpoint.put
+      .tag("API Admin")
+      .in("api" / "admin" / "groups" / path[String]("groupId").description("Идентификатор группы, которую необходимо изменить").example("fhasdhf4327890fdshkl"))
+      .in(jsonBody[EditGroupName])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(statusCode(StatusCode.NoContent))
+      .description("Успешное редактирование имени группы")
+
+  def createTopicEndpoint: Endpoint[Unit, CreateTopicName, ApiError, Unit, Any] =
     baseEndpoint.get
       .tag("API Admin")
       .in("groups")
       .summary("Список групп")
+      .in(jsonBody[CreateTopicName])
       .description("Запрос возвращает список всех доступных групп, а также подвязанных к каждой группе показатели эффективности и участников группы")
       .errorOut(
         oneOf[ApiError](
@@ -169,7 +190,5 @@ object AdminAPI {
       )
       .out(statusCode(StatusCode.NoContent))
       .description("Отвязка учителя от группы")
-  
-  
 
 }

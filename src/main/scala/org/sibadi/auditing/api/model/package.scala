@@ -30,6 +30,10 @@ package object model {
 
   final case class EditTopicRequestDto(name: String)
 
+  final case class EditGroupName(name: String)
+
+  final case class CreateTopicName(name: String)
+
   final case class TopicKpiResponse(id: String, title: String)
 
   final case class EditKpiRequestDto(aboba: String)
