@@ -36,7 +36,7 @@ package object model {
 
   final case class TopicKpiResponse(id: String, title: String)
 
-  final case class EditKpiRequestDto(aboba: String)
+  final case class EditKpiRequestDto(name: String)
 
   final case class EditTeacherStatusRequest(newstatus: ReviewStatus.ReviewStatus)
 
