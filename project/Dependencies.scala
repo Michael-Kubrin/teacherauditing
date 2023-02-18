@@ -40,6 +40,7 @@ object Dependencies {
   val doobiePostgres = "org.tpolecat"                %% "doobie-postgres"         % Versions.doobie
   val flyWay         = "org.flywaydb"                 % "flyway-core"             % Versions.flyWay
   val pureConfig     = "com.github.pureconfig"       %% "pureconfig"              % Versions.pureConfigVersion
+  val enumeratum    = "com.beachape" %% "enumeratum" % "1.7.2"
 
   val all: Seq[ModuleID] =
     Seq(
@@ -61,7 +62,8 @@ object Dependencies {
       doobieHikari,
       doobiePostgres,
       flyWay,
-      pureConfig
+      pureConfig,
+      enumeratum
     ) ++ Seq(
       testcontainers,
       weaver
