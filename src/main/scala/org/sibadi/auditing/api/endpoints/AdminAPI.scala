@@ -35,21 +35,15 @@ object AdminAPI {
     deleteKpiEndpoint
   )
 
-  def createGroupEndpoint: Endpoint[String, CreateGroupRequestDto, ApiError, Unit, Any] =
+  def createGroupEndpoint: Endpoint[Unit, CreateGroupRequestDto, ApiError, Unit, Any] =
     baseEndpoint.post
-      .tag("API Admin")
-      .tags(List("API Admin", "API REviewerfjksadljfklasdhjkfjkewahsjkfhjkas"))
-      .securityIn(auth.bearer[String]())
+      .tags(List("API Admin"))
       .in("groups")
       .summary("Создание группы")
       .description("Создание группы")
       .in(jsonBody[CreateGroupRequestDto].example(exampleCreateGroupRequestDto))
       .errorOut(
         oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description("Параметры запроса невалидны"))),
-          oneOfVariant(
-            statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description("Недостаточно прав для авторизованного пользователя"))
-          ),
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Критическая ошибка")))
         )
       )
@@ -64,7 +58,6 @@ object AdminAPI {
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
@@ -90,7 +83,7 @@ object AdminAPI {
     baseEndpoint.put
       .tag("API Admin")
       .in(
-        "api" / "admin" / "groups" / path[String]("groupId")
+        "groups" / path[String]("groupId")
           .description("Идентификатор группы, которую необходимо изменить")
           .example("fhasdhf4327890fdshkl")
       )
@@ -107,8 +100,8 @@ object AdminAPI {
 
   def createTopicEndpoint: Endpoint[Unit, CreateTopicName, ApiError, Unit, Any] =
     baseEndpoint.post
-      .tag("Topics API")
-      .in("api" / "admin" / "topics")
+      .tag("API Admin")
+      .in("topics")
       .in(jsonBody[CreateTopicName].description("Название топика").example(CreateTopicName("Качество приема")))
       .description("Создание раздела")
       .errorOut(
@@ -123,8 +116,8 @@ object AdminAPI {
 
   def getAllTopicsEndpoint: Endpoint[Unit, Unit, ApiError, List[TopicItemResponseDto], Any] =
     baseEndpoint.get
-      .tag("Topics API")
-      .in("api" / "admin" / "topics")
+      .tag("API Admin")
+      .in("topics")
       .description("Получение всех разделов")
       .errorOut(
         oneOf[ApiError](
@@ -138,8 +131,8 @@ object AdminAPI {
 
   def deleteTopicEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
     baseEndpoint.delete
-      .tag("Topics API")
-      .in("api" / "admin" / "topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
+      .tag("API Admin")
+      .in("topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
       .description("Удаление раздела")
       .errorOut(
         oneOf[ApiError](
@@ -153,8 +146,8 @@ object AdminAPI {
 
   def editTopicNameEndpoint: Endpoint[Unit, (String, EditTopicRequestDto), ApiError, Unit, Any] =
     baseEndpoint.put
-      .tag("Topics API")
-      .in("api" / "admin" / "topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
+      .tag("API Admin")
+      .in("topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
       .in(jsonBody[EditTopicRequestDto])
       .description("Внесение изменений в раздел")
       .errorOut(
@@ -169,8 +162,8 @@ object AdminAPI {
 
   def createKpiEndpoint: Endpoint[Unit, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
     baseEndpoint.post
-      .tag("Kpi API")
-      .in("api" / "admin" / "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
+      .tag("API Admin")
+      .in("topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
       .in(jsonBody[CreateKPIRequestDto])
       .description("Создание KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
@@ -184,8 +177,8 @@ object AdminAPI {
 
   def getAllKpiEndpoint: Endpoint[Unit, String, ApiError, List[TopicKpiResponse], Any] =
     baseEndpoint.get
-      .tag("Kpi API")
-      .in("api" / "admin" / "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
+      .tag("API Admin")
+      .in("topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
       .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
         oneOf[ApiError](
@@ -198,9 +191,9 @@ object AdminAPI {
 
   def editKpiEndpoint: Endpoint[Unit, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
     baseEndpoint.put
-      .tag("Kpi API")
+      .tag("API Admin")
       .in(
-        "api" / "admin" / "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi" / path[String]("kpiId")
+        "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi" / path[String]("kpiId")
           .description("Идентификатор KPI")
           .example("678910")
       )
@@ -217,8 +210,8 @@ object AdminAPI {
 
   def deleteKpiEndpoint: Endpoint[Unit, (String, String), ApiError, Unit, Any] =
     baseEndpoint.delete
-      .tag("Kpi API")
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .tag("API Admin")
+      .in("topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
@@ -233,7 +226,7 @@ object AdminAPI {
     baseEndpoint.put
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
+      .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -249,7 +242,7 @@ object AdminAPI {
     baseEndpoint.delete
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
+      .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -265,7 +258,7 @@ object AdminAPI {
     baseEndpoint.put
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -281,7 +274,7 @@ object AdminAPI {
     baseEndpoint.delete
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -297,7 +290,7 @@ object AdminAPI {
     baseEndpoint.delete
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),

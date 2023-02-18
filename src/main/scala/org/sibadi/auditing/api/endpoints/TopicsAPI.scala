@@ -21,7 +21,7 @@ object TopicsAPI {
     baseEndpoint.post
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics")
+      .in("topics")
       .in(jsonBody[CreateTopicsRequestDto])
       .description("Создание раздела")
       .errorOut(
@@ -37,7 +37,7 @@ object TopicsAPI {
     baseEndpoint.get
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics")
+      .in("topics")
       .description("Получение всех разделов")
       .errorOut(
         oneOf[ApiError](
@@ -52,7 +52,7 @@ object TopicsAPI {
     baseEndpoint.delete
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId"))
+      .in("topics" / path[String]("topicId"))
       .description("Удаление раздела")
       .errorOut(
         oneOf[ApiError](
@@ -68,7 +68,7 @@ object TopicsAPI {
     baseEndpoint.put
       .tag("Topics API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId"))
+      .in("topics" / path[String]("topicId"))
       .in(jsonBody[EditTopicRequestDto])
       .description("Внесение изменений в раздел")
       .errorOut(

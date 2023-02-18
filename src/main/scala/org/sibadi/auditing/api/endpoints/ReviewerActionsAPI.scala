@@ -21,7 +21,7 @@ object ReviewerActionsAPI {
     baseEndpoint.put
       .tag("Teacher Actions API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teachers" / path[String]("teacherId") / "status")
+      .in("topics" / path[String]("topicId") / "kpi" / path[String]("kpiId") / "teachers" / path[String]("teacherId") / "status")
       .in(jsonBody[EditTeacherStatusRequest])
       .errorOut(
         oneOf[ApiError](
@@ -38,7 +38,7 @@ object ReviewerActionsAPI {
     baseEndpoint.get
       .tag("Reviewer Actions API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers" / path[String]("teacherId"))
+      .in("teachers" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -54,7 +54,7 @@ object ReviewerActionsAPI {
     baseEndpoint.get
       .tag("Reviewer Actions API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers" / path[String]("teacherId"))
+      .in("teachers" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),

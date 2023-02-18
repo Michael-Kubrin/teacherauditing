@@ -24,7 +24,7 @@ object GroupsAPI {
     baseEndpoint.post
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups")
+      .in("groups")
       .in(jsonBody[CreateGroupRequestDto])
       .errorOut(
         oneOf[ApiError](
@@ -41,7 +41,7 @@ object GroupsAPI {
     baseEndpoint.get
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups")
+      .in("groups")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -57,7 +57,7 @@ object GroupsAPI {
     baseEndpoint.put
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
+      .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -73,7 +73,7 @@ object GroupsAPI {
     baseEndpoint.delete
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
+      .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -89,7 +89,7 @@ object GroupsAPI {
     baseEndpoint.put
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -105,7 +105,7 @@ object GroupsAPI {
     baseEndpoint.delete
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -121,7 +121,7 @@ object GroupsAPI {
     baseEndpoint.delete
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
+      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),

@@ -103,7 +103,7 @@ object PublicAPI {
     baseEndpoint.get
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
+      .in("topics" / path[String]("topicId") / "kpi")
       .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
         oneOf[ApiError](

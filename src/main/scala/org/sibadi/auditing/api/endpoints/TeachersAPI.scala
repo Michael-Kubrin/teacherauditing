@@ -21,7 +21,7 @@ object TeachersAPI {
     baseEndpoint.post
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers")
+      .in("teachers")
       .in(jsonBody[CreateTeacherRequest])
       .description("")
       .errorOut(
@@ -38,7 +38,7 @@ object TeachersAPI {
     baseEndpoint.get
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers")
+      .in("teachers")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -54,7 +54,7 @@ object TeachersAPI {
     baseEndpoint.get
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers" / path[String]("teacherId"))
+      .in("teachers" / path[String]("teacherId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -70,7 +70,7 @@ object TeachersAPI {
     baseEndpoint.put
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "teachers" / path[String]("teacherId"))
+      .in("teachers" / path[String]("teacherId"))
       .in(jsonBody[EditTeacherRequest])
       .description("")
       .errorOut(

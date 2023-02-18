@@ -21,7 +21,7 @@ object KpiAPI {
     baseEndpoint.post
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
+      .in("topics" / path[String]("topicId") / "kpi")
       .in(jsonBody[CreateKPIRequestDto])
       .description("Создание KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
@@ -37,7 +37,7 @@ object KpiAPI {
     baseEndpoint.get
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi")
+      .in("topics" / path[String]("topicId") / "kpi")
       .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
       .errorOut(
         oneOf[ApiError](
@@ -52,7 +52,7 @@ object KpiAPI {
     baseEndpoint.put
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .in("topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
       .in(jsonBody[EditKpiRequestDto])
       .errorOut(
         oneOf[ApiError](
@@ -68,7 +68,7 @@ object KpiAPI {
     baseEndpoint.delete
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .in("topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),

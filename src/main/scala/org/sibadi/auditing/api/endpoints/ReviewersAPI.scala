@@ -20,7 +20,7 @@ object ReviewersAPI {
     baseEndpoint.post
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "reviewers")
+      .in("reviewers")
       .in(jsonBody[CreateReviewerRequest])
       .description("Создание роли проверяющего")
       .errorOut(
@@ -37,7 +37,7 @@ object ReviewersAPI {
     baseEndpoint.get
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "reviewers")
+      .in("reviewers")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
@@ -53,7 +53,7 @@ object ReviewersAPI {
     baseEndpoint.put
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
-      .in("api" / "admin" / "reviewers" / path[String]("reviewerId"))
+      .in("reviewers" / path[String]("reviewerId"))
       .in(jsonBody[EditReviewersRequest])
       .errorOut(
         oneOf[ApiError](
