@@ -25,7 +25,9 @@ object AdminAPI {
     editGroupEndpoint,
     // topics crud
     createTopicEndpoint,
-
+    getAllTopicsEndpoint,
+    deleteTopicEndpoint,
+    editTopicNameEndpoint
   )
 
   def createGroupEndpoint: Endpoint[String, CreateGroupRequestDto, ApiError, Unit, Any] =
@@ -79,10 +81,14 @@ object AdminAPI {
       )
       .out(statusCode(StatusCode.NoContent).description("Успешное удаление группы"))
 
-  def editGroupEndpoint: Endpoint[String, EditGroupName, ApiError, Unit, Any] =
+  def editGroupEndpoint: Endpoint[Unit, (String, EditGroupName), ApiError, Unit, Any] =
     baseEndpoint.put
       .tag("API Admin")
-      .in("api" / "admin" / "groups" / path[String]("groupId").description("Идентификатор группы, которую необходимо изменить").example("fhasdhf4327890fdshkl"))
+      .in(
+        "api" / "admin" / "groups" / path[String]("groupId")
+          .description("Идентификатор группы, которую необходимо изменить")
+          .example("fhasdhf4327890fdshkl")
+      )
       .in(jsonBody[EditGroupName])
       .errorOut(
         oneOf[ApiError](
@@ -93,23 +99,68 @@ object AdminAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent))
-      .description("Успешное редактирование имени группы")
 
   def createTopicEndpoint: Endpoint[Unit, CreateTopicName, ApiError, Unit, Any] =
-    baseEndpoint.get
-      .tag("API Admin")
-      .in("groups")
-      .summary("Список групп")
-      .in(jsonBody[CreateTopicName])
-      .description("Запрос возвращает список всех доступных групп, а также подвязанных к каждой группе показатели эффективности и участников группы")
+    baseEndpoint.post
+      .tag("Topics API")
+      .in("api" / "admin" / "topics")
+      .in(jsonBody[CreateTopicName].description("Название топика").example(CreateTopicName("Качество приема")))
+      .description("Создание раздела")
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
           oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[GroupResponseItemDto]].example(exampleGroupResponseItemDtoList))
+      .out(statusCode(StatusCode.unsafeApply(201)))
+
+  def getAllTopicsEndpoint: Endpoint[Unit, Unit, ApiError, List[TopicItemResponseDto], Any] =
+    baseEndpoint.get
+      .tag("Topics API")
+      .in("api" / "admin" / "topics")
+      .description("Получение всех разделов")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[List[TopicItemResponseDto]])
+
+  def deleteTopicEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
+    baseEndpoint.delete
+      .tag("Topics API")
+      .in("api" / "admin" / "topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
+      .description("Удаление раздела")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(statusCode(StatusCode.NoContent))
+
+  def editTopicNameEndpoint: Endpoint[Unit, (String, EditTopicRequestDto), ApiError, Unit, Any] =
+    baseEndpoint.put
+      .tag("Topics API")
+      .in("api" / "admin" / "topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
+      .in(jsonBody[EditTopicRequestDto])
+      .description("Внесение изменений в раздел")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(statusCode(StatusCode.NoContent))
 
   def putApiAdminGroupsGroupIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     baseEndpoint.put
