@@ -27,7 +27,12 @@ object AdminAPI {
     createTopicEndpoint,
     getAllTopicsEndpoint,
     deleteTopicEndpoint,
-    editTopicNameEndpoint
+    editTopicNameEndpoint,
+    //kpi crud
+    createKpiEndpoint,
+    getAllKpiEndpoint,
+    editKpiEndpoint,
+    deleteKpiEndpoint
   )
 
   def createGroupEndpoint: Endpoint[String, CreateGroupRequestDto, ApiError, Unit, Any] =
@@ -161,6 +166,68 @@ object AdminAPI {
         )
       )
       .out(statusCode(StatusCode.NoContent))
+
+  def createKpiEndpoint: Endpoint[Unit, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
+    baseEndpoint.post
+      .tag("Kpi API")
+      .in("api" / "admin" / "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
+      .in(jsonBody[CreateKPIRequestDto])
+      .description("Создание KPI. KPI - Ключевой Показатель эффективности")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[ResponseId])
+
+  def getAllKpiEndpoint: Endpoint[Unit, String, ApiError, List[TopicKpiResponse], Any] =
+    baseEndpoint.get
+      .tag("Kpi API")
+      .in("api" / "admin" / "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
+      .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(jsonBody[List[TopicKpiResponse]])
+
+  def editKpiEndpoint: Endpoint[Unit, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
+    baseEndpoint.put
+      .tag("Kpi API")
+      .in(
+        "api" / "admin" / "topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi" / path[String]("kpiId")
+          .description("Идентификатор KPI")
+          .example("678910")
+      )
+      .in(jsonBody[EditKpiRequestDto])
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(statusCode(StatusCode.NoContent))
+      .description("Изменения KPI. KPI - Ключевой Показатель эффективности")
+
+  def deleteKpiEndpoint: Endpoint[Unit, (String, String), ApiError, Unit, Any] =
+    baseEndpoint.delete
+      .tag("Kpi API")
+      .in("api" / "admin" / "topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
+      .errorOut(
+        oneOf[ApiError](
+          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
+          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
+          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+        )
+      )
+      .out(statusCode(StatusCode.NoContent))
+      .description("Удаления KPI. KPI - Ключевой Показатель эффективности")
 
   def putApiAdminGroupsGroupIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
     baseEndpoint.put
