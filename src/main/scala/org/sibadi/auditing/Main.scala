@@ -1,30 +1,130 @@
 package org.sibadi.auditing
 
-import cats.effect.{IO, IOApp, Sync}
+import cats.effect._
+import doobie.util.transactor.Transactor
+import org.http4s.HttpRoutes
 import org.http4s.blaze.server.BlazeServerBuilder
-import org.http4s.server.Router
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.http4s.server.middleware.CORS
+import org.http4s.server.{Router, Server}
+import org.sibadi.auditing.api.routes._
+import org.sibadi.auditing.configs.{AppConfig, DatabaseConfig, ServerConfig}
+import org.sibadi.auditing.db._
+import org.sibadi.auditing.service._
+import org.sibadi.auditing.util.{Filer, HashGenerator, TokenGenerator}
+import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import sttp.tapir.server.http4s.Http4sServerInterpreter
-
-import scala.io.StdIn
 
 object Main extends IOApp.Simple {
 
-  implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger
-
-  val routes = Http4sServerInterpreter[IO]().toRoutes(Endpoints.all)
+  implicit def logger[F[_]: Sync]: Logger[F] = Slf4jLogger.getLogger
 
   override def run: IO[Unit] =
-    BlazeServerBuilder[IO]
-      .bindHttp(9999, "localhost")
+    main[IO].use { _ =>
+      IO.never
+    }.void
+
+  private def main[F[_]: Async]: Resource[F, Server] =
+    for {
+      cfg        <- Resource.eval(AppConfig.read)
+      _          <- Resource.eval(Logger[F].trace(AppConfig.show.show(cfg)))
+      _          <- Resource.eval(Migrations(cfg.database).migrate())
+      transactor <- createTransactor(cfg.database)
+      // DAOs
+      teacher             = new TeacherDAO(transactor)
+      teacherCredentials  = new TeacherCredentialsDAO(transactor)
+      reviewer            = new ReviewerDAO(transactor)
+      reviewerCredentials = new ReviewerCredentialsDAO(transactor)
+      group               = new GroupDAO(transactor)
+      kpi                 = new KpiDAO(transactor)
+      topic               = new TopicDAO(transactor)
+      topicKpi            = new TopicKpiDAO(transactor)
+      kpiGroup            = new KpiGroupDAO(transactor)
+      teacherGroup        = new TeacherGroupDAO(transactor)
+      estimate            = new EstimateDAO(transactor)
+      estimateFiles       = new EstimateFilesDAO(transactor)
+      // Utils
+      filer          = new Filer[F]
+      tokenGenerator = TokenGenerator()
+      hashGenerator  = new HashGenerator()
+      authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
+      // Service
+      estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
+      groupService    <- GroupService[F](group, kpi, kpiGroup, teacherGroup, teacher)
+      kpiService      <- KpiService[F](kpi, kpiGroup)
+      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
+      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, group, hashGenerator)
+      topicService    <- TopicService[F](topic, kpi, topicKpi)
+      // Router
+      groupsRouter   = new GroupsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
+      kpiRouter      = new KpiRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
+      publicRouter = new PublicRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
+      reviewerActionsRouter = new ReviewerActionsRouter[F](
+        authenticator,
+        estimateService,
+        groupService,
+        kpiService,
+        reviewerService,
+        teacherService,
+        topicService
+      )
+      reviewersRouter = new ReviewersRouter[F](
+        authenticator,
+        estimateService,
+        groupService,
+        kpiService,
+        reviewerService,
+        teacherService,
+        topicService
+      )
+      teacherActionsRouter = new TeacherActionsRouter[F](
+        authenticator,
+        estimateService,
+        groupService,
+        kpiService,
+        reviewerService,
+        teacherService,
+        topicService
+      )
+
+      teacherRouter = new TeachersRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
+      topicsRouter  = new TopicsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
+      router <- AppRouter[F](
+        groupsRouter,
+        kpiRouter,
+        publicRouter,
+        reviewerActionsRouter,
+        reviewersRouter,
+        teacherActionsRouter,
+        teacherRouter,
+        topicsRouter
+      )
+
+      cors = CORS.policy
+        .withAllowOriginAll
+        .withAllowCredentials(false)
+        .apply(router.httpRoutes)
+
+      server <- server[F](cfg.server, cors)
+      _      <- Resource.eval(Logger[F].info(s"Server started at ${cfg.server.host}:${cfg.server.port}"))
+    } yield server
+
+
+
+  private def createTransactor[F[_]: Async](cfg: DatabaseConfig): Resource[F, Transactor[F]] =
+    Resource.eval {
+      Sync[F].blocking {
+        Transactor.fromDriverManager[F](
+          "org.postgresql.Driver",
+          cfg.jdbcUrl,  // connect URL (driver-specific)
+          cfg.username, // user
+          cfg.password  // password
+        )
+      }
+    }
+
+  private def server[F[_]: Async](cfg: ServerConfig, routes: HttpRoutes[F]): Resource[F, Server] =
+    BlazeServerBuilder[F]
+      .bindHttp(cfg.port, cfg.host)
       .withHttpApp(Router("/" -> routes).orNotFound)
       .resource
-      .use { server =>
-        IO.blocking {
-          println(s"Go to http://localhost:${server.address.getPort}/docs to open SwaggerUI. Press ENTER key to exit.")
-          StdIn.readLine()
-        }
-      }
-      .void
 }
