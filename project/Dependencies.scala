@@ -2,19 +2,19 @@ import sbt._
 
 object Versions {
   val cats              = "2.9.0"
-  val catsEffect        = "3.4.0"
+  val catsEffect        = "3.4.8"
   val catsMtl           = "1.3.0"
-  val fs2               = "3.3.0"
+  val fs2               = "3.6.1"
   val log4cats          = "2.5.0"
-  val logback           = "1.4.4"
+  val logback           = "1.4.5"
   val scala             = "2.13.8"
-  val testcontainers    = "1.17.4"
-  val weaver            = "0.8.0"
-  val tapir             = "1.2.2"
-  val tapirHttp4s       = "0.23.12"
+  val testcontainers    = "1.17.6"
+  val weaver            = "0.8.1"
+  val tapir             = "1.2.9"
+  val tapirHttp4s       = "0.23.13"
   val doobie            = "1.0.0-RC2"
-  val flyWay            = "6.2.4"
-  val pureConfigVersion = "0.17.1"
+  val flyWay            = "9.15.0"
+  val pureConfigVersion = "0.17.2"
 }
 
 object Dependencies {
@@ -34,7 +34,8 @@ object Dependencies {
   val tapirHttp      = "org.http4s"                  %% "http4s-blaze-server"     % Versions.tapirHttp4s
   val tapirSwagger   = "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Versions.tapir
   val tapirJson      = "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % Versions.tapir
-  val tapirApiSpec      = "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml"    % "0.3.1"
+  val tapirApiSpec      = "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml"    % "0.3.2"
+  val tapirEnumerantum = "com.softwaremill.sttp.tapir" %% "tapir-enumeratum" % Versions.tapir
   val doobieCore     = "org.tpolecat"                %% "doobie-core"             % Versions.doobie
   val doobieHikari   = "org.tpolecat"                %% "doobie-hikari"           % Versions.doobie
   val doobiePostgres = "org.tpolecat"                %% "doobie-postgres"         % Versions.doobie
@@ -58,6 +59,7 @@ object Dependencies {
       tapirSwagger,
       tapirJson,
       tapirApiSpec,
+      tapirEnumerantum,
       doobieCore,
       doobieHikari,
       doobiePostgres,
