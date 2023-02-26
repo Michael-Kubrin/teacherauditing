@@ -3,7 +3,7 @@ package org.sibadi.auditing.api.endpoints.refucktor
 import io.circe.generic.auto._
 import org.sibadi.auditing.api.endpoints.Examples._
 import org.sibadi.auditing.api.endpoints.baseEndpoint
-import org.sibadi.auditing.api.model.ApiError._
+import org.sibadi.auditing.api.endpoints.refucktor.TapirErrors._
 import org.sibadi.auditing.api.model._
 import sttp.model.StatusCode
 import sttp.tapir._
@@ -12,18 +12,18 @@ import sttp.tapir.json.circe.jsonBody
 
 object AdminAPI {
 
-  // register teacher and crud
-  // register reviewer and crud
-  // kpi crud
-  // link/unlink teacher to group
-  // link/unlink kpi to group
-
   def all = List(
     // group crud
     createGroupEndpoint,
     getAllGroupsEndpoint,
     deleteGroupEndpoint,
     editGroupEndpoint,
+    // link/unlink teacher to group
+    putApiAdminGroupsGroupIdTeacherTeacherId,
+    deleteApiAdminGroupsGroupIdTeacherTeacherId,
+    // link/unlink kpi to group
+    putApiAdminGroupsGroupIdKpiKpiId,
+    deleteApiAdminGroupsGroupIdKpiKpiId,
     // topics crud
     createTopicEndpoint,
     getAllTopicsEndpoint,
@@ -43,7 +43,7 @@ object AdminAPI {
     createReviewersEndpoint,
     getAllReviewersEndpoint,
     editReviewersEndpoint,
-    deleteReviewersEndpoint
+    deleteReviewersEndpoint,
   )
 
   def createGroupEndpoint: Endpoint[Unit, CreateGroupRequestDto, ApiError, Unit, Any] =
@@ -53,11 +53,7 @@ object AdminAPI {
       .summary("Создание группы")
       .description("Создание группы")
       .in(jsonBody[CreateGroupRequestDto].example(exampleCreateGroupRequestDto))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Критическая ошибка")))
-        )
-      )
+      .errorOut(oneOf[ApiError](serverError500))
       .out(statusCode(StatusCode.NoContent).description("Успешное создание группы"))
 
   def getAllGroupsEndpoint: Endpoint[Unit, Unit, ApiError, List[GroupResponseItemDto], Any] =
@@ -66,12 +62,7 @@ object AdminAPI {
       .in("groups")
       .summary("Список групп")
       .description("Запрос возвращает список всех доступных групп, а также подвязанных к каждой группе показатели эффективности и участников группы")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, serverError500))
       .out(jsonBody[List[GroupResponseItemDto]].example(exampleGroupResponseItemDtoList))
 
   def deleteGroupEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
@@ -80,13 +71,7 @@ object AdminAPI {
       .in("groups" / path[String]("groupId").description("Идентификатор группы, которую необходимо удалить").example("fhasdhf4327890fdshkl"))
       .summary("Удаление группы")
       .description("Запрос удаляет группу")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent).description("Успешное удаление группы"))
 
   def editGroupEndpoint: Endpoint[Unit, (String, EditGroupName), ApiError, Unit, Any] =
@@ -99,13 +84,7 @@ object AdminAPI {
       )
       .summary("Изменения имени группы")
       .in(jsonBody[EditGroupName])
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
   def createTopicEndpoint: Endpoint[Unit, CreateTopicName, ApiError, Unit, Any] =
@@ -115,13 +94,7 @@ object AdminAPI {
       .in(jsonBody[CreateTopicName].description("Название топика").example(CreateTopicName("Качество приема")))
       .description("Создание раздела")
       .summary("Создание раздела")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.unsafeApply(201)))
 
   def getAllTopicsEndpoint: Endpoint[Unit, Unit, ApiError, List[TopicItemResponseDto], Any] =
@@ -130,13 +103,7 @@ object AdminAPI {
       .in("topics")
       .description("Получение всех разделов")
       .summary("Получение всех разделов")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(jsonBody[List[TopicItemResponseDto]])
 
   def deleteTopicEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
@@ -145,13 +112,7 @@ object AdminAPI {
       .in("topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
       .description("Удаление раздела")
       .summary("Удаление раздела")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
   def editTopicNameEndpoint: Endpoint[Unit, (String, EditTopicRequestDto), ApiError, Unit, Any] =
@@ -161,13 +122,7 @@ object AdminAPI {
       .in(jsonBody[EditTopicRequestDto])
       .description("Внесение изменений в раздел")
       .summary("Внесение изменений в раздел")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
   def createKpiEndpoint: Endpoint[Unit, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
@@ -177,12 +132,7 @@ object AdminAPI {
       .in(jsonBody[CreateKPIRequestDto])
       .description("Создание KPI. KPI - Ключевой Показатель эффективности")
       .summary("Создание *Ключевой Показатель эффективности*")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(jsonBody[ResponseId])
 
   def getAllKpiEndpoint: Endpoint[Unit, String, ApiError, List[TopicKpiResponse], Any] =
@@ -191,12 +141,7 @@ object AdminAPI {
       .in("topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
       .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
       .summary("Получения списка *Ключевой Показатель эффективности*")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(jsonBody[List[TopicKpiResponse]])
 
   def editKpiEndpoint: Endpoint[Unit, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
@@ -210,12 +155,7 @@ object AdminAPI {
       .description("Изменения KPI. KPI - Ключевой Показатель эффективности")
       .summary("Изменения имени *Ключевой Показатель эффективности*")
       .in(jsonBody[EditKpiRequestDto])
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
   def deleteKpiEndpoint: Endpoint[Unit, (String, String), ApiError, Unit, Any] =
@@ -230,12 +170,7 @@ object AdminAPI {
       )
       .description("Удаления KPI. KPI - Ключевой Показатель эффективности")
       .summary("Удаления *Ключевой Показатель эффективности*")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
   def createTeachersEndpoint: Endpoint[Unit, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
@@ -249,12 +184,7 @@ object AdminAPI {
       )
       .description("Создание оцениваемого персонала")
       .summary("Создание оцениваемого персонала")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(
         jsonBody[ResponseIdPassword]
           .description("Идентификатор и пароль на созданного пользователя")
@@ -267,13 +197,7 @@ object AdminAPI {
       .in("teachers")
       .description("Получение списка оцениваемого персонала")
       .summary("Получение списка оцениваемого персонала")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(
         jsonBody[List[TeacherItemResponse]]
           .description("Список оцениваемого персонала с их данными: Идентификатор, ФИО")
@@ -291,26 +215,14 @@ object AdminAPI {
       )
       .description("Изменение конкретного пользователя с ролью *Проверяющий*")
       .summary("Изменение конкретного пользователя с ролью *Проверяющий*")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
   def deleteTeachersEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
-    baseEndpoint.put
+    baseEndpoint.delete
       .tag("API Admin")
       .in("teachers" / path[String]("teacherId").description("Идентификатор оценивающего персонала").example("1111s"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Удаление конкретного пользователя с ролью *Оцениваемый персонал*")
       .summary("Удаление конкретного пользователя с ролью *Оцениваемый персонал*")
       .out(statusCode(StatusCode.NoContent))
@@ -324,12 +236,7 @@ object AdminAPI {
           .description("Входные парамметры проверяющего: ФИО, логин")
           .example(CreateReviewerRequest("Иванов", "Иван", Some("Иванович"), "Ivan"))
       )
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Создание пользователя с ролью *Проверяющий*")
       .summary("Создание пользователя с ролью *Проверяющий*")
       .out(
@@ -342,13 +249,7 @@ object AdminAPI {
     baseEndpoint.get
       .tag("API Admin")
       .in("reviewers")
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Получение списка всех пользователей с ролью *Проверяющий*")
       .summary("Получение списка всех пользователей с ролью *Проверяющий*")
       .out(
@@ -366,28 +267,16 @@ object AdminAPI {
           .description("Данные конкретного проверяющего персонала, которые необходимо изменить: ФИО")
           .example(EditReviewersRequest("Сергеев", "Сергей", Some("Сергеевич")))
       )
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Изменения конкретного пользователя с ролью *Проверяющий*")
       .summary("Изменения конкретного пользователя с ролью *Проверяющий*")
       .out(statusCode(StatusCode.NoContent))
 
   def deleteReviewersEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
-    baseEndpoint.put
+    baseEndpoint.delete
       .tag("API Admin")
       .in("reviewers" / path[String]("reviewerId").description("Идентификатор проверяемого персонала").example("2222c"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Удаление конкретного пользователя с ролью *Проверяющий*")
       .summary("Удаление конкретного пользователя с ролью *Проверяющий*")
       .out(statusCode(StatusCode.NoContent))
@@ -397,14 +286,7 @@ object AdminAPI {
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Привязка показателей эффективности к группе")
 
@@ -413,14 +295,7 @@ object AdminAPI {
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Отвязка показателей эффективности от группы")
 
@@ -429,14 +304,7 @@ object AdminAPI {
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Привязка учителя к группе")
 
@@ -445,30 +313,7 @@ object AdminAPI {
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
-      .out(statusCode(StatusCode.NoContent))
-      .description("Отвязка учителя от группы")
-
-  def deleteApiAdminGroupsGroupId: Endpoint[String, (String, String), ApiError, Unit, Any] =
-    baseEndpoint.delete
-      .tag("API Admin")
-      .securityIn(auth.bearer[String]())
-      .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
-      .errorOut(
-        oneOf[ApiError](
-          oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),
-          oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description(""))),
-          oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found"))),
-          oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
-        )
-      )
+      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Отвязка учителя от группы")
 

@@ -1,6 +1,6 @@
 package org.sibadi.auditing.api.endpoints
 
-import org.sibadi.auditing.api.endpoints.refucktor.FullApi
+import org.sibadi.auditing.api.endpoints.refucktor.{AdminAPI, FullApi}
 
 //import org.sibadi.auditing.api.endpoints.GroupsAPI.groupsApi
 //import org.sibadi.auditing.api.endpoints.KpiAPI.kpiApi
@@ -24,6 +24,6 @@ object AppEndpoints {
 //      publicApi ++
 //      reviewerActionsApi ++
 //      yamlDocApi ++
-      FullApi.all
+      FullApi.all ++ AdminAPI.all
 
 }
