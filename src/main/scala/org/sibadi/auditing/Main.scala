@@ -48,13 +48,9 @@ object Main extends IOApp.Simple {
       hashGenerator  = new HashGenerator()
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
-      estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
-      groupService    <- GroupService[F](group, kpi, kpiGroup, teacherGroup, teacher)
-      kpiService      <- KpiService[F](kpi, kpiGroup)
-      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
-      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, group, hashGenerator)
-      topicService    <- TopicService[F](topic, kpi, topicKpi)
-      router = new AppRouter[F]()
+      allService = new AllService[F](transactor)
+      allRouter  = new AllRouter[F](allService)
+      router     = new AppRouter[F](allRouter)
 
       cors = CORS.policy
         .withAllowOriginAll

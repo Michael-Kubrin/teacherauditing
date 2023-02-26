@@ -3,7 +3,7 @@ package org.sibadi.auditing.api
 import cats.syntax.applicativeError._
 import cats.syntax.either._
 import cats.{ApplicativeError, Functor}
-import org.sibadi.auditing.api.model.ApiError
+import org.sibadi.auditing.api.endpoints.model.ApiError
 import org.sibadi.auditing.service.Authenticator
 import org.typelevel.log4cats.Logger
 
