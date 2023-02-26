@@ -61,7 +61,7 @@ class TopicService[F[_]](
       topicsWithKpis <- topics.map { topic =>
         for {
           links <- topicKpiDAO.getByTopicId(topic.id)
-          kpis <- links.map(link => kpiDAO.get(link.kpiId)).flatTraverse(f => f.map(_.toList)).map(_.map(kpi => FullKpi(kpi.id, kpi.title)))
+          kpis  <- links.map(link => kpiDAO.get(link.kpiId)).flatTraverse(f => f.map(_.toList)).map(_.map(kpi => FullKpi(kpi.id, kpi.title)))
         } yield FullTopic(topic.id, topic.title, kpis)
       }.sequence
     } yield topicsWithKpis

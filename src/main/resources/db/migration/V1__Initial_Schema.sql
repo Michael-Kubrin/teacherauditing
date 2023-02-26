@@ -6,28 +6,12 @@ CREATE TABLE IF NOT EXISTS teacher(
     deleteDt TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS teacher_credentials(
-    id TEXT NOT NULL,
-    login TEXT NOT NULL,
-    passwordHash TEXT NOT NULL,
-    bearer TEXT NOT NULL,
-    PRIMARY KEY (id, login)
-);
-
 CREATE TABLE IF NOT EXISTS reviewer(
     id TEXT PRIMARY KEY,
     firstName TEXT NOT NULL,
     lastName TEXT NOT NULL,
     middleName TEXT,
     deleteDt TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS reviewer_credentials(
-    id TEXT NOT NULL,
-    login TEXT NOT NULL,
-    passwordHash TEXT NOT NULL,
-    bearer TEXT NOT NULL,
-    PRIMARY KEY (id, login)
 );
 
 CREATE TABLE IF NOT EXISTS "group" (
@@ -46,6 +30,22 @@ CREATE TABLE IF NOT EXISTS topic(
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     deleteDt TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS teacher_credentials(
+    id TEXT NOT NULL,
+    login TEXT NOT NULL,
+    passwordHash TEXT NOT NULL,
+    bearer TEXT NOT NULL,
+    PRIMARY KEY (id, login)
+);
+
+CREATE TABLE IF NOT EXISTS reviewer_credentials(
+    id TEXT NOT NULL,
+    login TEXT NOT NULL,
+    passwordHash TEXT NOT NULL,
+    bearer TEXT NOT NULL,
+    PRIMARY KEY (id, login)
 );
 
 CREATE TABLE IF NOT EXISTS topic_kpi(

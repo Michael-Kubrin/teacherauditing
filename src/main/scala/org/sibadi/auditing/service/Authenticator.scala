@@ -37,9 +37,8 @@ class Authenticator[F[_]: Monad](
   def isAdmin(token: String): OptionT[F, UserType] =
     OptionT.pure(Admin("").cast).filter(_ => token === adminConfig.bearer)
 
-  def authenticate(login: String, password: String)(implicit L: Logger[F]): OptionT[F, String] = {
+  def authenticate(login: String, password: String)(implicit L: Logger[F]): OptionT[F, String] =
     authAsTeacher(login, password).orElse(authAsReviewer(login, password))
-  }
 
   private def authAsTeacher(login: String, password: String)(implicit L: Logger[F]): OptionT[F, String] =
     OptionT(teacherCredentialsDAO.getByLogin(login))

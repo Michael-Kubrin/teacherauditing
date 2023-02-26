@@ -1,4 +1,4 @@
-package org.sibadi.auditing.api.model
+package org.sibadi.auditing.api.endpoints.model
 
 sealed abstract class ApiError(val code: String) {
   def cast: ApiError = this

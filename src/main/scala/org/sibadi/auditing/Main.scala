@@ -48,67 +48,17 @@ object Main extends IOApp.Simple {
       hashGenerator  = new HashGenerator()
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
-      estimateService <- EstimateService[F](estimate, teacherGroup, estimateFiles, filer)
-      groupService    <- GroupService[F](group, kpi, kpiGroup, teacherGroup, teacher)
-      kpiService      <- KpiService[F](kpi, kpiGroup)
-      reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
-      teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, group, hashGenerator)
-      topicService    <- TopicService[F](topic, kpi, topicKpi)
-      // Router
-      groupsRouter   = new GroupsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      kpiRouter      = new KpiRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      publicRouter = new PublicRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      reviewerActionsRouter = new ReviewerActionsRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
-      reviewersRouter = new ReviewersRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
-      teacherActionsRouter = new TeacherActionsRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
+      allService = new AllService[F](transactor)
+      allRouter  = new AllRouter[F](allService)
+      router     = new AppRouter[F](allRouter)
 
-      teacherRouter = new TeachersRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      topicsRouter  = new TopicsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      router <- AppRouter[F](
-        groupsRouter,
-        kpiRouter,
-        publicRouter,
-        reviewerActionsRouter,
-        reviewersRouter,
-        teacherActionsRouter,
-        teacherRouter,
-        topicsRouter
-      )
-
-      cors = CORS.policy
-        .withAllowOriginAll
+      cors = CORS.policy.withAllowOriginAll
         .withAllowCredentials(false)
         .apply(router.httpRoutes)
 
       server <- server[F](cfg.server, cors)
       _      <- Resource.eval(Logger[F].info(s"Server started at ${cfg.server.host}:${cfg.server.port}"))
     } yield server
-
-
 
   private def createTransactor[F[_]: Async](cfg: DatabaseConfig): Resource[F, Transactor[F]] =
     Resource.eval {
