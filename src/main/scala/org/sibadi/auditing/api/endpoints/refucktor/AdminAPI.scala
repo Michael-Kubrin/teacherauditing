@@ -4,6 +4,7 @@ import io.circe.generic.auto._
 import org.sibadi.auditing.api.endpoints.Examples._
 import org.sibadi.auditing.api.endpoints.baseEndpoint
 import org.sibadi.auditing.api.endpoints.refucktor.TapirErrors._
+import org.sibadi.auditing.api.endpoints.refucktor.model._
 import org.sibadi.auditing.api.model._
 import sttp.model.StatusCode
 import sttp.tapir._

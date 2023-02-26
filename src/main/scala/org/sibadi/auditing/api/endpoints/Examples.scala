@@ -1,7 +1,6 @@
 package org.sibadi.auditing.api.endpoints
 
-import org.sibadi.auditing.api.model.CreateGroupRequestDto
-import org.sibadi.auditing.api.model._
+import org.sibadi.auditing.api.endpoints.refucktor.model._
 
 object Examples {
 
