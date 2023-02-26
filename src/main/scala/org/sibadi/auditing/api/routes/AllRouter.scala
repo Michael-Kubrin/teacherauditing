@@ -43,119 +43,119 @@ class AllRouter[F[_]: Async](
     )
 
   def createGroupEndpointLogic = createGroupEndpoint.serverLogic { params =>
-    service.createGroupEndpointHandle(params)
+    service.createGroupEndpointHandle(params).value
   }
 
   def getAllGroupsEndpointLogic = getAllGroupsEndpoint.serverLogic { params =>
-    service.getAllGroupsEndpointHandle(params)
+    service.getAllGroupsEndpointHandle(params).value
   }
 
   def deleteGroupEndpointLogic = deleteGroupEndpoint.serverLogic { params =>
-    service.deleteGroupEndpointHandle(params)
+    service.deleteGroupEndpointHandle(params).value
   }
 
   def editGroupEndpointLogic = editGroupEndpoint.serverLogic { params =>
-    service.editGroupEndpointHandle(params)
+    service.editGroupEndpointHandle(params).value
   }
 
   def putApiAdminGroupsGroupIdTeacherTeacherIdLogic = putApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { params =>
-    service.putApiAdminGroupsGroupIdTeacherTeacherIdHandle(params)
+    service.putApiAdminGroupsGroupIdTeacherTeacherIdHandle(params).value
   }
 
   def deleteApiAdminGroupsGroupIdTeacherTeacherIdLogic = deleteApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { params =>
-    service.deleteApiAdminGroupsGroupIdTeacherTeacherIdHandle(params)
+    service.deleteApiAdminGroupsGroupIdTeacherTeacherIdHandle(params).value
   }
 
   def putApiAdminGroupsGroupIdKpiKpiIdLogic = putApiAdminGroupsGroupIdKpiKpiId.serverLogic { params =>
-    service.putApiAdminGroupsGroupIdKpiKpiIdHandle(params)
+    service.putApiAdminGroupsGroupIdKpiKpiIdHandle(params).value
   }
 
   def deleteApiAdminGroupsGroupIdKpiKpiIdLogic = deleteApiAdminGroupsGroupIdKpiKpiId.serverLogic { params =>
-    service.deleteApiAdminGroupsGroupIdKpiKpiIdHandle(params)
+    service.deleteApiAdminGroupsGroupIdKpiKpiIdHandle(params).value
   }
 
   def createTopicEndpointLogic = createTopicEndpoint.serverLogic { params =>
-    service.createTopicEndpointHandle(params)
+    service.createTopicEndpointHandle(params).value
   }
 
   def getAllTopicsEndpointLogic = getAllTopicsEndpoint.serverLogic { params =>
-    service.getAllTopicsEndpointHandle(params)
+    service.getAllTopicsEndpointHandle(params).value
   }
 
   def deleteTopicEndpointLogic = deleteTopicEndpoint.serverLogic { params =>
-    service.deleteTopicEndpointHandle(params)
+    service.deleteTopicEndpointHandle(params).value
   }
 
   def editTopicNameEndpointLogic = editTopicNameEndpoint.serverLogic { params =>
-    service.editTopicNameEndpointHandle(params)
+    service.editTopicNameEndpointHandle(params).value
   }
 
   def createKpiEndpointLogic = createKpiEndpoint.serverLogic { params =>
-    service.createKpiEndpointHandle(params)
+    service.createKpiEndpointHandle(params).value
   }
 
   def getAllKpiEndpointLogic = getAllKpiEndpoint.serverLogic { params =>
-    service.getAllKpiEndpointHandle(params)
+    service.getAllKpiEndpointHandle(params).value
   }
 
   def editKpiEndpointLogic = editKpiEndpoint.serverLogic { params =>
-    service.editKpiEndpointHandle(params)
+    service.editKpiEndpointHandle(params).value
   }
 
   def deleteKpiEndpointLogic = deleteKpiEndpoint.serverLogic { params =>
-    service.deleteKpiEndpointHandle(params)
+    service.deleteKpiEndpointHandle(params).value
   }
 
   def createTeachersEndpointLogic = createTeachersEndpoint.serverLogic { params =>
-    service.createTeachersEndpointHandle(params)
+    service.createTeachersEndpointHandle(params).value
   }
 
   def getTeachersEndpointLogic = getTeachersEndpoint.serverLogic { params =>
-    service.getTeachersEndpointHandle(params)
+    service.getTeachersEndpointHandle(params).value
   }
 
   def editTeachersEndpointLogic = editTeachersEndpoint.serverLogic { params =>
-    service.editTeachersEndpointHandle(params)
+    service.editTeachersEndpointHandle(params).value
   }
 
   def deleteTeachersEndpointLogic = deleteTeachersEndpoint.serverLogic { params =>
-    service.deleteTeachersEndpointHandle(params)
+    service.deleteTeachersEndpointHandle(params).value
   }
 
   def createReviewersEndpointLogic = createReviewersEndpoint.serverLogic { params =>
-    service.createReviewersEndpointHandle(params)
+    service.createReviewersEndpointHandle(params).value
   }
 
   def getAllReviewersEndpointLogic = getAllReviewersEndpoint.serverLogic { params =>
-    service.getAllReviewersEndpointHandle(params)
+    service.getAllReviewersEndpointHandle(params).value
   }
 
   def editReviewersEndpointLogic = editReviewersEndpoint.serverLogic { params =>
-    service.editReviewersEndpointHandle(params)
+    service.editReviewersEndpointHandle(params).value
   }
 
   def deleteReviewersEndpointLogic = deleteReviewersEndpoint.serverLogic { params =>
-    service.deleteReviewersEndpointHandle(params)
+    service.deleteReviewersEndpointHandle(params).value
   }
 
   def loginEndpointLogic = loginEndpoint.serverLogic { params =>
-    service.loginEndpointHandle(params)
+    service.loginEndpointHandle(params).value
   }
 
   def getKpiDataForTeacherLogic = getKpiDataForTeacher.serverLogic { params =>
-    service.getKpiDataForTeacherHandle(params)
+    service.getKpiDataForTeacherHandle(params).value
   }
 
   def getKpisByTeacherForReviewerLogic = getKpisByTeacherForReviewer.serverLogic { params =>
-    service.getKpisByTeacherForReviewerHandle(params)
+    service.getKpisByTeacherForReviewerHandle(params).value
   }
 
   def estimateTeacherEndpointLogic = estimateTeacherEndpoint.serverLogic { params =>
-    service.estimateTeacherEndpointHandle(params)
+    service.estimateTeacherEndpointHandle(params).value
   }
 
   def fillKpiEndpointLogic = fillKpiEndpoint.serverLogic { params =>
-    service.fillKpiEndpointHandle(params)
+    service.fillKpiEndpointHandle(params).value
   }
 
 }

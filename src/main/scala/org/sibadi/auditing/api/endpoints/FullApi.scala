@@ -26,6 +26,7 @@ object FullApi {
       .in("topics" / path[String]("topicId") / "kpi" / path[String]("kpiId"))
       .in(multipartBody[FillKpiRequestDto])
       .out(statusCode(StatusCode.NoContent))
+      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, serverError500))
 
   def estimateTeacherEndpoint =
     baseEndpoint.put
