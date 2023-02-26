@@ -1,6 +1,6 @@
 package org.sibadi.auditing.api.routes
 
-import cats.effect.{Async, Resource, Sync}
+import cats.effect.{Async, Sync}
 import org.http4s.HttpRoutes
 import org.sibadi.auditing.api.endpoints.{AppEndpoints, YamlDocAPI}
 import sttp.apispec.openapi.OpenAPI
@@ -10,16 +10,7 @@ import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
-class AppRouter[F[_]: Async](
-  groupsRouter: GroupsRouter[F],
-  kpiRouter: KpiRouter[F],
-  publicRouter: PublicRouter[F],
-  reviewerActionsRouter: ReviewerActionsRouter[F],
-  reviewersRouter: ReviewersRouter[F],
-  teacherActionsRouter: TeacherActionsRouter[F],
-  teacherRouter: TeachersRouter[F],
-  topicsRouter: TopicsRouter[F]
-) {
+class AppRouter[F[_]: Async]() {
 
   def httpRoutes: HttpRoutes[F] =
     Http4sServerInterpreter[F]().toRoutes(allRoutes ++ AppRouter.docRoutes :+ docAsYamlRoute)
@@ -33,15 +24,7 @@ class AppRouter[F[_]: Async](
         }
       }
 
-  private def allRoutes: List[ServerEndpoint[Any, F]] =
-    groupsRouter.routes ++
-      kpiRouter.routes ++
-      publicRouter.routes ++
-      reviewerActionsRouter.routes ++
-      reviewersRouter.routes ++
-      teacherActionsRouter.routes ++
-      teacherRouter.routes ++
-      topicsRouter.routes
+  private def allRoutes: List[ServerEndpoint[Any, F]] = List.empty
 
 }
 
@@ -54,26 +37,4 @@ object AppRouter {
       "1.0.0"
     )
 
-  def apply[F[_]: Async](
-    groupsRouter: GroupsRouter[F],
-    kpiRouter: KpiRouter[F],
-    publicRouter: PublicRouter[F],
-    reviewerActionsRouter: ReviewerActionsRouter[F],
-    reviewersRouter: ReviewersRouter[F],
-    teacherActionsRouter: TeacherActionsRouter[F],
-    teacherRouter: TeachersRouter[F],
-    topicsRouter: TopicsRouter[F]
-  ): Resource[F, AppRouter[F]] =
-    Resource.pure(
-      new AppRouter(
-        groupsRouter,
-        kpiRouter,
-        publicRouter,
-        reviewerActionsRouter,
-        reviewersRouter,
-        teacherActionsRouter,
-        teacherRouter,
-        topicsRouter
-      )
-    )
 }

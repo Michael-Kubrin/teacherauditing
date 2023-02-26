@@ -133,7 +133,7 @@ object AdminAPI {
       .description("Создание KPI. KPI - Ключевой Показатель эффективности")
       .summary("Создание *Ключевой Показатель эффективности*")
       .errorOut(oneOf[ApiError](notFound404, serverError500))
-      .out(jsonBody[ResponseId])
+      .out(jsonBody[IdResponseDto])
 
   def getAllKpiEndpoint =
     baseEndpoint.get

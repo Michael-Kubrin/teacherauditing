@@ -54,50 +54,7 @@ object Main extends IOApp.Simple {
       reviewerService <- ReviewerService[F](tokenGenerator, reviewer, teacherCredentials, reviewerCredentials, hashGenerator)
       teacherService  <- TeacherService[F](tokenGenerator, teacher, teacherCredentials, reviewerCredentials, teacherGroup, group, hashGenerator)
       topicService    <- TopicService[F](topic, kpi, topicKpi)
-      // Router
-      groupsRouter   = new GroupsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      kpiRouter      = new KpiRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      publicRouter = new PublicRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      reviewerActionsRouter = new ReviewerActionsRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
-      reviewersRouter = new ReviewersRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
-      teacherActionsRouter = new TeacherActionsRouter[F](
-        authenticator,
-        estimateService,
-        groupService,
-        kpiService,
-        reviewerService,
-        teacherService,
-        topicService
-      )
-
-      teacherRouter = new TeachersRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      topicsRouter  = new TopicsRouter[F](authenticator, estimateService, groupService, kpiService, reviewerService, teacherService, topicService)
-      router <- AppRouter[F](
-        groupsRouter,
-        kpiRouter,
-        publicRouter,
-        reviewerActionsRouter,
-        reviewersRouter,
-        teacherActionsRouter,
-        teacherRouter,
-        topicsRouter
-      )
+      router = new AppRouter[F]()
 
       cors = CORS.policy
         .withAllowOriginAll
