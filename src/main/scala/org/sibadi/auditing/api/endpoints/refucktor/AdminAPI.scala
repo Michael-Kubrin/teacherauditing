@@ -1,13 +1,14 @@
-package org.sibadi.auditing.api.endpoints
+package org.sibadi.auditing.api.endpoints.refucktor
 
-import org.sibadi.auditing.api.model.ApiError._
+import io.circe.generic.auto._
 import org.sibadi.auditing.api.endpoints.Examples._
+import org.sibadi.auditing.api.endpoints.baseEndpoint
+import org.sibadi.auditing.api.model.ApiError._
 import org.sibadi.auditing.api.model._
 import sttp.model.StatusCode
 import sttp.tapir._
 import sttp.tapir.generic.auto._
 import sttp.tapir.json.circe.jsonBody
-import io.circe.generic.auto._
 
 object AdminAPI {
 
