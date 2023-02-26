@@ -7,13 +7,13 @@ import org.sibadi.auditing.api.endpoints.PublicAPI._
 import org.sibadi.auditing.api.model.{
   toApiError,
   ApiError,
-  GroupResponseItemDto,
+  GroupItemResponseDto,
   KpiInGroupItemDto,
   LoginResponse,
   PasswordResponse,
   TeacherInGroupItemDto,
   TopicItemResponseDto,
-  TopicKpiResponse
+  TopicKpiItemResponseDto
 }
 import org.sibadi.auditing.domain.errors.AppError
 import org.sibadi.auditing.service.Authenticator.UserType
@@ -109,10 +109,10 @@ class PublicRouter[F[_]: Sync](
           .map(_.map { group =>
             val kpis     = group.kpis.map(kpi => KpiInGroupItemDto(kpi.id, kpi.title))
             val teachers = group.teachers.map(teacher => TeacherInGroupItemDto(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName))
-            GroupResponseItemDto(group.id, group.title, kpis, teachers)
+            GroupItemResponseDto(group.id, group.title, kpis, teachers)
           })
           .value
-          .handleErrorWith(throwableToUnexpected[F, List[GroupResponseItemDto]])
+          .handleErrorWith(throwableToUnexpected[F, List[GroupItemResponseDto]])
       }
 
   private def publicGetTopics =
@@ -144,8 +144,8 @@ class PublicRouter[F[_]: Sync](
       .serverLogic { userType => body =>
         kpiService.getAllKpi
           .leftSemiflatMap(toApiError[F])
-          .map(_.map(x => TopicKpiResponse(x.id, x.title)))
+          .map(_.map(x => TopicKpiItemResponseDto(x.id, x.title)))
           .value
-          .handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicKpiResponse]])
+          .handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicKpiItemResponseDto]])
       }
 }

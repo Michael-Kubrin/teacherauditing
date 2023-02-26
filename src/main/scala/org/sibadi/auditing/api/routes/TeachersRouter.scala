@@ -36,11 +36,11 @@ class TeachersRouter[F[_]: Sync](
             login = body.login
           )
           .map { createdTeacher =>
-            ResponseIdPassword(createdTeacher.id, createdTeacher.password)
+            CredentialsResponseDto(createdTeacher.id, createdTeacher.password)
           }
           .leftSemiflatMap(toApiError[F])
           .value
-          .handleErrorWith(throwableToUnexpected[F, ResponseIdPassword])
+          .handleErrorWith(throwableToUnexpected[F, CredentialsResponseDto])
       }
 
   private def adminGetTeachers =
@@ -48,10 +48,10 @@ class TeachersRouter[F[_]: Sync](
       .serverSecurityLogic(adminSecurityLogic[F])
       .serverLogic { _ => _ =>
         teacherService.getAllTeachers
-          .map(_.map(teacher => TeacherItemResponse(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName)))
+          .map(_.map(teacher => TeacherItemResponseDto(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName)))
           .leftSemiflatMap(toApiError[F])
           .value
-          .handleErrorWith(throwableToUnexpected[F, List[TeacherItemResponse]])
+          .handleErrorWith(throwableToUnexpected[F, List[TeacherItemResponseDto]])
       }
 
   private def adminGetTeacher =

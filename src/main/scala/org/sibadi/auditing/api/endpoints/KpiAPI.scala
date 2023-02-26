@@ -33,7 +33,7 @@ object KpiAPI {
       )
       .out(jsonBody[ResponseId])
 
-  def getApiAdminTopicsTopicIdKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
+  def getApiAdminTopicsTopicIdKpi: Endpoint[String, String, ApiError, List[TopicKpiItemResponseDto], Any] =
     baseEndpoint.get
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
@@ -46,7 +46,7 @@ object KpiAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[TopicKpiResponse]])
+      .out(jsonBody[List[TopicKpiItemResponseDto]])
 
   def putApiAdminTopicsTopicIdKpiKpiId: Endpoint[String, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
     baseEndpoint.put

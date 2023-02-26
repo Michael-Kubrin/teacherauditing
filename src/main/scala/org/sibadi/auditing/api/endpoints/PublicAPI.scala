@@ -67,7 +67,7 @@ object PublicAPI {
       .out(fileBody)
       .description("")
 
-  def getPublicGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
+  def getPublicGroups: Endpoint[String, Unit, ApiError, List[GroupItemResponseDto], Any] =
     baseEndpoint.get
       .tag("Public API")
       .securityIn(auth.bearer[String]())
@@ -80,7 +80,7 @@ object PublicAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[GroupResponseItemDto]])
+      .out(jsonBody[List[GroupItemResponseDto]])
       .description("Получения списков групп от роли админа")
 
   def getApiPublicAllTopics: Endpoint[String, Unit, ApiError, List[TopicItemResponseDto], Any] =
@@ -99,7 +99,7 @@ object PublicAPI {
       .out(jsonBody[List[TopicItemResponseDto]])
       .description("")
 
-  def getApiPublicAllKpi: Endpoint[String, String, ApiError, List[TopicKpiResponse], Any] =
+  def getApiPublicAllKpi: Endpoint[String, String, ApiError, List[TopicKpiItemResponseDto], Any] =
     baseEndpoint.get
       .tag("Kpi API")
       .securityIn(auth.bearer[String]())
@@ -112,6 +112,6 @@ object PublicAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[TopicKpiResponse]])
+      .out(jsonBody[List[TopicKpiItemResponseDto]])
 
 }

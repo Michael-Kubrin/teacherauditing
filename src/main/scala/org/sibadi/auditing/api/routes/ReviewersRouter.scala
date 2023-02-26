@@ -3,7 +3,7 @@ package org.sibadi.auditing.api.routes
 import cats.effect.Sync
 import cats.syntax.all._
 import org.sibadi.auditing.api.endpoints.ReviewersAPI._
-import org.sibadi.auditing.api.model.{ApiError, ResponseIdPassword, ReviewerResponse, toApiError}
+import org.sibadi.auditing.api.model.{ApiError, CredentialsResponseDto, ReviewerItemResponseDto, toApiError}
 import org.sibadi.auditing.service._
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -36,8 +36,8 @@ class ReviewersRouter[F[_]: Sync](
             login = body.login
           )
           .leftSemiflatMap(toApiError[F])
-          .map(reviewer => ResponseIdPassword(id = reviewer.id, password = reviewer.password))
-          .value.handleErrorWith(throwableToUnexpected[F, ResponseIdPassword])
+          .map(reviewer => CredentialsResponseDto(id = reviewer.id, password = reviewer.password))
+          .value.handleErrorWith(throwableToUnexpected[F, CredentialsResponseDto])
       }
 
   private def adminGetReviewers =
@@ -47,9 +47,9 @@ class ReviewersRouter[F[_]: Sync](
       }
       .serverLogic { userType => body =>
         reviewerService.getAllReviewers
-          .map(_.map(reviewer => ReviewerResponse(reviewer.id, reviewer.firstName, reviewer.lastName, reviewer.middleName)))
+          .map(_.map(reviewer => ReviewerItemResponseDto(reviewer.id, reviewer.firstName, reviewer.lastName, reviewer.middleName)))
           .leftSemiflatMap(toApiError[F])
-          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.ReviewerResponse]])
+          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.ReviewerItemResponseDto]])
       }
 
   private def adminEditReviewers =

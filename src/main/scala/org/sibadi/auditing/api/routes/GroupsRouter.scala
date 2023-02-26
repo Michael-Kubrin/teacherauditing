@@ -53,10 +53,10 @@ class GroupsRouter[F[_]: Sync](
           .map(_.map { group =>
             val kpis     = group.kpis.map(kpi => KpiInGroupItemDto(kpi.id, kpi.title))
             val teachers = group.teachers.map(teacher => TeacherInGroupItemDto(teacher.id, teacher.firstName, teacher.lastName, teacher.middleName))
-            GroupResponseItemDto(group.id, group.title, kpis, teachers)
+            GroupItemResponseDto(group.id, group.title, kpis, teachers)
           })
           .value
-          .handleErrorWith(throwableToUnexpected[F, List[GroupResponseItemDto]])
+          .handleErrorWith(throwableToUnexpected[F, List[GroupItemResponseDto]])
       }
 
   private def adminAddKpiToGroup =

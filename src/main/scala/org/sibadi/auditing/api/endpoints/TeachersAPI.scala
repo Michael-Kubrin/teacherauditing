@@ -17,12 +17,12 @@ object TeachersAPI {
     getApiAdminTeachersTeacherId
   )
 
-  def postApiAdminTeachers: Endpoint[String, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
+  def postApiAdminTeachers: Endpoint[String, CreateTeacherRequestDto, ApiError, CredentialsResponseDto, Any] =
     baseEndpoint.post
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
       .in("teachers")
-      .in(jsonBody[CreateTeacherRequest])
+      .in(jsonBody[CreateTeacherRequestDto])
       .description("")
       .errorOut(
         oneOf[ApiError](
@@ -32,9 +32,9 @@ object TeachersAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[ResponseIdPassword])
+      .out(jsonBody[CredentialsResponseDto])
 
-  def getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherItemResponse], Any] =
+  def getApiAdminTeachers: Endpoint[String, Unit, ApiError, List[TeacherItemResponseDto], Any] =
     baseEndpoint.get
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
@@ -47,7 +47,7 @@ object TeachersAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[TeacherItemResponse]])
+      .out(jsonBody[List[TeacherItemResponseDto]])
       .description("")
 
   def getApiAdminTeachersTeacherId: Endpoint[String, String, ApiError, TeacherResponse, Any] =
@@ -66,12 +66,12 @@ object TeachersAPI {
       .out(jsonBody[TeacherResponse])
       .description("")
 
-  def putApiAdminTeachers: Endpoint[String, (String, EditTeacherRequest), ApiError, Unit, Any] =
+  def putApiAdminTeachers: Endpoint[String, (String, EditTeacherRequestDto), ApiError, Unit, Any] =
     baseEndpoint.put
       .tag("Teachers API")
       .securityIn(auth.bearer[String]())
       .in("teachers" / path[String]("teacherId"))
-      .in(jsonBody[EditTeacherRequest])
+      .in(jsonBody[EditTeacherRequestDto])
       .description("")
       .errorOut(
         oneOf[ApiError](

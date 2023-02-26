@@ -8,7 +8,7 @@ object Examples {
   val exampleCreateGroupRequestDto = CreateGroupRequestDto("some group name")
 
   val exampleGroupResponseItemDtoList = List(
-    GroupResponseItemDto(
+    GroupItemResponseDto(
       id = "fjsa7u8ftw24tg4yfigi",
       name = "Директор",
       kpis = List(
@@ -36,7 +36,7 @@ object Examples {
         )
       )
     ),
-    GroupResponseItemDto(
+    GroupItemResponseDto(
       id = "fasd89yq3nqfwhejkgas",
       name = "Зав. кафедрой",
       kpis = List(
@@ -64,7 +64,7 @@ object Examples {
         )
       )
     ),
-    GroupResponseItemDto(
+    GroupItemResponseDto(
       id = "fbasdnmbfewtyruitwei",
       name = "НПР",
       kpis = List(

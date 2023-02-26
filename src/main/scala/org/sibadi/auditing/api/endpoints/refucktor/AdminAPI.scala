@@ -46,7 +46,7 @@ object AdminAPI {
     deleteReviewersEndpoint,
   )
 
-  def createGroupEndpoint: Endpoint[Unit, CreateGroupRequestDto, ApiError, Unit, Any] =
+  def createGroupEndpoint =
     baseEndpoint.post
       .tags(List("API Admin"))
       .in("groups")
@@ -56,16 +56,16 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](serverError500))
       .out(statusCode(StatusCode.NoContent).description("Успешное создание группы"))
 
-  def getAllGroupsEndpoint: Endpoint[Unit, Unit, ApiError, List[GroupResponseItemDto], Any] =
+  def getAllGroupsEndpoint =
     baseEndpoint.get
       .tag("API Admin")
       .in("groups")
       .summary("Список групп")
       .description("Запрос возвращает список всех доступных групп, а также подвязанных к каждой группе показатели эффективности и участников группы")
       .errorOut(oneOf[ApiError](badRequest400, serverError500))
-      .out(jsonBody[List[GroupResponseItemDto]].example(exampleGroupResponseItemDtoList))
+      .out(jsonBody[List[GroupItemResponseDto]].example(exampleGroupResponseItemDtoList))
 
-  def deleteGroupEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
+  def deleteGroupEndpoint =
     baseEndpoint.delete
       .tag("API Admin")
       .in("groups" / path[String]("groupId").description("Идентификатор группы, которую необходимо удалить").example("fhasdhf4327890fdshkl"))
@@ -74,7 +74,7 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent).description("Успешное удаление группы"))
 
-  def editGroupEndpoint: Endpoint[Unit, (String, EditGroupName), ApiError, Unit, Any] =
+  def editGroupEndpoint =
     baseEndpoint.put
       .tag("API Admin")
       .in(
@@ -83,21 +83,21 @@ object AdminAPI {
           .example("fhasdhf4327890fdshkl")
       )
       .summary("Изменения имени группы")
-      .in(jsonBody[EditGroupName])
+      .in(jsonBody[EditGroupRequestDto])
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
-  def createTopicEndpoint: Endpoint[Unit, CreateTopicName, ApiError, Unit, Any] =
+  def createTopicEndpoint =
     baseEndpoint.post
       .tag("API Admin")
       .in("topics")
-      .in(jsonBody[CreateTopicName].description("Название топика").example(CreateTopicName("Качество приема")))
+      .in(jsonBody[CreateTopicRequestDto].description("Название топика").example(CreateTopicRequestDto("Качество приема")))
       .description("Создание раздела")
       .summary("Создание раздела")
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.unsafeApply(201)))
 
-  def getAllTopicsEndpoint: Endpoint[Unit, Unit, ApiError, List[TopicItemResponseDto], Any] =
+  def getAllTopicsEndpoint =
     baseEndpoint.get
       .tag("API Admin")
       .in("topics")
@@ -106,7 +106,7 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(jsonBody[List[TopicItemResponseDto]])
 
-  def deleteTopicEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
+  def deleteTopicEndpoint =
     baseEndpoint.delete
       .tag("API Admin")
       .in("topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
@@ -115,7 +115,7 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
-  def editTopicNameEndpoint: Endpoint[Unit, (String, EditTopicRequestDto), ApiError, Unit, Any] =
+  def editTopicNameEndpoint =
     baseEndpoint.put
       .tag("API Admin")
       .in("topics" / path[String]("topicId").description("Индентификатор топика").example("12345"))
@@ -125,7 +125,7 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
-  def createKpiEndpoint: Endpoint[Unit, (String, CreateKPIRequestDto), ApiError, ResponseId, Any] =
+  def createKpiEndpoint =
     baseEndpoint.post
       .tag("API Admin")
       .in("topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
@@ -135,16 +135,16 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(jsonBody[ResponseId])
 
-  def getAllKpiEndpoint: Endpoint[Unit, String, ApiError, List[TopicKpiResponse], Any] =
+  def getAllKpiEndpoint =
     baseEndpoint.get
       .tag("API Admin")
       .in("topics" / path[String]("topicId").description("Идентификатор раздела").example("12345") / "kpi")
       .description("Получения списка KPI. KPI - Ключевой Показатель эффективности")
       .summary("Получения списка *Ключевой Показатель эффективности*")
       .errorOut(oneOf[ApiError](notFound404, serverError500))
-      .out(jsonBody[List[TopicKpiResponse]])
+      .out(jsonBody[List[TopicKpiItemResponseDto]])
 
-  def editKpiEndpoint: Endpoint[Unit, (String, String, EditKpiRequestDto), ApiError, Unit, Any] =
+  def editKpiEndpoint =
     baseEndpoint.put
       .tag("API Admin")
       .in(
@@ -158,7 +158,7 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
-  def deleteKpiEndpoint: Endpoint[Unit, (String, String), ApiError, Unit, Any] =
+  def deleteKpiEndpoint =
     baseEndpoint.delete
       .tag("API Admin")
       .in(
@@ -173,25 +173,25 @@ object AdminAPI {
       .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
-  def createTeachersEndpoint: Endpoint[Unit, CreateTeacherRequest, ApiError, ResponseIdPassword, Any] =
+  def createTeachersEndpoint =
     baseEndpoint.post
       .tag("API Admin")
       .in("teachers")
       .in(
-        jsonBody[CreateTeacherRequest]
+        jsonBody[CreateTeacherRequestDto]
           .description("Входные парамметры оцениваемого персонала: ФИО, логин")
-          .example(CreateTeacherRequest("Иванов", "Иван", Some("Иванович"), "Ivan"))
+          .example(CreateTeacherRequestDto("Иванов", "Иван", Some("Иванович"), "Ivan"))
       )
       .description("Создание оцениваемого персонала")
       .summary("Создание оцениваемого персонала")
       .errorOut(oneOf[ApiError](notFound404, serverError500))
       .out(
-        jsonBody[ResponseIdPassword]
+        jsonBody[CredentialsResponseDto]
           .description("Идентификатор и пароль на созданного пользователя")
-          .example(ResponseIdPassword("ivan777", "fgjskdbgksjgbsglijks"))
+          .example(CredentialsResponseDto("ivan777", "fgjskdbgksjgbsglijks"))
       )
 
-  def getTeachersEndpoint: Endpoint[Unit, Unit, ApiError, List[TeacherItemResponse], Any] =
+  def getTeachersEndpoint =
     baseEndpoint.get
       .tag("API Admin")
       .in("teachers")
@@ -199,26 +199,26 @@ object AdminAPI {
       .summary("Получение списка оцениваемого персонала")
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(
-        jsonBody[List[TeacherItemResponse]]
+        jsonBody[List[TeacherItemResponseDto]]
           .description("Список оцениваемого персонала с их данными: Идентификатор, ФИО")
-          .example(List(TeacherItemResponse("ivan777", "Иванов", "Иван", Some("Иванович"))))
+          .example(List(TeacherItemResponseDto("ivan777", "Иванов", "Иван", Some("Иванович"))))
       )
 
-  def editTeachersEndpoint: Endpoint[Unit, (String, EditTeacherRequest), ApiError, Unit, Any] =
+  def editTeachersEndpoint =
     baseEndpoint.put
       .tag("API Admin")
       .in("teachers" / path[String]("teacherId").description("Идентификатор оценивающего персонала").example("1111s"))
       .in(
-        jsonBody[EditTeacherRequest]
+        jsonBody[EditTeacherRequestDto]
           .description("Данные конкретного оцениваемого персонала, которые необходимо изменить: ФИО")
-          .example(EditTeacherRequest("Сергеев", "Сергей", Some("Сергеевич")))
+          .example(EditTeacherRequestDto("Сергеев", "Сергей", Some("Сергеевич")))
       )
       .description("Изменение конкретного пользователя с ролью *Проверяющий*")
       .summary("Изменение конкретного пользователя с ролью *Проверяющий*")
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
 
-  def deleteTeachersEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
+  def deleteTeachersEndpoint =
     baseEndpoint.delete
       .tag("API Admin")
       .in("teachers" / path[String]("teacherId").description("Идентификатор оценивающего персонала").example("1111s"))
@@ -227,25 +227,25 @@ object AdminAPI {
       .summary("Удаление конкретного пользователя с ролью *Оцениваемый персонал*")
       .out(statusCode(StatusCode.NoContent))
 
-  def createReviewersEndpoint: Endpoint[Unit, CreateReviewerRequest, ApiError, ResponseIdPassword, Any] =
+  def createReviewersEndpoint =
     baseEndpoint.post
       .tag("API Admin")
       .in("reviewers")
       .in(
-        jsonBody[CreateReviewerRequest]
+        jsonBody[CreateReviewerRequestDto]
           .description("Входные парамметры проверяющего: ФИО, логин")
-          .example(CreateReviewerRequest("Иванов", "Иван", Some("Иванович"), "Ivan"))
+          .example(CreateReviewerRequestDto("Иванов", "Иван", Some("Иванович"), "Ivan"))
       )
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Создание пользователя с ролью *Проверяющий*")
       .summary("Создание пользователя с ролью *Проверяющий*")
       .out(
-        jsonBody[ResponseIdPassword]
+        jsonBody[CredentialsResponseDto]
           .description("Идентификатор и пароль на созданного пользователя")
-          .example(ResponseIdPassword("ivan777", "fgjskdbgksjgbsglijks"))
+          .example(CredentialsResponseDto("ivan777", "fgjskdbgksjgbsglijks"))
       )
 
-  def getAllReviewersEndpoint: Endpoint[Unit, Unit, ApiError, List[ReviewerResponse], Any] =
+  def getAllReviewersEndpoint =
     baseEndpoint.get
       .tag("API Admin")
       .in("reviewers")
@@ -253,26 +253,26 @@ object AdminAPI {
       .description("Получение списка всех пользователей с ролью *Проверяющий*")
       .summary("Получение списка всех пользователей с ролью *Проверяющий*")
       .out(
-        jsonBody[List[ReviewerResponse]]
+        jsonBody[List[ReviewerItemResponseDto]]
           .description("Список проверяющего персонала с их данными: Идентификатор, ФИО")
-          .example(List(ReviewerResponse("ivan777", "Иванов", "Иван", Some("Иванович"))))
+          .example(List(ReviewerItemResponseDto("ivan777", "Иванов", "Иван", Some("Иванович"))))
       )
 
-  def editReviewersEndpoint: Endpoint[Unit, (String, EditReviewersRequest), ApiError, Unit, Any] =
+  def editReviewersEndpoint =
     baseEndpoint.put
       .tag("API Admin")
       .in("reviewers" / path[String]("reviewerId").description("Идентификатор проверяемого персонала").example("2222c"))
       .in(
-        jsonBody[EditReviewersRequest]
+        jsonBody[EditReviewerRequestDto]
           .description("Данные конкретного проверяющего персонала, которые необходимо изменить: ФИО")
-          .example(EditReviewersRequest("Сергеев", "Сергей", Some("Сергеевич")))
+          .example(EditReviewerRequestDto("Сергеев", "Сергей", Some("Сергеевич")))
       )
       .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .description("Изменения конкретного пользователя с ролью *Проверяющий*")
       .summary("Изменения конкретного пользователя с ролью *Проверяющий*")
       .out(statusCode(StatusCode.NoContent))
 
-  def deleteReviewersEndpoint: Endpoint[Unit, String, ApiError, Unit, Any] =
+  def deleteReviewersEndpoint =
     baseEndpoint.delete
       .tag("API Admin")
       .in("reviewers" / path[String]("reviewerId").description("Идентификатор проверяемого персонала").example("2222c"))
@@ -281,7 +281,7 @@ object AdminAPI {
       .summary("Удаление конкретного пользователя с ролью *Проверяющий*")
       .out(statusCode(StatusCode.NoContent))
 
-  def putApiAdminGroupsGroupIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
+  def putApiAdminGroupsGroupIdKpiKpiId =
     baseEndpoint.put
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
@@ -290,7 +290,7 @@ object AdminAPI {
       .out(statusCode(StatusCode.NoContent))
       .description("Привязка показателей эффективности к группе")
 
-  def deleteApiAdminGroupsGroupIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =
+  def deleteApiAdminGroupsGroupIdKpiKpiId =
     baseEndpoint.delete
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
@@ -299,7 +299,7 @@ object AdminAPI {
       .out(statusCode(StatusCode.NoContent))
       .description("Отвязка показателей эффективности от группы")
 
-  def putApiAdminGroupsGroupIdTeacherTeacherId: Endpoint[String, (String, String), ApiError, Unit, Any] =
+  def putApiAdminGroupsGroupIdTeacherTeacherId =
     baseEndpoint.put
       .tag("API Admin")
       .securityIn(auth.bearer[String]())
@@ -308,7 +308,7 @@ object AdminAPI {
       .out(statusCode(StatusCode.NoContent))
       .description("Привязка учителя к группе")
 
-  def deleteApiAdminGroupsGroupIdTeacherTeacherId: Endpoint[String, (String, String), ApiError, Unit, Any] =
+  def deleteApiAdminGroupsGroupIdTeacherTeacherId =
     baseEndpoint.delete
       .tag("API Admin")
       .securityIn(auth.bearer[String]())

@@ -37,7 +37,7 @@ object GroupsAPI {
       .out(statusCode(StatusCode.NoContent))
       .description("Создание груп от роли админа")
 
-  def getApiAdminGroups: Endpoint[String, Unit, ApiError, List[GroupResponseItemDto], Any] =
+  def getApiAdminGroups: Endpoint[String, Unit, ApiError, List[GroupItemResponseDto], Any] =
     baseEndpoint.get
       .tag("Groups API")
       .securityIn(auth.bearer[String]())
@@ -50,7 +50,7 @@ object GroupsAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[GroupResponseItemDto]])
+      .out(jsonBody[List[GroupItemResponseDto]])
       .description("Получения списков групп от роли админа")
 
   def putApiAdminGroupsGroupIdKpiKpiId: Endpoint[String, (String, String), ApiError, Unit, Any] =

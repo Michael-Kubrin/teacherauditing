@@ -16,12 +16,12 @@ object ReviewersAPI {
     putApiAdminReviewersId
   )
 
-  def postApiAdminReviewers: Endpoint[String, CreateReviewerRequest, ApiError, ResponseIdPassword, Any] =
+  def postApiAdminReviewers: Endpoint[String, CreateReviewerRequestDto, ApiError, CredentialsResponseDto, Any] =
     baseEndpoint.post
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
       .in("reviewers")
-      .in(jsonBody[CreateReviewerRequest])
+      .in(jsonBody[CreateReviewerRequestDto])
       .description("Создание роли проверяющего")
       .errorOut(
         oneOf[ApiError](
@@ -31,9 +31,9 @@ object ReviewersAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[ResponseIdPassword])
+      .out(jsonBody[CredentialsResponseDto])
 
-  def getApiAdminReviewers: Endpoint[String, Unit, ApiError, List[ReviewerResponse], Any] =
+  def getApiAdminReviewers: Endpoint[String, Unit, ApiError, List[ReviewerItemResponseDto], Any] =
     baseEndpoint.get
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
@@ -46,15 +46,15 @@ object ReviewersAPI {
           oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
         )
       )
-      .out(jsonBody[List[ReviewerResponse]])
+      .out(jsonBody[List[ReviewerItemResponseDto]])
       .description("Получение списка с ролью Проверяющий")
 
-  def putApiAdminReviewersId: Endpoint[String, (String, EditReviewersRequest), ApiError, Unit, Any] =
+  def putApiAdminReviewersId: Endpoint[String, (String, EditReviewerRequestDto), ApiError, Unit, Any] =
     baseEndpoint.put
       .tag("Reviewers API")
       .securityIn(auth.bearer[String]())
       .in("reviewers" / path[String]("reviewerId"))
-      .in(jsonBody[EditReviewersRequest])
+      .in(jsonBody[EditReviewerRequestDto])
       .errorOut(
         oneOf[ApiError](
           oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description(""))),

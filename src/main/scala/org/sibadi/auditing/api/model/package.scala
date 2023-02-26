@@ -16,11 +16,9 @@ package object model {
 
   final case class ResponseId(id: String)
 
-  final case class ResponseIdPassword(id: String, password: String)
+  final case class CredentialsResponseDto(id: String, password: String)
 
   final case class CreateKPIRequestDto(title: String)
-
-  final case class CreateTopicRequestDto(title: String, kpis: List[CreateKPIRequestDto])
 
   final case class CreateTopicsRequestDto(topics: List[CreateTopicRequestDto])
 
@@ -30,17 +28,17 @@ package object model {
 
   final case class EditTopicRequestDto(name: String)
 
-  final case class EditGroupName(name: String)
+  final case class EditGroupRequestDto(name: String)
 
-  final case class CreateTopicName(name: String)
+  final case class CreateTopicRequestDto(name: String)
 
-  final case class TopicKpiResponse(id: String, title: String)
+  final case class TopicKpiItemResponseDto(id: String, title: String)
 
   final case class EditKpiRequestDto(name: String)
 
   final case class EditTeacherStatusRequest(newstatus: ReviewStatus.ReviewStatus)
 
-  final case class CreateTeacherRequest(name: String, surName: String, middleName: Option[String], login: String)
+  final case class CreateTeacherRequestDto(name: String, surName: String, middleName: Option[String], login: String)
 
   final case class TeacherResponse(
     id: String,
@@ -52,20 +50,20 @@ package object model {
 
   final case class TeacherGroupItemResponse(id: String, name: String)
 
-  final case class TeacherItemResponse(
+  final case class TeacherItemResponseDto(
     id: String,
     name: String,
     surName: String,
     middleName: Option[String]
   )
 
-  final case class EditTeacherRequest(name: String, surName: String, middleName: Option[String])
+  final case class EditTeacherRequestDto(name: String, surName: String, middleName: Option[String])
 
-  final case class CreateReviewerRequest(name: String, surName: String, middleName: Option[String], login: String)
+  final case class CreateReviewerRequestDto(name: String, surName: String, middleName: Option[String], login: String)
 
-  final case class ReviewerResponse(id: String, name: String, surName: String, middleName: Option[String])
+  final case class ReviewerItemResponseDto(id: String, name: String, surName: String, middleName: Option[String])
 
-  final case class EditReviewersRequest(name: String, surName: String, middleName: Option[String])
+  final case class EditReviewerRequestDto(name: String, surName: String, middleName: Option[String])
 
   final case class GetPublicKpiResponse(
     status: ReviewStatus.ReviewStatus,
@@ -80,7 +78,7 @@ package object model {
 
   final case class CreateGroupRequestDto(name: String)
 
-  final case class GroupResponseItemDto(
+  final case class GroupItemResponseDto(
     id: String,
     name: String,
     kpis: List[KpiInGroupItemDto],

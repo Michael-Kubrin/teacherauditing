@@ -52,8 +52,8 @@ class KpiRouter[F[_]: Sync](
       .serverLogic { userType => body =>
         kpiService.getAllKpi
           .leftSemiflatMap(toApiError[F])
-          .map(_.map(x => TopicKpiResponse(x.id, x.title)))
-          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicKpiResponse]])
+          .map(_.map(x => TopicKpiItemResponseDto(x.id, x.title)))
+          .value.handleErrorWith(throwableToUnexpected[F, List[org.sibadi.auditing.api.model.TopicKpiItemResponseDto]])
       }
 
   private def adminEditTopicKpiId =
