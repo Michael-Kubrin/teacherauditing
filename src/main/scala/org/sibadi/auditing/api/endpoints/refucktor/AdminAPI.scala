@@ -285,36 +285,32 @@ object AdminAPI {
   def putApiAdminGroupsGroupIdKpiKpiId =
     baseEndpoint.put
       .tag("API Admin")
-      .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
-      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Привязка показателей эффективности к группе")
 
   def deleteApiAdminGroupsGroupIdKpiKpiId =
     baseEndpoint.delete
       .tag("API Admin")
-      .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "kpis" / path[String]("kpiId"))
-      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Отвязка показателей эффективности от группы")
 
   def putApiAdminGroupsGroupIdTeacherTeacherId =
     baseEndpoint.put
       .tag("API Admin")
-      .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
-      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Привязка учителя к группе")
 
   def deleteApiAdminGroupsGroupIdTeacherTeacherId =
     baseEndpoint.delete
       .tag("API Admin")
-      .securityIn(auth.bearer[String]())
       .in("groups" / path[String]("groupId") / "teacher" / path[String]("teacherId"))
-      .errorOut(oneOf[ApiError](badRequest400, unauthorized401, notFound404, serverError500))
+      .errorOut(oneOf[ApiError](badRequest400, notFound404, serverError500))
       .out(statusCode(StatusCode.NoContent))
       .description("Отвязка учителя от группы")
 
