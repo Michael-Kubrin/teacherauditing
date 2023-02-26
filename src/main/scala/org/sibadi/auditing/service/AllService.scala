@@ -13,7 +13,7 @@ import org.typelevel.log4cats.Logger
 class AllService[F[_]: UUIDGen: Logger](
   transactor: Transactor[F]
 )(implicit M: MonadCancel[F, Throwable]) {
-  
+
   def createGroupEndpointHandle(params: CreateGroupRequestDto): EitherT[F, ApiError, Unit] =
     for {
       name <- EitherT.cond(params.name.isBlank, params.name, emptyNameError)
@@ -52,6 +52,6 @@ class AllService[F[_]: UUIDGen: Logger](
 }
 
 object AllService {
-  def apply[F[_]: UUIDGen](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]): Resource[F, AllService[F]] =
+  def apply[F[_]: UUIDGen: Logger](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]): Resource[F, AllService[F]] =
     Resource.pure(new AllService(transactor))
 }

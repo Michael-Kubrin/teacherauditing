@@ -19,13 +19,12 @@ package object syntax {
 
 trait SqlOps {
 
-  implicit class AbobaOps[F[_] : MonadCancelThrow : Logger, A](io: ConnectionIO[A]) {
+  implicit class AbobaOps[F[_]: MonadCancelThrow: Logger, A](io: ConnectionIO[A]) {
 
-    def eitherT(transactor: Transactor[F]): EitherT[F, ApiError, A] = {
+    def eitherT(transactor: Transactor[F]): EitherT[F, ApiError, A] =
       io.attemptT.transact(transactor).leftSemiflatMap { throwable =>
         Logger[F].error(throwable)(s"SQL error").map(_ => sqlError)
       }
-    }
 
   }
 

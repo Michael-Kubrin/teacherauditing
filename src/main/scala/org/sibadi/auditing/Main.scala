@@ -52,16 +52,13 @@ object Main extends IOApp.Simple {
       allRouter  = new AllRouter[F](allService)
       router     = new AppRouter[F](allRouter)
 
-      cors = CORS.policy
-        .withAllowOriginAll
+      cors = CORS.policy.withAllowOriginAll
         .withAllowCredentials(false)
         .apply(router.httpRoutes)
 
       server <- server[F](cfg.server, cors)
       _      <- Resource.eval(Logger[F].info(s"Server started at ${cfg.server.host}:${cfg.server.port}"))
     } yield server
-
-
 
   private def createTransactor[F[_]: Async](cfg: DatabaseConfig): Resource[F, Transactor[F]] =
     Resource.eval {

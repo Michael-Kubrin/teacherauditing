@@ -5,7 +5,7 @@ import sttp.tapir.Codec.PlainCodec
 
 sealed trait EstimateStatusDto extends EnumEntry
 object EstimateStatusDto extends Enum[EstimateStatusDto] {
-  val values = findValues
+  val values                                        = findValues
   implicit val codec: PlainCodec[EstimateStatusDto] = sttp.tapir.codec.enumeratum.plainCodecEnumEntryDecodeCaseInsensitive
   case object WaitingForFill extends EstimateStatusDto
   case object Filled         extends EstimateStatusDto

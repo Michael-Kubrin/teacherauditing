@@ -19,12 +19,12 @@ package object endpoints {
     .errorOut(header("Access-Control-Allow-Credentials", "true"))
     .errorOut(header("Access-Control-Allow-Origin", "*"))
 
-  val badRequest400 = oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description("Невалидные параметры")))
+  val badRequest400   = oneOfVariant(statusCode(StatusCode.BadRequest).and(jsonBody[BadRequest].description("Невалидные параметры")))
   val unauthorized401 = oneOfVariant(statusCode(StatusCode.Unauthorized).and(jsonBody[Unauthorized].description("Не авторизован")))
-  val notFound404 = oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found")))
-  val serverError500 = oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
+  val notFound404     = oneOfVariant(statusCode(StatusCode.NotFound).and(jsonBody[NotFound].description("Not found")))
+  val serverError500  = oneOfVariant(statusCode(StatusCode.InternalServerError).and(jsonBody[InternalError].description("Server down")))
 
   val emptyNameError: ApiError = ApiError.BadRequest("empty name")
-  val sqlError: ApiError = ApiError.InternalError("sql error")
+  val sqlError: ApiError       = ApiError.InternalError("sql error")
 
 }
