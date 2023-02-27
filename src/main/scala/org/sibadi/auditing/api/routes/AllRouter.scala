@@ -4,9 +4,11 @@ import cats.effect.Async
 import org.sibadi.auditing.api.endpoints.AdminAPI._
 import org.sibadi.auditing.api.endpoints.FullApi._
 import org.sibadi.auditing.service.AllService
+import org.sibadi.auditing.service.refucktor.GroupService
 
 class AllRouter[F[_]: Async](
-  service: AllService[F]
+  service: AllService[F],
+  groupService: GroupService[F]
 ) {
 
   def all =
@@ -43,35 +45,35 @@ class AllRouter[F[_]: Async](
     )
 
   def createGroupEndpointLogic = createGroupEndpoint.serverLogic { params =>
-    service.createGroupEndpointHandle(params).value
+    groupService.createGroupEndpointHandle(params).value
   }
 
-  def getAllGroupsEndpointLogic = getAllGroupsEndpoint.serverLogic { params =>
-    service.getAllGroupsEndpointHandle(params).value
+  def getAllGroupsEndpointLogic = getAllGroupsEndpoint.serverLogic { _ =>
+    groupService.getAllGroupsEndpointHandle.value
   }
 
-  def deleteGroupEndpointLogic = deleteGroupEndpoint.serverLogic { params =>
-    service.deleteGroupEndpointHandle(params).value
+  def deleteGroupEndpointLogic = deleteGroupEndpoint.serverLogic { groupId =>
+    groupService.deleteGroupEndpointHandle(groupId).value
   }
 
-  def editGroupEndpointLogic = editGroupEndpoint.serverLogic { params =>
-    service.editGroupEndpointHandle(params).value
+  def editGroupEndpointLogic = editGroupEndpoint.serverLogic { case (groupId, body) =>
+    groupService.editGroupEndpointHandle(groupId, body).value
   }
 
-  def putApiAdminGroupsGroupIdTeacherTeacherIdLogic = putApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { params =>
-    service.putApiAdminGroupsGroupIdTeacherTeacherIdHandle(params).value
+  def putApiAdminGroupsGroupIdTeacherTeacherIdLogic = putApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { case (groupId, teacherId) =>
+    groupService.putApiAdminGroupsGroupIdTeacherTeacherIdHandle(groupId, teacherId).value
   }
 
-  def deleteApiAdminGroupsGroupIdTeacherTeacherIdLogic = deleteApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { params =>
-    service.deleteApiAdminGroupsGroupIdTeacherTeacherIdHandle(params).value
+  def deleteApiAdminGroupsGroupIdTeacherTeacherIdLogic = deleteApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { case (groupId, teacherId) =>
+    groupService.deleteApiAdminGroupsGroupIdTeacherTeacherIdHandle(groupId, teacherId).value
   }
 
-  def putApiAdminGroupsGroupIdKpiKpiIdLogic = putApiAdminGroupsGroupIdKpiKpiId.serverLogic { params =>
-    service.putApiAdminGroupsGroupIdKpiKpiIdHandle(params).value
+  def putApiAdminGroupsGroupIdKpiKpiIdLogic = putApiAdminGroupsGroupIdKpiKpiId.serverLogic { case (groupId, kpiId) =>
+    groupService.putApiAdminGroupsGroupIdKpiKpiIdHandle(groupId, kpiId).value
   }
 
-  def deleteApiAdminGroupsGroupIdKpiKpiIdLogic = deleteApiAdminGroupsGroupIdKpiKpiId.serverLogic { params =>
-    service.deleteApiAdminGroupsGroupIdKpiKpiIdHandle(params).value
+  def deleteApiAdminGroupsGroupIdKpiKpiIdLogic = deleteApiAdminGroupsGroupIdKpiKpiId.serverLogic { case (groupId, kpiId) =>
+    groupService.deleteApiAdminGroupsGroupIdKpiKpiIdHandle(groupId, kpiId).value
   }
 
   def createTopicEndpointLogic = createTopicEndpoint.serverLogic { params =>

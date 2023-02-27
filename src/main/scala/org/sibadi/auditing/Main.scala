@@ -9,7 +9,8 @@ import org.http4s.server.{Router, Server}
 import org.sibadi.auditing.api.routes._
 import org.sibadi.auditing.configs.{AppConfig, DatabaseConfig, ServerConfig}
 import org.sibadi.auditing.db._
-import org.sibadi.auditing.service._
+import org.sibadi.auditing.service.refucktor._
+import org.sibadi.auditing.service.{AllService, Authenticator}
 import org.sibadi.auditing.util.{Filer, HashGenerator, TokenGenerator}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -49,7 +50,8 @@ object Main extends IOApp.Simple {
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
       allService = new AllService[F](transactor)
-      allRouter  = new AllRouter[F](allService)
+      groupService = new GroupService[F](transactor)
+      allRouter  = new AllRouter[F](allService, groupService)
       router     = new AppRouter[F](allRouter)
 
       cors = CORS.policy.withAllowOriginAll
