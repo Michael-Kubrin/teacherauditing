@@ -31,7 +31,6 @@ class AllService[F[_]: UUIDGen: Logger](
   def getKpiDataForTeacherHandle(params: (String, String)): EitherT[F, ApiError, KpiDataResponseDto]                 = ???
   def getKpisByTeacherForReviewerHandle(params: (String, String)): EitherT[F, ApiError, KpiReviewerDataResponseDto]  = ???
   def getTeachersEndpointHandle(params: Unit): EitherT[F, ApiError, List[TeacherItemResponseDto]]                    = ???
-  def loginEndpointHandle(params: LoginRequestDto): EitherT[F, ApiError, BearerResponseDto]                          = ???
 
 }
 

@@ -3,12 +3,16 @@ package org.sibadi.auditing.api.routes
 import cats.effect.Async
 import org.sibadi.auditing.api.endpoints.AdminAPI._
 import org.sibadi.auditing.api.endpoints.FullApi._
-import org.sibadi.auditing.service.AllService
+import org.sibadi.auditing.api.endpoints.model.BearerResponseDto
+import org.sibadi.auditing.api.endpoints.unauthorized
 import org.sibadi.auditing.service.refucktor.GroupService
+import org.sibadi.auditing.service.{AllService, Authenticator}
+import org.typelevel.log4cats.Logger
 
-class AllRouter[F[_]: Async](
+class AllRouter[F[_]: Async: Logger](
   service: AllService[F],
-  groupService: GroupService[F]
+  groupService: GroupService[F],
+  authenticator: Authenticator[F]
 ) {
 
   def all =
@@ -141,7 +145,7 @@ class AllRouter[F[_]: Async](
   }
 
   def loginEndpointLogic = loginEndpoint.serverLogic { params =>
-    service.loginEndpointHandle(params).value
+    authenticator.authenticate(params.login, params.password).map(BearerResponseDto.apply).toRight(unauthorized).value
   }
 
   def getKpiDataForTeacherLogic = getKpiDataForTeacher.serverLogic { params =>

@@ -30,5 +30,6 @@ package object endpoints {
   val noGroupWithGivenId: ApiError       = ApiError.NotFound("no group with given id")
   val noKpiWithGivenId: ApiError       = ApiError.NotFound("no kpi with given id")
   val noTeacherWithGivenId: ApiError       = ApiError.NotFound("no teacher with given id")
+  val unauthorized: ApiError       = ApiError.Unauthorized("unauthorized")
 
 }
