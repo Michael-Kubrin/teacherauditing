@@ -19,8 +19,6 @@ package object routes {
       .handleErrorWith(throwableToUnexpected[F, Authenticator.UserType])
 
   def throwableToUnexpected[F[_]: Logger: Functor, A](throwable: Throwable): F[Either[ApiError, A]] =
-    Functor[F].map(Logger[F].error(throwable)("Unexpected error"))(_ =>
-      ApiError.InternalError(s"Unexpected error: ${throwable.getMessage}").asLeft[A]
-    )
+    Functor[F].map(Logger[F].error(throwable)("Unexpected error"))(_ => ApiError.InternalError(s"Unexpected error: ${throwable.getMessage}").asLeft[A])
 
 }
