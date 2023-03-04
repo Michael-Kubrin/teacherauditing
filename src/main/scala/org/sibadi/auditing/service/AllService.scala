@@ -11,11 +11,6 @@ class AllService[F[_]: UUIDGen: Logger](
   transactor: Transactor[F]
 )(implicit M: MonadCancel[F, Throwable]) {
 
-  def createKpiEndpointHandle(params: (String, CreateKPIRequestDto)): EitherT[F, ApiError, IdResponseDto] = ???
-  def deleteKpiEndpointHandle(params: (String, String)): EitherT[F, ApiError, Unit]                       = ???
-  def editKpiEndpointHandle(params: (String, String, EditKpiRequestDto)): EitherT[F, ApiError, Unit]      = ???
-  def getAllKpiEndpointHandle(params: String): EitherT[F, ApiError, List[TopicKpiItemResponseDto]]        = ???
-
   def createTopicEndpointHandle(params: CreateTopicRequestDto): EitherT[F, ApiError, Unit]           = ???
   def deleteTopicEndpointHandle(params: String): EitherT[F, ApiError, Unit]                          = ???
   def editTopicNameEndpointHandle(params: (String, EditTopicRequestDto)): EitherT[F, ApiError, Unit] = ???
