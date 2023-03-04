@@ -49,10 +49,11 @@ object Main extends IOApp.Simple {
       hashGenerator  = new HashGenerator()
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
       // Service
-      allService   = new AllService[F](transactor)
-      groupService = new GroupService[F](transactor)
-      allRouter    = new AllRouter[F](allService, groupService, authenticator)
-      router       = new AppRouter[F](allRouter)
+      allService      = new AllService[F](transactor)
+      groupService    = new GroupService[F](transactor)
+      registerService = new RegisterService[F](transactor, tokenGenerator, hashGenerator)
+      allRouter       = new AllRouter[F](allService, groupService, authenticator, registerService)
+      router          = new AppRouter[F](allRouter)
 
       cors = CORS.policy.withAllowOriginAll
         .withAllowCredentials(false)

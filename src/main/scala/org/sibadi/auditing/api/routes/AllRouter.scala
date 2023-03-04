@@ -4,15 +4,16 @@ import cats.effect.Async
 import org.sibadi.auditing.api.endpoints.AdminAPI._
 import org.sibadi.auditing.api.endpoints.FullApi._
 import org.sibadi.auditing.api.endpoints.model.BearerResponseDto
-import org.sibadi.auditing.api.endpoints.unauthorized
-import org.sibadi.auditing.service.refucktor.GroupService
+import org.sibadi.auditing.api.ApiErrors.unauthorized
+import org.sibadi.auditing.service.refucktor.{GroupService, RegisterService}
 import org.sibadi.auditing.service.{AllService, Authenticator}
 import org.typelevel.log4cats.Logger
 
 class AllRouter[F[_]: Async: Logger](
   service: AllService[F],
   groupService: GroupService[F],
-  authenticator: Authenticator[F]
+  authenticator: Authenticator[F],
+  registerService: RegisterService[F]
 ) {
 
   def all =
@@ -113,7 +114,14 @@ class AllRouter[F[_]: Async: Logger](
   }
 
   def createTeachersEndpointLogic = createTeachersEndpoint.serverLogic { params =>
-    service.createTeachersEndpointHandle(params).value
+    registerService
+      .registerTeacher(
+        rawFirstName = params.name,
+        rawLastName = params.surName,
+        rawMiddleName = params.middleName,
+        rawLogin = params.login
+      )
+      .value
   }
 
   def getTeachersEndpointLogic = getTeachersEndpoint.serverLogic { params =>
@@ -129,7 +137,14 @@ class AllRouter[F[_]: Async: Logger](
   }
 
   def createReviewersEndpointLogic = createReviewersEndpoint.serverLogic { params =>
-    service.createReviewersEndpointHandle(params).value
+    registerService
+      .registerReviewer(
+        rawFirstName = params.name,
+        rawLastName = params.surName,
+        rawMiddleName = params.middleName,
+        rawLogin = params.login
+      )
+      .value
   }
 
   def getAllReviewersEndpointLogic = getAllReviewersEndpoint.serverLogic { params =>

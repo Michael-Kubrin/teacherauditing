@@ -7,7 +7,7 @@ import cats.syntax.eq._
 import cats.syntax.traverse._
 import doobie.syntax.all._
 import doobie.util.transactor.Transactor
-import org.sibadi.auditing.api.endpoints._
+import org.sibadi.auditing.api.ApiErrors._
 import org.sibadi.auditing.api.endpoints.model._
 import org.sibadi.auditing.db.model.{GroupDbModel, KpiDbModel, TeacherDbModel}
 import org.sibadi.auditing.syntax.sql._

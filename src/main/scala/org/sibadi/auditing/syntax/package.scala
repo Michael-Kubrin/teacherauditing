@@ -7,7 +7,7 @@ import cats.syntax.functor._
 import doobie.ConnectionIO
 import doobie.util.transactor.Transactor
 import org.sibadi.auditing.api.endpoints.model.ApiError
-import org.sibadi.auditing.api.endpoints.sqlError
+import org.sibadi.auditing.api.ApiErrors.sqlError
 import org.typelevel.log4cats.Logger
 import doobie.syntax.all._
 
