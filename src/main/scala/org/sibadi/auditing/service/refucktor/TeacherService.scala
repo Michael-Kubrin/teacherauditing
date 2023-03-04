@@ -21,7 +21,7 @@ class TeacherService[F[_]: UUIDGen: Logger](
       .query[TeacherDbModel]
       .to[List]
       .eitherT(transactor)
-      .map(_.map(t => TeacherItemResponseDto(id = t.id, name = t.firstName, surName = t.lastName, middleName = t.middleName)))
+      .map(_.map(t => TeacherItemResponseDto(id = t.id, firstName = t.firstName, lastName = t.lastName, middleName = t.middleName)))
 
   def delete(id: String): EitherT[F, ApiError, Unit] =
     sql"""DELETE FROM teacher WHERE id = $id""".update.run.eitherT(transactor).void
@@ -30,8 +30,8 @@ class TeacherService[F[_]: UUIDGen: Logger](
     sql"""
        UPDATE reviewer
        SET
-        firstName = ${body.name},
-        lastName = ${body.surName},
+        firstName = ${body.firstName},
+        lastName = ${body.lastName},
         middleName = ${body.middleName}
        WHERE id = $id;
        """.update.run.eitherT(transactor).void

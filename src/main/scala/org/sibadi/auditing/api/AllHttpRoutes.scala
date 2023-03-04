@@ -80,8 +80,8 @@ class AllHttpRoutes[F[_]: Async: Logger](
   def createTeachersEndpointLogic = createTeachersEndpoint.serverLogic { params =>
     service.register
       .registerTeacher(
-        rawFirstName = params.name,
-        rawLastName = params.surName,
+        rawFirstName = params.firstName,
+        rawLastName = params.lastName,
         rawMiddleName = params.middleName,
         rawLogin = params.login
       )
@@ -103,8 +103,8 @@ class AllHttpRoutes[F[_]: Async: Logger](
   def createReviewersEndpointLogic = createReviewersEndpoint.serverLogic { params =>
     service.register
       .registerReviewer(
-        rawFirstName = params.name,
-        rawLastName = params.surName,
+        rawFirstName = params.firstName,
+        rawLastName = params.lastName,
         rawMiddleName = params.middleName,
         rawLogin = params.login
       )

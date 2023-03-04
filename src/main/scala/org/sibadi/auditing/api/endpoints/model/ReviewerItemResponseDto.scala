@@ -1,3 +1,3 @@
 package org.sibadi.auditing.api.endpoints.model
 
-final case class ReviewerItemResponseDto(id: String, name: String, surName: String, middleName: Option[String])
+final case class ReviewerItemResponseDto(id: String, firstName: String, lastName: String, middleName: Option[String])
