@@ -5,7 +5,7 @@ import org.sibadi.auditing.api.endpoints.AdminAPI._
 import org.sibadi.auditing.api.endpoints.FullApi._
 import org.sibadi.auditing.api.endpoints.model.BearerResponseDto
 import org.sibadi.auditing.api.ApiErrors.unauthorized
-import org.sibadi.auditing.service.refucktor.{KpiService, _}
+import org.sibadi.auditing.service.refucktor._
 import org.sibadi.auditing.service.{AllService, Authenticator}
 import org.typelevel.log4cats.Logger
 
@@ -16,7 +16,8 @@ class AllRouter[F[_]: Async: Logger](
   registerService: RegisterService[F],
   teacherService: TeacherService[F],
   reviewerService: ReviewerService[F],
-  kpiService: KpiService[F]
+  kpiService: KpiService[F],
+  topicService: TopicService[F]
 ) {
 
   def all =
@@ -85,19 +86,19 @@ class AllRouter[F[_]: Async: Logger](
   }
 
   def createTopicEndpointLogic = createTopicEndpoint.serverLogic { params =>
-    service.createTopicEndpointHandle(params).value
+    topicService.create(params).value
   }
 
   def getAllTopicsEndpointLogic = getAllTopicsEndpoint.serverLogic { params =>
-    service.getAllTopicsEndpointHandle(params).value
+    topicService.getAll.value
   }
 
-  def deleteTopicEndpointLogic = deleteTopicEndpoint.serverLogic { params =>
-    service.deleteTopicEndpointHandle(params).value
+  def deleteTopicEndpointLogic = deleteTopicEndpoint.serverLogic { topicId =>
+    topicService.delete(topicId).value
   }
 
   def editTopicNameEndpointLogic = editTopicNameEndpoint.serverLogic { params =>
-    service.editTopicNameEndpointHandle(params).value
+    topicService.edit(params._1, params._2).value
   }
 
   def createKpiEndpointLogic = createKpiEndpoint.serverLogic { params =>

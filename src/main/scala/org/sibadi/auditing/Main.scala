@@ -55,7 +55,8 @@ object Main extends IOApp.Simple {
       teacherService  = new TeacherService[F](transactor)
       reviewerService = new ReviewerService[F](transactor)
       kpiService      = new KpiService[F](transactor)
-      allRouter       = new AllRouter[F](allService, groupService, authenticator, registerService, teacherService, reviewerService, kpiService)
+      topicService    = new TopicService[F](transactor)
+      allRouter       = new AllRouter[F](allService, groupService, authenticator, registerService, teacherService, reviewerService, kpiService, topicService)
       router          = new AppRouter[F](allRouter)
 
       cors = CORS.policy.withAllowOriginAll
