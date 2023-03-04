@@ -11,7 +11,7 @@ import org.sibadi.auditing.configs.{AppConfig, DatabaseConfig, ServerConfig}
 import org.sibadi.auditing.db._
 import org.sibadi.auditing.service.refucktor._
 import org.sibadi.auditing.service.{AllService, Authenticator}
-import org.sibadi.auditing.util.{Filer, HashGenerator, TokenGenerator}
+import org.sibadi.auditing.util.{HashGenerator, TokenGenerator}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -31,20 +31,9 @@ object Main extends IOApp.Simple {
       _          <- Resource.eval(Migrations(cfg.database).migrate())
       transactor <- createTransactor(cfg.database)
       // DAOs
-      teacher             = new TeacherDAO(transactor)
       teacherCredentials  = new TeacherCredentialsDAO(transactor)
-      reviewer            = new ReviewerDAO(transactor)
       reviewerCredentials = new ReviewerCredentialsDAO(transactor)
-      group               = new GroupDAO(transactor)
-      kpi                 = new KpiDAO(transactor)
-      topic               = new TopicDAO(transactor)
-      topicKpi            = new TopicKpiDAO(transactor)
-      kpiGroup            = new KpiGroupDAO(transactor)
-      teacherGroup        = new TeacherGroupDAO(transactor)
-      estimate            = new EstimateDAO(transactor)
-      estimateFiles       = new EstimateFilesDAO(transactor)
       // Utils
-      filer          = new Filer[F]
       tokenGenerator = TokenGenerator()
       hashGenerator  = new HashGenerator()
       authenticator <- Authenticator[F](teacherCredentials, reviewerCredentials, cfg.admin, tokenGenerator, hashGenerator)
