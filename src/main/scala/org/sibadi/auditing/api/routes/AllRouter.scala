@@ -5,7 +5,7 @@ import org.sibadi.auditing.api.endpoints.AdminAPI._
 import org.sibadi.auditing.api.endpoints.FullApi._
 import org.sibadi.auditing.api.endpoints.model.BearerResponseDto
 import org.sibadi.auditing.api.ApiErrors.unauthorized
-import org.sibadi.auditing.service.refucktor.{GroupService, RegisterService, TeacherService}
+import org.sibadi.auditing.service.refucktor._
 import org.sibadi.auditing.service.{AllService, Authenticator}
 import org.typelevel.log4cats.Logger
 
@@ -14,7 +14,8 @@ class AllRouter[F[_]: Async: Logger](
   groupService: GroupService[F],
   authenticator: Authenticator[F],
   registerService: RegisterService[F],
-  teacherService: TeacherService[F]
+  teacherService: TeacherService[F],
+  reviewerService: ReviewerService[F]
 ) {
 
   def all =
@@ -148,16 +149,16 @@ class AllRouter[F[_]: Async: Logger](
       .value
   }
 
-  def getAllReviewersEndpointLogic = getAllReviewersEndpoint.serverLogic { params =>
-    service.getAllReviewersEndpointHandle(params).value
+  def getAllReviewersEndpointLogic = getAllReviewersEndpoint.serverLogic { _ =>
+    reviewerService.getAll.value
   }
 
   def editReviewersEndpointLogic = editReviewersEndpoint.serverLogic { params =>
-    service.editReviewersEndpointHandle(params).value
+    reviewerService.edit(params._1, params._2).value
   }
 
   def deleteReviewersEndpointLogic = deleteReviewersEndpoint.serverLogic { params =>
-    service.deleteReviewersEndpointHandle(params).value
+    reviewerService.delete(params).value
   }
 
   def loginEndpointLogic = loginEndpoint.serverLogic { params =>
