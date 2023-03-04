@@ -3,7 +3,7 @@ package org.sibadi.auditing
 import cats.effect._
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.{Router, Server}
-import org.sibadi.auditing.api.routes.AppRouter
+import org.sibadi.auditing.api.AppRouter
 import org.sibadi.auditing.configs.AppConfig
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger

@@ -1,124 +1,84 @@
-package org.sibadi.auditing.api.routes
+package org.sibadi.auditing.api
 
 import cats.effect.Async
+import org.sibadi.auditing.api.ApiErrors.unauthorized
 import org.sibadi.auditing.api.endpoints.AdminAPI._
 import org.sibadi.auditing.api.endpoints.FullApi._
 import org.sibadi.auditing.api.endpoints.model.BearerResponseDto
-import org.sibadi.auditing.api.ApiErrors.unauthorized
 import org.sibadi.auditing.service.refucktor._
-import org.sibadi.auditing.service.{AllService, Authenticator}
 import org.typelevel.log4cats.Logger
+import sttp.tapir.server.ServerEndpoint
 
-class AllRouter[F[_]: Async: Logger](
-  service: AllService[F],
-  groupService: GroupService[F],
-  authenticator: Authenticator[F],
-  registerService: RegisterService[F],
-  teacherService: TeacherService[F],
-  reviewerService: ReviewerService[F],
-  kpiService: KpiService[F],
-  topicService: TopicService[F]
+class AllHttpRoutes[F[_]: Async: Logger](
+  service: ServiceComponent[F]
 ) {
 
-  def all =
-    List(
-      createGroupEndpointLogic,
-      getAllGroupsEndpointLogic,
-      deleteGroupEndpointLogic,
-      editGroupEndpointLogic,
-      putApiAdminGroupsGroupIdTeacherTeacherIdLogic,
-      deleteApiAdminGroupsGroupIdTeacherTeacherIdLogic,
-      putApiAdminGroupsGroupIdKpiKpiIdLogic,
-      deleteApiAdminGroupsGroupIdKpiKpiIdLogic,
-      createTopicEndpointLogic,
-      getAllTopicsEndpointLogic,
-      deleteTopicEndpointLogic,
-      editTopicNameEndpointLogic,
-      createKpiEndpointLogic,
-      getAllKpiEndpointLogic,
-      editKpiEndpointLogic,
-      deleteKpiEndpointLogic,
-      createTeachersEndpointLogic,
-      getTeachersEndpointLogic,
-      editTeachersEndpointLogic,
-      deleteTeachersEndpointLogic,
-      createReviewersEndpointLogic,
-      getAllReviewersEndpointLogic,
-      editReviewersEndpointLogic,
-      deleteReviewersEndpointLogic,
-      loginEndpointLogic,
-      getKpiDataForTeacherLogic,
-      getKpisByTeacherForReviewerLogic,
-      estimateTeacherEndpointLogic,
-      fillKpiEndpointLogic
-    )
-
   def createGroupEndpointLogic = createGroupEndpoint.serverLogic { params =>
-    groupService.createGroupEndpointHandle(params).value
+    service.group.createGroupEndpointHandle(params).value
   }
 
   def getAllGroupsEndpointLogic = getAllGroupsEndpoint.serverLogic { _ =>
-    groupService.getAllGroupsEndpointHandle.value
+    service.group.getAllGroupsEndpointHandle.value
   }
 
   def deleteGroupEndpointLogic = deleteGroupEndpoint.serverLogic { groupId =>
-    groupService.deleteGroupEndpointHandle(groupId).value
+    service.group.deleteGroupEndpointHandle(groupId).value
   }
 
   def editGroupEndpointLogic = editGroupEndpoint.serverLogic { case (groupId, body) =>
-    groupService.editGroupEndpointHandle(groupId, body).value
+    service.group.editGroupEndpointHandle(groupId, body).value
   }
 
   def putApiAdminGroupsGroupIdTeacherTeacherIdLogic = putApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { case (groupId, teacherId) =>
-    groupService.putApiAdminGroupsGroupIdTeacherTeacherIdHandle(groupId, teacherId).value
+    service.group.putApiAdminGroupsGroupIdTeacherTeacherIdHandle(groupId, teacherId).value
   }
 
   def deleteApiAdminGroupsGroupIdTeacherTeacherIdLogic = deleteApiAdminGroupsGroupIdTeacherTeacherId.serverLogic { case (groupId, teacherId) =>
-    groupService.deleteApiAdminGroupsGroupIdTeacherTeacherIdHandle(groupId, teacherId).value
+    service.group.deleteApiAdminGroupsGroupIdTeacherTeacherIdHandle(groupId, teacherId).value
   }
 
   def putApiAdminGroupsGroupIdKpiKpiIdLogic = putApiAdminGroupsGroupIdKpiKpiId.serverLogic { case (groupId, kpiId) =>
-    groupService.putApiAdminGroupsGroupIdKpiKpiIdHandle(groupId, kpiId).value
+    service.group.putApiAdminGroupsGroupIdKpiKpiIdHandle(groupId, kpiId).value
   }
 
   def deleteApiAdminGroupsGroupIdKpiKpiIdLogic = deleteApiAdminGroupsGroupIdKpiKpiId.serverLogic { case (groupId, kpiId) =>
-    groupService.deleteApiAdminGroupsGroupIdKpiKpiIdHandle(groupId, kpiId).value
+    service.group.deleteApiAdminGroupsGroupIdKpiKpiIdHandle(groupId, kpiId).value
   }
 
   def createTopicEndpointLogic = createTopicEndpoint.serverLogic { params =>
-    topicService.create(params).value
+    service.topic.create(params).value
   }
 
   def getAllTopicsEndpointLogic = getAllTopicsEndpoint.serverLogic { params =>
-    topicService.getAll.value
+    service.topic.getAll.value
   }
 
   def deleteTopicEndpointLogic = deleteTopicEndpoint.serverLogic { topicId =>
-    topicService.delete(topicId).value
+    service.topic.delete(topicId).value
   }
 
   def editTopicNameEndpointLogic = editTopicNameEndpoint.serverLogic { params =>
-    topicService.edit(params._1, params._2).value
+    service.topic.edit(params._1, params._2).value
   }
 
   def createKpiEndpointLogic = createKpiEndpoint.serverLogic { params =>
-    kpiService.create(params._1, params._2).value
+    service.kpi.create(params._1, params._2).value
   }
 
   def getAllKpiEndpointLogic = getAllKpiEndpoint.serverLogic { params =>
-    kpiService.getAll(params).value
+    service.kpi.getAll(params).value
   }
 
   def editKpiEndpointLogic = editKpiEndpoint.serverLogic { params =>
-    kpiService.edit(params._2, params._3).value
+    service.kpi.edit(params._2, params._3).value
   }
 
   def deleteKpiEndpointLogic = deleteKpiEndpoint.serverLogic { params =>
-    kpiService.delete(params._1, params._2).value
+    service.kpi.delete(params._1, params._2).value
   }
 
   def createTeachersEndpointLogic = createTeachersEndpoint.serverLogic { params =>
-    registerService
+    service.register
       .registerTeacher(
         rawFirstName = params.name,
         rawLastName = params.surName,
@@ -129,19 +89,19 @@ class AllRouter[F[_]: Async: Logger](
   }
 
   def getTeachersEndpointLogic = getTeachersEndpoint.serverLogic { _ =>
-    teacherService.getAll.value
+    service.teacher.getAll.value
   }
 
   def editTeachersEndpointLogic = editTeachersEndpoint.serverLogic { params =>
-    teacherService.edit(params._1, params._2).value
+    service.teacher.edit(params._1, params._2).value
   }
 
   def deleteTeachersEndpointLogic = deleteTeachersEndpoint.serverLogic { params =>
-    teacherService.delete(params).value
+    service.teacher.delete(params).value
   }
 
   def createReviewersEndpointLogic = createReviewersEndpoint.serverLogic { params =>
-    registerService
+    service.register
       .registerReviewer(
         rawFirstName = params.name,
         rawLastName = params.surName,
@@ -152,35 +112,76 @@ class AllRouter[F[_]: Async: Logger](
   }
 
   def getAllReviewersEndpointLogic = getAllReviewersEndpoint.serverLogic { _ =>
-    reviewerService.getAll.value
+    service.reviewer.getAll.value
   }
 
   def editReviewersEndpointLogic = editReviewersEndpoint.serverLogic { params =>
-    reviewerService.edit(params._1, params._2).value
+    service.reviewer.edit(params._1, params._2).value
   }
 
   def deleteReviewersEndpointLogic = deleteReviewersEndpoint.serverLogic { params =>
-    reviewerService.delete(params).value
+    service.reviewer.delete(params).value
   }
 
   def loginEndpointLogic = loginEndpoint.serverLogic { params =>
-    authenticator.authenticate(params.login, params.password).map(BearerResponseDto.apply).toRight(unauthorized).value
+    service.auth.authenticate(params.login, params.password).map(BearerResponseDto.apply).toRight(unauthorized).value
   }
 
   def getKpiDataForTeacherLogic = getKpiDataForTeacher.serverLogic { params =>
-    service.getKpiDataForTeacherHandle(params).value
+    service.all.getKpiDataForTeacherHandle(params).value
   }
 
   def getKpisByTeacherForReviewerLogic = getKpisByTeacherForReviewer.serverLogic { params =>
-    service.getKpisByTeacherForReviewerHandle(params).value
+    service.all.getKpisByTeacherForReviewerHandle(params).value
   }
 
   def estimateTeacherEndpointLogic = estimateTeacherEndpoint.serverLogic { params =>
-    service.estimateTeacherEndpointHandle(params).value
+    service.all.estimateTeacherEndpointHandle(params).value
   }
 
   def fillKpiEndpointLogic = fillKpiEndpoint.serverLogic { params =>
-    service.fillKpiEndpointHandle(params).value
+    service.all.fillKpiEndpointHandle(params).value
+  }
+
+}
+
+object AllHttpRoutes {
+
+  def apply[F[_]: Async: Logger](
+    service: ServiceComponent[F]
+  ): List[ServerEndpoint.Full[_, _, _, _, _, Any, F]] = {
+    val routes = new AllHttpRoutes(service)
+    List(
+      routes.createGroupEndpointLogic,
+      routes.getAllGroupsEndpointLogic,
+      routes.deleteGroupEndpointLogic,
+      routes.editGroupEndpointLogic,
+      routes.putApiAdminGroupsGroupIdTeacherTeacherIdLogic,
+      routes.deleteApiAdminGroupsGroupIdTeacherTeacherIdLogic,
+      routes.putApiAdminGroupsGroupIdKpiKpiIdLogic,
+      routes.deleteApiAdminGroupsGroupIdKpiKpiIdLogic,
+      routes.createTopicEndpointLogic,
+      routes.getAllTopicsEndpointLogic,
+      routes.deleteTopicEndpointLogic,
+      routes.editTopicNameEndpointLogic,
+      routes.createKpiEndpointLogic,
+      routes.getAllKpiEndpointLogic,
+      routes.editKpiEndpointLogic,
+      routes.deleteKpiEndpointLogic,
+      routes.createTeachersEndpointLogic,
+      routes.getTeachersEndpointLogic,
+      routes.editTeachersEndpointLogic,
+      routes.deleteTeachersEndpointLogic,
+      routes.createReviewersEndpointLogic,
+      routes.getAllReviewersEndpointLogic,
+      routes.editReviewersEndpointLogic,
+      routes.deleteReviewersEndpointLogic,
+      routes.loginEndpointLogic,
+      routes.getKpiDataForTeacherLogic,
+      routes.getKpisByTeacherForReviewerLogic,
+      routes.estimateTeacherEndpointLogic,
+      routes.fillKpiEndpointLogic
+    )
   }
 
 }
