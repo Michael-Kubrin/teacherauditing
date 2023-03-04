@@ -4,10 +4,11 @@ import cats.effect.MonadCancel
 import cats.syntax.functor._
 import doobie._
 import doobie.syntax.all._
+import org.sibadi.auditing.db.model._
 
 class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadCancel[F, Throwable]) {
 
-  def insertCredentials(credentials: ReviewerCredentials): F[Unit] =
+  def insertCredentials(credentials: ReviewerCredentialsDbModel): F[Unit] =
     sql"""
        INSERT INTO reviewer_credentials (id, login, passwordHash, bearer)
        SELECT ${credentials.id}, ${credentials.login}, ${credentials.passwordHash}, ${credentials.bearer}
@@ -21,33 +22,23 @@ class ReviewerCredentialsDAO[F[_]](transactor: Transactor[F])(implicit M: MonadC
        """.update.run.void
       .transact(transactor)
 
-  def getCredentialsByBearer(bearer: String): F[Option[ReviewerCredentials]] =
+  def getCredentialsByBearer(bearer: String): F[Option[ReviewerCredentialsDbModel]] =
     sql"""
        SELECT id, login, passwordHash, bearer
        FROM reviewer_credentials
        WHERE bearer = $bearer
        """
-      .query[ReviewerCredentials]
+      .query[ReviewerCredentialsDbModel]
       .option
       .transact(transactor)
 
-  def getCredentialsById(id: String): F[Option[ReviewerCredentials]] =
-    sql"""
-       SELECT id, login, passwordHash, bearer
-       FROM reviewer_credentials
-       WHERE id = $id
-       """
-      .query[ReviewerCredentials]
-      .option
-      .transact(transactor)
-
-  def getByLogin(login: String): F[Option[ReviewerCredentials]] =
+  def getByLogin(login: String): F[Option[ReviewerCredentialsDbModel]] =
     sql"""
        SELECT id, login, passwordHash, bearer
        FROM reviewer_credentials
        WHERE login = $login
        """
-      .query[ReviewerCredentials]
+      .query[ReviewerCredentialsDbModel]
       .option
       .transact(transactor)
 

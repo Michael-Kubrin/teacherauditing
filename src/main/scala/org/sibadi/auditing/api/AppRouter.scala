@@ -1,9 +1,9 @@
-package org.sibadi.auditing.api.routes
+package org.sibadi.auditing.api
 
 import cats.effect.{Async, Sync}
 import org.http4s.HttpRoutes
+import org.sibadi.auditing.api.AppRouter.allEndpoints
 import org.sibadi.auditing.api.endpoints._
-import org.sibadi.auditing.api.routes.AppRouter.allEndpoints
 import sttp.apispec.openapi.OpenAPI
 import sttp.apispec.openapi.circe.yaml._
 import sttp.tapir._
@@ -12,10 +12,10 @@ import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
-class AppRouter[F[_]: Async](allRouter: AllRouter[F]) {
+class AppRouter[F[_]: Async](routes: List[ServerEndpoint[Any, F]]) {
 
   def httpRoutes: HttpRoutes[F] =
-    Http4sServerInterpreter[F]().toRoutes(allRoutes ++ AppRouter.docRoutes :+ docAsYamlRoute)
+    Http4sServerInterpreter[F]().toRoutes(routes ++ AppRouter.docRoutes :+ docAsYamlRoute)
 
   private def docAsYamlRoute =
     baseEndpoint.get
@@ -30,8 +30,6 @@ class AppRouter[F[_]: Async](allRouter: AllRouter[F]) {
           docs.toYaml
         }
       }
-
-  private def allRoutes: List[ServerEndpoint[Any, F]] = allRouter.all
 
 }
 

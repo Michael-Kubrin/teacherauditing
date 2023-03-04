@@ -65,24 +65,3 @@ CREATE TABLE IF NOT EXISTS teacher_group(
     groupId TEXT,
     PRIMARY KEY (teacherId, groupId)
 );
-
-CREATE TABLE IF NOT EXISTS estimate(
-    topicId TEXT,
-    kpiId TEXT,
-    groupId TEXT,
-    teacherId TEXT,
-    status TEXT NOT NULL,
-    score BIGINT NOT NULL,
-    lastReviewerId TEXT,
-    lastChangesDt TIMESTAMP NOT NULL,
-    PRIMARY KEY (topicId, kpiId, groupId, teacherId)
-);
-
-CREATE TABLE IF NOT EXISTS estimate_files(
-    topicId TEXT,
-    kpiId TEXT,
-    teacherId TEXT,
-    fileId TEXT,
-    path TEXT NOT NULL,
-    PRIMARY KEY (topicId, kpiId, teacherId, fileId)
-);

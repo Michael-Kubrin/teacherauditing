@@ -1,3 +1,3 @@
 package org.sibadi.auditing.api.endpoints.model
 
-final case class EditTeacherRequestDto(name: String, surName: String, middleName: Option[String])
+final case class EditTeacherRequestDto(firstName: String, lastName: String, middleName: Option[String])
