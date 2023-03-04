@@ -21,12 +21,6 @@ class AllService[F[_]: UUIDGen: Logger](
   def editTopicNameEndpointHandle(params: (String, EditTopicRequestDto)): EitherT[F, ApiError, Unit] = ???
   def getAllTopicsEndpointHandle(params: Unit): EitherT[F, ApiError, List[TopicItemResponseDto]]     = ???
 
-  def getAllReviewersEndpointHandle(params: Unit): EitherT[F, ApiError, List[ReviewerItemResponseDto]] = ???
-
-  def deleteReviewersEndpointHandle(params: String): EitherT[F, ApiError, Unit] = ???
-
-  def editReviewersEndpointHandle(params: (String, EditReviewerRequestDto)): EitherT[F, ApiError, Unit] = ???
-
   def estimateTeacherEndpointHandle(params: (String, String, EstimateTeacherRequestDto)): EitherT[F, ApiError, Unit] = ???
   def fillKpiEndpointHandle(params: (String, String, FillKpiRequestDto)): EitherT[F, ApiError, Unit]                 = ???
   def getKpiDataForTeacherHandle(params: (String, String)): EitherT[F, ApiError, KpiDataResponseDto]                 = ???
